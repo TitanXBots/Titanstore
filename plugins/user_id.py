@@ -1,27 +1,21 @@
+# plugins/id.py
 from pyrogram import filters, enums
 from pyrogram.types import Message
-from bot import Bot
+from pyrogram import Client  # Import the Client class
+#from bot import Bot #No Need to import bot here since it get initialed during start
 
-
-
-
-@Bot.on_message(filters.command("id") & filters.private)
-async def showid(client, message):
+@Client.on_message(filters.command("id") & filters.private)
+async def showid(client:Client, message: Message):  #Explicit typing with client : Client
     chat_type = message.chat.type
 
     if chat_type == enums.ChatType.PRIVATE:
         user_id = message.chat.id
         await message.reply_text(
-            f"<b>Your User ID Is :</b> <code>{user_id}</code>", 
+            f"Your User ID Is : {user_id}",
             quote=True
         )
-        
 
-
-
-
-
-# Jishu Developer 
+# Jishu Developer
 # Don't Remove Credit 🥺
 # Telegram Channel @Madflix_Bots
 # Backup Channel @JishuBotz
