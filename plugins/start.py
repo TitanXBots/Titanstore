@@ -9,6 +9,7 @@ from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
+from pyrogram.errors import MessageNotModified
 
 titanxofficials = FILE_AUTO_DELETE
 titandeveloper = titanxofficials
@@ -232,16 +233,24 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
 
 
 # Function to handle file deletion
-async def delete_files(messages, client, k):
+async def delete_files(messages: list[Message], client: Client, k: Message):
+    """Deletes messages and edits the command message with a 'Get File Again' button.
+
+    Args:
+        messages: A list of pyrogram.types.Message objects to delete.
+        client: The pyrogram client instance.
+        k: The pyrogram.types.Message object representing the command message.
+    """
     await asyncio.sleep(FILE_AUTO_DELETE)  # Wait for the duration specified in config.py
+
     for msg in messages:
         try:
             await client.delete_messages(chat_id=msg.chat.id, message_ids=[msg.id])
         except Exception as e:
             print(f"The attempt to delete the media {msg.id} was unsuccessful: {e}")
 
-        # Safeguard against k.command being None or having insufficient parts
-    command_part = k.command[1] if k.command and len(k.command) > 1 else None
+    # Safeguard against k.command being None or having insufficient parts
+    command_part = k.command[1] if hasattr(k, 'command') and k.command and len(k.command) > 1 else None
 
     if command_part:
         button_url = f"https://t.me/{client.username}?start={command_part}"
@@ -254,4 +263,10 @@ async def delete_files(messages, client, k):
         keyboard = None
 
     # Edit message with the button
-    await k.edit_text("<b><i>Your Video / File Is Successfully Deleted ✅</i></b>", reply_markup=keyboard)
+    try:
+        await k.edit_text("Your Video / File Is Successfully Deleted ✅", reply_markup=keyboard)
+    except MessageNotModified:
+        print("MessageNotModified: The message is already the same, skipping edit.")
+    except Exception as e:
+        print(f"Error editing message: {e}")
+
