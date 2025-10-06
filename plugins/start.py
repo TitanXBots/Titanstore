@@ -217,6 +217,7 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
 
 
 
+
 async def delete_files(messages, client, k):
     await asyncio.sleep(FILE_AUTO_DELETE)  # Wait for the duration specified in config.py
     for msg in messages:
@@ -225,7 +226,7 @@ async def delete_files(messages, client, k):
         except Exception as e:
             print(f"The attempt to delete the media {msg.id} was unsuccessful: {e}")
 
-        # Safeguard against k.command being None or having insufficient parts
+    # Safeguard against k.command being None or having insufficient parts
     command_part = k.command[1] if k.command and len(k.command) > 1 else None
 
     if command_part:
@@ -239,15 +240,9 @@ async def delete_files(messages, client, k):
         keyboard = None
 
     # Edit message with the button
-        try:
-            await k.edit_text("Your Video / File Is Successfully Deleted ✅", reply_markup=keyboard)
-        except Exception as e:
-              logging.error(f"Error editing the message: {e}")
-        except Exception as e:
-              logging.error(f"An unexpected error occurred: {e}")
-            
-
-# Dont Remove Credit
-# Update Channel - TitanXBots
-# Ask Any Doubt on Telegram - @TitanOwner
-# Support Group - @TitanMattersSupport
+    try:
+        await k.edit_text("Your Video / File Is Successfully Deleted ✅", reply_markup=keyboard)
+    except Exception as e:
+        logging.error(f"Error editing the message: {e}")
+    except Exception as e:
+        logging.error(f"An unexpected error occurred: {e}")
