@@ -5,7 +5,7 @@ from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
-
+from pyrogram.errors import MessageNotModified
 from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
@@ -218,16 +218,26 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
 
 
 
+
 async def delete_files(messages, client, k):
     await asyncio.sleep(FILE_AUTO_DELETE)  # Wait for the duration specified in config.py
+
     for msg in messages:
         try:
             await client.delete_messages(chat_id=msg.chat.id, message_ids=[msg.id])
+            logging.info(f"Deleted message {msg.id} from chat {msg.chat.id}")
         except Exception as e:
-            print(f"The attempt to delete the media {msg.id} was unsuccessful: {e}")
+            logging.error(f"Failed to delete message {msg.id}: {e}")
+
+    # Debugging information
+    logging.debug(f"k.command: {k.command}")  # Log the value of k.command
+    if k.command:
+        logging.debug(f"Length of k.command: {len(k.command)}")
 
     # Safeguard against k.command being None or having insufficient parts
-    command_part = k.command[1] if k.command and len(k.command) > 1 else None
+    command_part = k.command[1] if k.command and k.command and len(k.command) > 1 else None
+
+    logging.debug(f"command_part: {command_part}")  # Log the value of command_part
 
     if command_part:
         button_url = f"https://t.me/{client.username}?start={command_part}"
@@ -239,10 +249,13 @@ async def delete_files(messages, client, k):
     else:
         keyboard = None
 
+    logging.debug(f"Keyboard: {keyboard}") # Log the keyboard object
+
     # Edit message with the button
     try:
         await k.edit_text("Your Video / File Is Successfully Deleted ✅", reply_markup=keyboard)
+        logging.info(f"Successfully edited message {k.id} with keyboard.")
+    except MessageNotModified:
+        logging.info(f"Message {k.id} was not modified (content is the same).")
     except Exception as e:
-        logging.error(f"Error editing the message: {e}")
-    except Exception as e:
-        logging.error(f"An unexpected error occurred: {e}")
+        logging.error(f"Error editing message {k.id}: {e}")
