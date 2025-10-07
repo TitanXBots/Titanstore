@@ -91,6 +91,35 @@ async def start_command(client: Client, message: Message):
 
         # Schedule the file deletion
         asyncio.create_task(delete_files(titanx_msgs, client, k))
+
+async def delete_files(messages, client, k):
+    await asyncio.sleep(FILE_AUTO_DELETE)  # Wait for the duration specified in config.py
+    for msg in messages:
+        try:
+            await client.delete_messages(chat_id=msg.chat.id, message_ids=[msg.id])
+        except Exception as e:
+            print(f"The attempt to delete the media {msg.id} was unsuccessful: {e}")
+
+        # Safeguard against k.command being None or having insufficient parts
+    command_part = k.command[1] if k.command and len(k.command) > 1 else None
+
+    if command_part:
+        button_url = f"https://t.me/{client.username}?start={command_part}"
+        keyboard = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=button_url)]
+            ]
+        )
+    else:
+        keyboard = None
+
+    # Edit message with the button
+        try:
+            await k.edit_text("Your Video / File Is Successfully Deleted ✅", reply_markup=keyboard)
+        except Exception as e:
+              logging.error(f"Error editing the message: {e}")
+        except Exception as e:
+              logging.error(f"An unexpected error occurred: {e}")
         
         return
     else:
@@ -217,34 +246,7 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
 
 
 
-async def delete_files(messages, client, k):
-    await asyncio.sleep(FILE_AUTO_DELETE)  # Wait for the duration specified in config.py
-    for msg in messages:
-        try:
-            await client.delete_messages(chat_id=msg.chat.id, message_ids=[msg.id])
-        except Exception as e:
-            print(f"The attempt to delete the media {msg.id} was unsuccessful: {e}")
 
-        # Safeguard against k.command being None or having insufficient parts
-    command_part = k.command[1] if k.command and len(k.command) > 1 else None
-
-    if command_part:
-        button_url = f"https://t.me/{client.username}?start={command_part}"
-        keyboard = InlineKeyboardMarkup(
-            [
-                [InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=button_url)]
-            ]
-        )
-    else:
-        keyboard = None
-
-    # Edit message with the button
-        try:
-            await k.edit_text("Your Video / File Is Successfully Deleted ✅", reply_markup=keyboard)
-        except Exception as e:
-              logging.error(f"Error editing the message: {e}")
-        except Exception as e:
-              logging.error(f"An unexpected error occurred: {e}")
             
 
 # Dont Remove Credit
