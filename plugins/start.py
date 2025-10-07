@@ -246,6 +246,9 @@ async def delete_files(messages, client, k):
         except Exception as e:
               logging.error(f"An unexpected error occurred: {e}")
             print(f"Error updating notification with 'Get File Again' button: {e}")
+        except Exception as e:
+              logging.error(f"An unexpected error occurred: {e}")
+    
 
 # Dont Remove Credit
 # Update Channel - TitanXBots
