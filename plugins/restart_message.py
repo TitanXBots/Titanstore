@@ -44,7 +44,7 @@ async def send_restart_message(client, message):
 
         # Perform the actual restart (using os.execv)
         logger.info("Initiating bot restart.")
-        await message.reply_text("Bot is restarting...")
+        await message.reply_text("Bot Restarted ✅")
         os.execv(sys.executable, [sys.executable] + sys.argv)  # Use sys.executable and sys.argv for correct restart
 
     except Exception as e:
