@@ -4,11 +4,7 @@ import os
 import sys  # Import sys for os.execv
 import asyncio 
 from pyrogram import Client, filters
-
-# Configuration (Move to a config file/environment variables for production)
-LOG_CHANNEL_ID = -1002313688533 # Replace with your log channel ID, keep it as integer
-ADMIN_USER_IDS = [5356695781] # Replace with actual Admin IDs
-
+from config import ADMINS, LOG_CHANNEL_ID
 
 RESTART_TXT = """
 Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ !
@@ -26,7 +22,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)  # Use __name__ instead of name
 
-@Client.on_message(filters.command("restart") & filters.private & filters.user(ADMIN_USER_IDS))
+@Client.on_message(filters.command("restart") & filters.private & filters.user(ADMINS))
 async def send_restart_message(client, message):
     try:
         now = datetime.datetime.now()
@@ -58,7 +54,7 @@ async def send_restart_message(client, message):
             "An error occurred during restart. Please check the logs.",
         )
 
-@Client.on_message(filters.command("restart") & filters.private & ~filters.user(ADMIN_USER_IDS))
+@Client.on_message(filters.command("restart") & filters.private & filters.user(ADMINS))
 async def not_admin_reply(client, message):
   await message.reply_text("You are not authorized to use this command.")
 
