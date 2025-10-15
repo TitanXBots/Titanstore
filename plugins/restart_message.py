@@ -54,7 +54,7 @@ async def send_restart_message(client, message):
             "An error occurred during restart. Please check the logs.",
         )
 
-@Client.on_message(filters.command("restart") & filters.private & filters.user(ADMINS))
+@Client.on_message(filters.command("restart") & filters.private & ~filters.user(ADMINS))
 async def not_admin_reply(client, message):
   await message.reply_text("You are not authorized to use this command.")
 
