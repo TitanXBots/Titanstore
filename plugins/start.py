@@ -18,11 +18,15 @@ file_auto_delete = humanize.naturaldelta(titandeveloper)
 
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
-    id = message.from_user.id
-    if not await present_user(id):
+    user_id = message.from_user.id
+    if not await present_user(user_id):
         try:
-            await add_user(id)
+            await add_user(user_id)
+            user_name = message.from_user.first_name or "Unknown"
+            message_text = NEW_USER_TXT.format(message.from_user.mention, user_id, user_name)
+            await client.send_message(LOG_CHANNEL_ID, message_text)
         except:
+            print(f"Error adding user: {e}")
             pass
     text = message.text
     if len(text)>7:
