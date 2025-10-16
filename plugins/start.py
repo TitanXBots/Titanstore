@@ -26,7 +26,6 @@ async def start_command(client: Client, message: Message):
             message_text = NEW_USER_TXT.format(message.from_user.mention, user_id, user_name)
             await client.send_message(LOG_CHANNEL_ID, message_text)
         except:
-            print(f"Error adding user: {e}")
             pass
     text = message.text
     if len(text)>7:
