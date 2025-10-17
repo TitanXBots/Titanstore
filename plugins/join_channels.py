@@ -66,7 +66,7 @@ async def join_channels(client: Client, message: Message):
     for channel_id in [F_SUB1, F_SUB2, F_SUB3]:
         try:
             channel_title = (await client.get_chat(channel_id)).title
-                      response += f"{channel_title} {member_statuses[channel_id]}\n"
+            response += f"{channel_title} {member_statuses[channel_id]}\n"
         except Exception as e:
             response += f"Channel ID: {channel_id} - Error: {e}\n"
 
@@ -102,7 +102,6 @@ async def join_channels(client: Client, message: Message):
 
 
 @Client.on_callback_query(filters.regex("turn_on_command"))
-@admin_filter
 async def turn_on(client: Client, callback_query: CallbackQuery):
     global COMMAND_ENABLED
     COMMAND_ENABLED = True
@@ -110,7 +109,6 @@ async def turn_on(client: Client, callback_query: CallbackQuery):
     await callback_query.message.edit_reply_markup(None) #remove inline keyboard
 
 @Client.on_callback_query(filters.regex("turn_off_command"))
-@admin_filter
 async def turn_off(client: Client, callback_query: CallbackQuery):
     global COMMAND_ENABLED
     COMMAND_ENABLED = False
