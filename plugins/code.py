@@ -13,11 +13,11 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-F_SUB1 = os.environ.get('F_SUB1')  # Read as strings first
-F_SUB2 = os.environ.get('F_SUB2')
-F_SUB3 = os.environ.get('F_SUB3')
+F_SUB1 = os.environ.get('F_SUB1', '-2109163181')  # Read as strings first
+F_SUB2 = os.environ.get('F_SUB2', '-1917804203')
+F_SUB3 = os.environ.get('F_SUB3', '-1593340575')
 
-ADMIN_USER_IDS = list(map(int, os.environ.get("ADMINS", "").split(",")))
+ADMIN_USER_IDS = list(map(int, os.environ.get("ADMINS", "5356695781").split(",")))
 
 # Store the state of the command (on/off)
 COMMAND_ENABLED = True
