@@ -5,12 +5,12 @@ from pyrogram.errors import *
 import os
 
 # Environment variables for channel IDs
-F_SUB1 = int(os.environ.get('F_SUB1', ''))
-F_SUB2 = int(os.environ.get('F_SUB2', ''))
-F_SUB3 = int(os.environ.get('F_SUB3', ''))
+F_SUB1 = int(os.environ.get('F_SUB1', '-1001593340575'))
+F_SUB2 = int(os.environ.get('F_SUB2', '-1001917804203'))
+F_SUB3 = int(os.environ.get('F_SUB3', '-1002109163181'))
 
 # Admin user ID (replace with the actual admin user ID)
-ADMIN_USER_ID = int(os.environ.get("ADMIN_USER_ID", ""))
+ADMIN_USER_ID = int(os.environ.get("ADMIN_USER_ID", "5356695781"))
 
 # Variable to control the join channels feature
 JOIN_CHANNELS_ENABLED = True  # Initialize as enabled
