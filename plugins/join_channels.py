@@ -2,11 +2,12 @@ from pyrogram import Client, filters, enums
 from pyrogram.types import *
 from pyrogram.errors import *
 import os
+from config import ADMINS
 
-F_SUB1 = int(os.environ.get('F_SUB1', ''))
-F_SUB2 = int(os.environ.get('F_SUB2', ''))
-F_SUB3 = int(os.environ.get('F_SUB3', ''))
-ADMIN_USER_IDS = list(map(int, os.environ.get("ADMINS", "").split()))  # Add your admin IDs here, comma-separated in .env
+F_SUB1 = int(os.environ.get('F_SUB1', '-2109163181'))
+F_SUB2 = int(os.environ.get('F_SUB2', '-1593340575'))
+F_SUB3 = int(os.environ.get('F_SUB3', '-1917804203'))
+
 
 # Store the state of the command (on/off)
 COMMAND_ENABLED = True
@@ -14,7 +15,7 @@ COMMAND_ENABLED = True
 def admin_filter(func):
     async def wrapper(client: Client, update):
         user_id = update.from_user.id
-        if user_id in ADMIN_USER_IDS:
+        if user_id in ADMINS:
             return await func(client, update)
         else:
             await update.answer("You are not authorized to perform this action.", show_alert=True)
@@ -80,7 +81,7 @@ async def join_channels(client: Client, message: Message):
         reply_markup = keyboard
 
     # Add on/off buttons -  Only show admins the on/off buttons
-    if message.from_user.id in ADMIN_USER_IDS:
+    if message.from_user.id in ADMINS:
         on_off_keyboard = InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("Turn OFF", callback_data="turn_off_command"),
