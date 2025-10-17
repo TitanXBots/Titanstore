@@ -11,8 +11,8 @@ JOIN_CHANNELS_ENABLED = True  # Global flag to control channel joining
 
 ADMIN_ID = int(os.environ.get("ADMIN_ID", "5356695781")) #Get admin id or default to 0
 
-@Client.on_message(filters.command("start") & filters.private)
-async def start(client: Client, message: Message):
+@Client.on_message(filters.command("settings") & filters.private)
+async def settings(client: Client, message: Message):
     keyboard = InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("Join Channels", callback_data="joinchannels")],
