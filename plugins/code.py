@@ -14,11 +14,6 @@ ADMIN_USER_ID = int(os.environ.get("ADMIN_USER_ID", "5356695781"))
 # --- Variable to control the join channels feature ---
 JOIN_CHANNELS_ENABLED = True  # Default ON
 
-
-# ==========================================================
-#                    JOIN CHANNELS COMMAND
-# ==========================================================
-
 # ==========================================================
 #                  ADMIN ON / OFF COMMANDS
 # ==========================================================
