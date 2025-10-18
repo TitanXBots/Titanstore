@@ -2,8 +2,8 @@ import logging
 import datetime
 import os
 import sys  # Import sys for os.execv
-import asyncio 
-from pyrogram import Client, filters
+import asyncio
+from pyrogram import Client, filters, types
 from config import ADMINS, LOG_CHANNEL_ID
 
 RESTART_TXT = """
@@ -20,7 +20,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-logger = logging.getLogger(__name__)  # Use __name__ instead of name
+logger = logging.getLogger(__name__)  # Use __name__ for logging module name
 
 @Client.on_message(filters.command("restart") & filters.private & filters.user(ADMINS))
 async def send_restart_message(client, message):
@@ -58,7 +58,40 @@ async def send_restart_message(client, message):
 async def not_admin_reply(client, message):
   await message.reply_text("You are not authorized to use this command.")
 
+# Example settings command with inline buttons
+@Client.on_message(filters.command("settings") & filters.private & filters.user(ADMINS))
+async def settings_command(client, message):
+    keyboard = types.InlineKeyboardMarkup(
+        [
+            [
+                types.InlineKeyboardButton("Restart On", callback_data="restarton"),
+                types.InlineKeyboardButton("Restart Off", callback_data="restartoff"),
+            ]
+        ]
+    )
 
-if __name__ == '__main__':  # Use __name__ for the main check
+    await message.reply_text("Bot Settings:", reply_markup=keyboard)
+
+# Callback query handler for the buttons
+@Client.on_callback_query(filters.regex("restarton|restartoff") & filters.user(ADMINS))
+async def restart_callback(client, callback_query):
+    action = callback_query.data
+    user_id = callback_query.from_user.id
+
+    if action == "restarton":
+        # Implement logic to turn restart on (e.g., set a flag)
+        await callback_query.answer("Restart is now ON.")
+        await callback_query.edit_message_text("Restart is now **ON**.")
+        logger.info(f"Restart turned ON by user {user_id}")
+    elif action == "restartoff":
+        # Implement logic to turn restart off (e.g., unset a flag)
+        await callback_query.answer("Restart is now OFF.")
+        await callback_query.edit_message_text("Restart is now **OFF**.")
+        logger.info(f"Restart turned OFF by user {user_id}")
+    else:
+        await callback_query.answer("Invalid action.")
+
+
+if __name__ == '__main__':
     app = Client("my_bot")  # Initialize your bot client (replace "my_bot" with your session name)
     app.run()  # Start the bot
