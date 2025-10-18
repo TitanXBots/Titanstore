@@ -18,6 +18,43 @@ JOIN_CHANNELS_ENABLED = True  # Default ON
 # ==========================================================
 #                    JOIN CHANNELS COMMAND
 # ==========================================================
+
+# ==========================================================
+#                  ADMIN ON / OFF COMMANDS
+# ==========================================================
+@Client.on_message(filters.command("joinchannelon") & filters.private)
+async def join_channel_on(client: Client, message: Message):
+    """
+    Enables the join channels feature (admin only).
+    """
+    global JOIN_CHANNELS_ENABLED
+
+    if message.from_user.id != ADMIN_USER_ID:
+        await message.reply_text("Only the admin can use this command.")
+        return
+
+    JOIN_CHANNELS_ENABLED = True
+    await message.reply_text("✅ Join channels feature is now **ENABLED**.")
+
+
+@Client.on_message(filters.command("joinchanneloff") & filters.private)
+async def join_channel_off(client: Client, message: Message):
+    """
+    Disables the join channels feature (admin only).
+    """
+    global JOIN_CHANNELS_ENABLED
+
+    if message.from_user.id != ADMIN_USER_ID:
+        await message.reply_text("Only the admin can use this command.")
+        return
+
+    JOIN_CHANNELS_ENABLED = False
+    await message.reply_text("🚫 Join channels feature is now **DISABLED**.")
+
+
+# ==========================================================
+#                  JOIN CHANNELS COMMAND
+# ==========================================================
 @Client.on_message(filters.command("joinchannels") & filters.private)
 async def join_channels(client: Client, message: Message):
     """
@@ -26,7 +63,7 @@ async def join_channels(client: Client, message: Message):
     global JOIN_CHANNELS_ENABLED
 
     if not JOIN_CHANNELS_ENABLED:
-        await message.reply_text("This feature is currently disabled by the admin.")
+        await message.reply_text("⚙️ This feature is currently disabled by the admin.")
         return
 
     user_id = message.from_user.id
@@ -71,7 +108,7 @@ async def join_channels(client: Client, message: Message):
 
 
 # ==========================================================
-#                       SETTINGS MENU
+#                     SETTINGS MENU
 # ==========================================================
 def build_settings_keyboard():
     """
@@ -99,7 +136,14 @@ async def settings_command(client: Client, message: Message):
         await message.reply_text("Only the admin can access settings.")
         return
 
-    await message.reply_text("⚙️ **Bot Settings:**", reply_markup=build_settings_keyboard())
+    text = (
+        "⚙️ **Bot Settings**\n\n"
+        f"Join Channels: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
+        "You can toggle it below or use:\n"
+        "`/joinchannelon` or `/joinchanneloff` commands."
+    )
+
+    await message.reply_text(text, reply_markup=build_settings_keyboard())
 
 
 @Client.on_callback_query(filters.regex("toggle_joinchannels"))
@@ -117,7 +161,14 @@ async def toggle_joinchannels_callback(client: Client, callback_query: CallbackQ
     JOIN_CHANNELS_ENABLED = not JOIN_CHANNELS_ENABLED
 
     # Update message
-    await callback_query.edit_message_text("⚙️ **Bot Settings:**", reply_markup=build_settings_keyboard())
+    text = (
+        "⚙️ **Bot Settings**\n\n"
+        f"Join Channels: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
+        "You can toggle it below or use:\n"
+        "`/joinchannelon` or `/joinchanneloff` commands."
+    )
+
+    await callback_query.edit_message_text(text, reply_markup=build_settings_keyboard())
 
     await callback_query.answer(
         f"Join channels feature is now {'ENABLED ✅' if JOIN_CHANNELS_ENABLED else 'DISABLED ❌'}."
