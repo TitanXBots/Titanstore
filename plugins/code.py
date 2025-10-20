@@ -25,11 +25,11 @@ async def join_channel_on(client: Client, message: Message):
     global JOIN_CHANNELS_ENABLED
 
     if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("Only the admin can use this command.")
+        await message.reply_text("ONLY THE ADMIN CAN USE THIS COMMAND.")
         return
 
     JOIN_CHANNELS_ENABLED = True
-    await message.reply_text("✅ Join channels feature is now **ENABLED**.")
+    await message.reply_text("JOIN CHANNEL FEATURE IS NOW ENABLED ✅.")
 
 
 @Client.on_message(filters.command("joinchanneloff") & filters.private)
@@ -40,11 +40,11 @@ async def join_channel_off(client: Client, message: Message):
     global JOIN_CHANNELS_ENABLED
 
     if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("Only the admin can use this command.")
+        await message.reply_text("ONLY THE ADMIN CAN USE THIS COMMAND.")
         return
 
     JOIN_CHANNELS_ENABLED = False
-    await message.reply_text("🚫 Join channels feature is now **DISABLED**.")
+    await message.reply_text("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴅɪꜱᴀʙʟᴇᴅ 🚫.")
 
 
 # ==========================================================
@@ -58,7 +58,7 @@ async def join_channels(client: Client, message: Message):
     global JOIN_CHANNELS_ENABLED
 
     if not JOIN_CHANNELS_ENABLED:
-        await message.reply_text("⚙️ This feature is currently disabled by the admin.")
+        await message.reply_text("⚙️ ᴛʜɪꜱ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ ᴅɪꜱᴀʙʟᴇᴅ ʙʏ ᴛʜᴇ ᴀᴅᴍɪɴ.")
         return
 
     user_id = message.from_user.id
@@ -93,7 +93,7 @@ async def join_channels(client: Client, message: Message):
             channel_title = f"Channel ID: {channel_id}"
         response += f"{channel_title} {member_statuses.get(channel_id, '⚠️')}\n"
 
-    response += "\nJoin @sd_bots For More 🔥"
+    response += "\nJoin @TitanXBots For More 🔥"
 
     if keyboard_buttons:
         keyboard = InlineKeyboardMarkup([[btn] for btn in keyboard_buttons])
