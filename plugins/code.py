@@ -133,9 +133,9 @@ async def settings_command(client: Client, message: Message):
 
     text = (
         "⚙️ BOT SETTINGS\n\n"
-        f"Join Channels: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
-        "You can toggle it below or use:\n"
-        "`/joinchannelon` or `/joinchanneloff` commands."
+        f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
+        "ʏᴏᴜ ᴄᴀɴ ᴇɴᴀʙʟᴇ ᴏʀ ᴅɪꜱᴀʙʟᴇᴅ:\n"
+        "ᴛʜᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʀᴇ`/joinchannelon` or `/joinchanneloff` 👈."
     )
 
     await message.reply_text(text, reply_markup=build_settings_keyboard())
