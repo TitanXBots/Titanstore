@@ -128,11 +128,11 @@ async def settings_command(client: Client, message: Message):
     Displays a settings menu (admin only).
     """
     if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("Only the admin can access settings.")
+        await message.reply_text("ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴀᴄᴄᴇꜱꜱ ꜱᴇᴛᴛɪɴɢꜱ.")
         return
 
     text = (
-        "⚙️ **Bot Settings**\n\n"
+        "⚙️ BOT SETTINGS\n\n"
         f"Join Channels: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
         "You can toggle it below or use:\n"
         "`/joinchannelon` or `/joinchanneloff` commands."
@@ -149,7 +149,7 @@ async def toggle_joinchannels_callback(client: Client, callback_query: CallbackQ
     global JOIN_CHANNELS_ENABLED
 
     if callback_query.from_user.id != ADMIN_USER_ID:
-        await callback_query.answer("You are not authorized to change settings.", show_alert=True)
+        await callback_query.answer("ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴜᴛʜᴏʀɪᴢᴇᴅ ᴛᴏ ᴄʜᴀɴɢᴇ ꜱᴇᴛᴛɪɴɢꜱ.", show_alert=True)
         return
 
     # Toggle the feature
@@ -157,16 +157,16 @@ async def toggle_joinchannels_callback(client: Client, callback_query: CallbackQ
 
     # Update message
     text = (
-        "⚙️ **Bot Settings**\n\n"
-        f"Join Channels: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
-        "You can toggle it below or use:\n"
-        "`/joinchannelon` or `/joinchanneloff` commands."
+        "⚙️ BOT SETTINGS\n\n"
+        f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
+        "ʏᴏᴜ ᴄᴀɴ ᴇɴᴀʙʟᴇ ᴏʀ ᴅɪꜱᴀʙʟᴇᴅ:\n"
+        "ᴛʜᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʀᴇ`/joinchannelon` or `/joinchanneloff` 👈."
     )
 
     await callback_query.edit_message_text(text, reply_markup=build_settings_keyboard())
 
     await callback_query.answer(
-        f"Join channels feature is now {'ENABLED ✅' if JOIN_CHANNELS_ENABLED else 'DISABLED ❌'}."
+        f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ {'ENABLED ✅' if JOIN_CHANNELS_ENABLED else 'DISABLED ❌'}."
     )
 
 
