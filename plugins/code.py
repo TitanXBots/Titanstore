@@ -25,11 +25,11 @@ async def join_channel_on(client: Client, message: Message):
     global JOIN_CHANNELS_ENABLED
 
     if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("ONLY THE ADMIN CAN USE THIS COMMAND.")
+        await message.reply_text("ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
         return
 
     JOIN_CHANNELS_ENABLED = True
-    await message.reply_text("JOIN CHANNEL FEATURE IS NOW ENABLED ✅.")
+    await message.reply_text("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴇɴᴀʙʟᴇᴅ ✅.")
 
 
 @Client.on_message(filters.command("joinchanneloff") & filters.private)
@@ -40,7 +40,7 @@ async def join_channel_off(client: Client, message: Message):
     global JOIN_CHANNELS_ENABLED
 
     if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("ONLY THE ADMIN CAN USE THIS COMMAND.")
+        await message.reply_text("ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
         return
 
     JOIN_CHANNELS_ENABLED = False
@@ -85,7 +85,7 @@ async def join_channels(client: Client, message: Message):
                 print(f"Error getting info for channel {channel_id}: {e}")
                 member_statuses[channel_id] = "⚠️"
 
-    response = "⚡️ **Checkout Our Channels** ⚡️\n\n"
+    response = "⚡️ 𝐂𝐇𝐄𝐂𝐊 𝐎𝐔𝐓 𝐎𝐔𝐑 𝐂𝐇𝐀𝐍𝐍𝐄𝐋𝐒 ⚡️\n\n"
     for channel_id in [F_SUB1, F_SUB2, F_SUB3]:
         try:
             channel_title = (await client.get_chat(channel_id)).title
@@ -132,7 +132,7 @@ async def settings_command(client: Client, message: Message):
         return
 
     text = (
-        "⚙️ BOT SETTINGS\n\n"
+        "⚙️ ʙᴏᴛ ꜱᴇᴛᴛɪɴɢꜱ\n\n"
         f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
         "ʏᴏᴜ ᴄᴀɴ ᴇɴᴀʙʟᴇ ᴏʀ ᴅɪꜱᴀʙʟᴇᴅ:\n"
         "ᴛʜᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʀᴇ`/joinchannelon` or `/joinchanneloff` 👈."
@@ -157,7 +157,7 @@ async def toggle_joinchannels_callback(client: Client, callback_query: CallbackQ
 
     # Update message
     text = (
-        "⚙️ BOT SETTINGS\n\n"
+        "⚙️ ʙᴏᴛ ꜱᴇᴛᴛɪɴɢꜱ\n\n"
         f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
         "ʏᴏᴜ ᴄᴀɴ ᴇɴᴀʙʟᴇ ᴏʀ ᴅɪꜱᴀʙʟᴇᴅ:\n"
         "ᴛʜᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʀᴇ`/joinchannelon` or `/joinchanneloff` 👈."
