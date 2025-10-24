@@ -245,7 +245,7 @@ async def delete_files(messages, client, k, command_payload=None):
 
     # Edit message with the button (outside the for loop)
     try:
-        await k.edit_text("Your Video / File Is Successfully Deleted ✅\nNow Click Below Button To Get Your Deleted Video/File👇", reply_markup=keyboard)
+        await k.edit_text("ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ ✅\nɴᴏᴡ ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇", reply_markup=keyboard)
     except Exception as e:
         logging.error(f"Error editing the message: {e}")
             
