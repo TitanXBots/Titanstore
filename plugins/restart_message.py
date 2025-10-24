@@ -56,7 +56,7 @@ async def send_restart_message(client, message):
 
 @Client.on_message(filters.command("restart") & filters.private & ~filters.user(ADMINS))
 async def not_admin_reply(client, message):
-  await message.reply_text("You are not authorized to use this command.")
+  await message.reply_text("ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴜᴛʜᴏʀɪᴢᴇᴅ ᴛᴏ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
 
 # Example settings command with inline buttons
 @Client.on_message(filters.command("settings") & filters.private & filters.user(ADMINS))
