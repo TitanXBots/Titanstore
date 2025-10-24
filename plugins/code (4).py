@@ -137,7 +137,7 @@ async def settings_command(client: Client, message: Message):
         "ᴛʜᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʀᴇ`/joinchannelon` or `/joinchanneloff` 👈."
     )
 
-    await callback_query.edit_message_text(text, reply_markup=build_settings_keyboard())
+    await message.reply_text("Bot Settings:", reply_markup=build_settings_keyboard())
 
 
 @Client.on_callback_query(filters.regex("toggle_joinchannels"))
