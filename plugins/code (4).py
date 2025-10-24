@@ -106,9 +106,17 @@ async def join_channels(client: Client, message: Message):
 #                     SETTINGS MENU
 # ==========================================================
 def build_settings_keyboard():
+    """
+    Builds the settings keyboard with only the Join Channels toggle button.
+    """
     keyboard = InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("Join Channels: ON" if JOIN_CHANNELS_ENABLED else "Join Channels: OFF", callback_data="toggle_joinchannels")]
+            [
+                InlineKeyboardButton(
+                    text=f"Join Channels: {'ON ✅' if JOIN_CHANNELS_ENABLED else 'OFF ❌'}",
+                    callback_data="toggle_joinchannels"
+                )
+            ]
         ]
     )
     return keyboard
