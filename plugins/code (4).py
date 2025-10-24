@@ -107,7 +107,7 @@ async def join_channels(client: Client, message: Message):
 # ==========================================================
 def build_settings_keyboard():
     """
-    Builds the settings keyboard with only the Join Channels toggle button.
+    Builds the settings keyboard with the Join Channels toggle button and a close button.
     """
     keyboard = InlineKeyboardMarkup(
         [
@@ -116,10 +116,17 @@ def build_settings_keyboard():
                     text=f"Join Channels: {'ON ✅' if JOIN_CHANNELS_ENABLED else 'OFF ❌'}",
                     callback_data="toggle_joinchannels"
                 )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="Close ❌",
+                    callback_data="close_settings"
+                )
             ]
         ]
     )
     return keyboard
+    
 
 @Client.on_message(filters.command("settings") & filters.private)
 async def settings_command(client: Client, message: Message):
@@ -138,6 +145,14 @@ async def settings_command(client: Client, message: Message):
     )
 
     await message.reply_text(text, reply_markup=build_settings_keyboard())
+
+@Client.on_callback_query(filters.regex("close_settings"))
+async def close_settings(client: Client, callback_query):
+    """
+    Handles the "Close" button callback query.
+    """
+    await callback_query.message.delete()
+    await callback_query.answer()  # Acknowledge the callback (optional)
 
 
 @Client.on_callback_query(filters.regex("toggle_joinchannels"))
