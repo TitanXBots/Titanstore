@@ -106,20 +106,13 @@ async def join_channels(client: Client, message: Message):
 #                     SETTINGS MENU
 # ==========================================================
 def build_settings_keyboard():
-    """
-    Builds the inline keyboard for settings.
-    """
-    keyboard = InlineKeyboardMarkup(
+    """Creates inline keyboard with Close button"""
+    buttons = [
         [
-            [
-                InlineKeyboardButton(
-                    f"Join Channels: {'ON ✅' if JOIN_CHANNELS_ENABLED else 'OFF ❌'}",
-                    callback_data="toggle_joinchannels",
-                )
-            ]
+            InlineKeyboardButton("❌ Close", callback_data="close_settings")
         ]
-    )
-    return keyboard
+    ]
+    return InlineKeyboardMarkup(buttons)
 
 
 @Client.on_message(filters.command("settings") & filters.private)
