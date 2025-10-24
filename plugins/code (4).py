@@ -127,6 +127,7 @@ def build_settings_keyboard():
     )
     return keyboard
     
+    
 
 @Client.on_message(filters.command("settings") & filters.private)
 async def settings_command(client: Client, message: Message):
@@ -146,14 +147,26 @@ async def settings_command(client: Client, message: Message):
 
     await message.reply_text(text, reply_markup=build_settings_keyboard())
 
-@Client.on_callback_query(filters.regex("close_settings"))
-async def close_settings(client: Client, callback_query):
+
+@Client.on_callback_query(filters.regex(r"^close_settings$"))
+async def close_settings(client: Client, callback_query: CallbackQuery):
     """
     Handles the "Close" button callback query.
+    Best practice: answer the callback first, then delete or edit the message.
     """
-    await callback_query.message.delete()
-    await callback_query.answer()  # Acknowledge the callback (optional)
+    # acknowledge the callback immediately (prevents "button stuck" UI)
+    await callback_query.answer()
 
+    # then try to delete the settings message
+    try:
+        await callback_query.message.delete()
+    except Exception:
+        # if delete fails (rare), attempt a fallback edit or ignore
+        try:
+            await callback_query.message.edit_text("Closed.")
+        except Exception:
+            pass
+            
 
 @Client.on_callback_query(filters.regex("toggle_joinchannels"))
 async def toggle_joinchannels_callback(client: Client, callback_query: CallbackQuery):
