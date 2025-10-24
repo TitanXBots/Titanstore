@@ -5,6 +5,8 @@ import sys  # Import sys for os.execv
 import asyncio
 from pyrogram import Client, filters, types
 from config import ADMINS, LOG_CHANNEL_ID
+from pyrogram.types import *
+
 
 RESTART_TXT = """
 Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ !
