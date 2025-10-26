@@ -107,25 +107,17 @@ async def join_channels(client: Client, message: Message):
 # ==========================================================
 def build_settings_keyboard():
     """
-    Builds the settings keyboard with the Join Channels toggle button and a close button.
+    Builds the inline keyboard for the settings menu.
     """
-    keyboard = InlineKeyboardMarkup(
+    keyboard = [
         [
-            [
-                InlineKeyboardButton(
-                    text=f"Join Channels: {'ON ✅' if JOIN_CHANNELS_ENABLED else 'OFF ❌'}",
-                    callback_data="toggle_joinchannels"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="Close ❌",
-                    callback_data="close_settings"
-                )
-            ]
+            InlineKeyboardButton("Toggle Join Channels (ON/OFF)", callback_data="toggle_join_channels"),
+        ],
+        [
+            InlineKeyboardButton("Close ❌", callback_data="close_settings") # Added Close Button
         ]
-    )
-    return keyboard
+    ]
+    return InlineKeyboardMarkup(keyboard)
 
 
 @Client.on_message(filters.command("settings") & filters.private)
@@ -151,23 +143,17 @@ async def settings_command(client: Client, message: Message):
     )
 
 
-@Client.on_callback_query(filters.regex(r"^close_settings$"))
-async def close_settings(client: Client, callback_query: CallbackQuery):
+@Client.on_callback_query(filters.regex("close_settings")) # Added Callback Query Handler
+async def close_settings(client: Client, callback_query):
     """
-    Handles the 'Close' button.
+    Handles the close button press.
     """
-    await callback_query.answer("Closing settings...", show_alert=False)
+    if callback_query.from_user.id != ADMIN_USER_ID:
+        await callback_query.answer("⚠️ Only the admin can close this menu.", show_alert=True)
+        return
 
-    try:
-        # Try deleting the message
-        await callback_query.message.delete()
-    except Exception as e:
-        # If it can't delete (e.g. older than 48 hours), fallback to editing
-        try:
-            await callback_query.message.edit_text("✅ Settings closed.", reply_markup=None) # Added reply_markup=None
-        except Exception as e:
-            print(f"Close button error: {e}")
-            pass
+    await callback_query.message.delete()
+    await callback_query.answer("Settings menu closed.")  # Optional: Acknowledge deletion
 
 
 @Client.on_callback_query(filters.regex(r"^toggle_joinchannels$"))
