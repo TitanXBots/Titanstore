@@ -138,9 +138,9 @@ async def settings_command(client: Client, message: Message):
         return
 
     text = (
-        "⚙️ **Bot Settings**\n\n"
+        "⚙️ Bot Settings\n\n"
         f"Join Channels: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
-        "Use `/joinchannelon` or `/joinchanneloff` to toggle manually.\n"
+        "Use /joinchannelon or /joinchanneloff to toggle manually.\n"
         "Or press the buttons below 👇"
     )
 
@@ -164,8 +164,8 @@ async def close_settings(client: Client, callback_query: CallbackQuery):
     except Exception as e:
         # If it can't delete (e.g. older than 48 hours), fallback to editing
         try:
-            await callback_query.message.edit_text("✅ Settings closed.")
-        except Exception:
+            await callback_query.message.edit_text("✅ Settings closed.", reply_markup=None) # Added reply_markup=None
+        except Exception as e:
             print(f"Close button error: {e}")
             pass
 
