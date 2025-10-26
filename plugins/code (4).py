@@ -105,6 +105,14 @@ async def join_channels(client: Client, message: Message):
 # ==========================================================
 #                     SETTINGS MENU
 # ==========================================================
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message
+
+# ==== SETTINGS ====
+ADMIN_USER_ID = 123456789  # 🔹 Replace with your Telegram user ID
+JOIN_CHANNELS_ENABLED = True
+
+
 def build_settings_keyboard():
     """
     Builds the settings keyboard with the Join Channels toggle button and a close button.
@@ -134,14 +142,14 @@ async def settings_command(client: Client, message: Message):
     Displays a settings menu (admin only).
     """
     if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴀᴄᴄᴇꜱꜱ ꜱᴇᴛᴛɪɴɢꜱ.")
+        await message.reply_text("⚠️ Only the admin can access settings.")
         return
 
     text = (
-        "⚙️ ʙᴏᴛ ꜱᴇᴛᴛɪɴɢꜱ\n\n"
-        f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
-        "ʏᴏᴜ ᴄᴀɴ ᴇɴᴀʙʟᴇ ᴏʀ ᴅɪꜱᴀʙʟᴇᴅ ᴛʜᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ꜰᴇᴀᴛᴜʀᴇ ʜᴇʀᴇ:\n"
-        "`/joinchannelon` or `/joinchanneloff` 👈"
+        "⚙️ **Bot Settings**\n\n"
+        f"Join Channels: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
+        "Use `/joinchannelon` or `/joinchanneloff` to toggle manually.\n"
+        "Or press the buttons below 👇"
     )
 
     await message.reply_text(
@@ -154,50 +162,43 @@ async def settings_command(client: Client, message: Message):
 @Client.on_callback_query(filters.regex(r"^close_settings$"))
 async def close_settings(client: Client, callback_query: CallbackQuery):
     """
-    Handles the "Close" button callback query.
+    Handles the 'Close' button.
     """
-    # Acknowledge the callback (prevents UI issues)
-    await callback_query.answer()
+    await callback_query.answer("Closing settings...", show_alert=False)
 
-    # Try to delete the message
     try:
+        # Try deleting the message
         await callback_query.message.delete()
-    except Exception:
-        # Fallback if deletion fails
+    except Exception as e:
+        # If it can't delete (e.g. older than 48 hours), fallback to editing
         try:
-            await callback_query.message.edit_text("Closed.")
+            await callback_query.message.edit_text("✅ Settings closed.")
         except Exception:
+            print(f"Close button error: {e}")
             pass
-            
 
-@Client.on_callback_query(filters.regex("toggle_joinchannels"))
-async def toggle_joinchannels_callback(client: Client, callback_query: CallbackQuery):
+
+@Client.on_callback_query(filters.regex(r"^toggle_joinchannels$"))
+async def toggle_joinchannels(client: Client, callback_query: CallbackQuery):
     """
-    Handles the callback query for toggling the join channels feature.
+    Toggles the Join Channels setting.
     """
     global JOIN_CHANNELS_ENABLED
-
-    if callback_query.from_user.id != ADMIN_USER_ID:
-        await callback_query.answer("ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴜᴛʜᴏʀɪᴢᴇᴅ ᴛᴏ ᴄʜᴀɴɢᴇ ꜱᴇᴛᴛɪɴɢꜱ.", show_alert=True)
-        return
-
-    # Toggle the feature
     JOIN_CHANNELS_ENABLED = not JOIN_CHANNELS_ENABLED
 
-    # Update message
-    text = (
-        "⚙️ ʙᴏᴛ ꜱᴇᴛᴛɪɴɢꜱ\n\n"
-        f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
-        "ʏᴏᴜ ᴄᴀɴ ᴇɴᴀʙʟᴇ ᴏʀ ᴅɪꜱᴀʙʟᴇᴅ:\n"
-        "ᴛʜᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʀᴇ`/joinchannelon` or `/joinchanneloff` 👈."
-    )
-
-    await callback_query.edit_message_text(text, reply_markup=build_settings_keyboard())
-
     await callback_query.answer(
-        f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ {'ENABLED ✅' if JOIN_CHANNELS_ENABLED else 'DISABLED ❌'}."
+        f"Join Channels is now {'ON ✅' if JOIN_CHANNELS_ENABLED else 'OFF ❌'}",
+        show_alert=False
     )
 
+    # Update keyboard state dynamically
+    try:
+        await callback_query.message.edit_reply_markup(
+            reply_markup=build_settings_keyboard()
+        )
+    except Exception as e:
+        print(f"Toggle button error: {e}")
+        pass
 
 # ==========================================================
 print("✅ Bot Started!")
