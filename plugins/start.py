@@ -10,6 +10,8 @@ from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
+AUTO_DELETE_ENABLED = True  # Default state
+
 
 
 titanxofficials = FILE_AUTO_DELETE
@@ -221,20 +223,25 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
 
 
 async def delete_files(messages, client, k, command_payload=None):
-    await asyncio.sleep(FILE_AUTO_DELETE)  # Wait for the duration specified in config.py
-    
-    # Delete all messages first
+    global AUTO_DELETE_ENABLED  # Access the global variable
+
+    if not AUTO_DELETE_ENABLED:
+        logging.info("Auto-delete is disabled. Skipping deletion.")
+        return
+
+    await asyncio.sleep(FILE_AUTO_DELETE)  # Wait for the duration
+
+    # Delete all messages
     for msg in messages:
         try:
             await client.delete_messages(chat_id=msg.chat.id, message_ids=[msg.id])
+            logging.info(f"Deleted message {msg.id} in chat {msg.chat.id}")
         except Exception as e:
-            print(f"The attempt to delete the media {msg.id} was unsuccessful: {e}")
+            logging.error(f"Failed to delete message {msg.id}: {e}")
 
-    # Safeguard against k.command being None or having insufficient parts
-    command_part = command_payload
-
-    if command_part:
-        button_url = f"https://t.me/{client.username}?start={command_part}"
+    # Construct the inline keyboard button
+    if command_payload:
+        button_url = f"https://t.me/{client.username}?start={command_payload}"
         keyboard = InlineKeyboardMarkup(
             [
                 [InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=button_url)]
@@ -243,11 +250,29 @@ async def delete_files(messages, client, k, command_payload=None):
     else:
         keyboard = None
 
-    # Edit message with the button (outside the for loop)
+    # Edit the message to inform the user
     try:
-        await k.edit_text("ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ ✅\nɴᴏᴡ ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇", reply_markup=keyboard)
+        await k.edit_text(
+            "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ ✅\nɴᴏᴡ ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇",
+            reply_markup=keyboard,
+        )
+        logging.info(f"Successfully edited message {k.id} in chat {k.chat.id} after deletion.")
     except Exception as e:
-        logging.error(f"Error editing the message: {e}")
+        logging.error(f"Error editing message after deletion: {e}")
+
+# Function to toggle auto-delete
+def toggle_auto_delete():
+    global AUTO_DELETE_ENABLED
+    AUTO_DELETE_ENABLED = not AUTO_DELETE_ENABLED
+    return AUTO_DELETE_ENABLED
+async def handle_toggle_command(client, message):
+    """Handles the /autodelete command to toggle auto-delete."""
+    new_state = toggle_auto_delete()
+    if new_state:
+        text = "Auto-delete is now **enabled**."
+    else:
+        text = "Auto-delete is now **disabled**."
+    await message.reply_text(text, parse_mode="markdown")
             
 
 # Dont Remove Credit
