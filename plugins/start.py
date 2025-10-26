@@ -10,7 +10,7 @@ from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
-AUTO_DELETE_ENABLED = True  # Default state
+AUTO_DELETE_ENABLED = False  # Default state
 
 
 
