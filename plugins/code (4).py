@@ -69,7 +69,7 @@ async def join_channels(client: Client, message: Message):
       for channel_id in [F_SUB1, F_SUB2, F_SUB3]:
           try:
               member = await client.get_chat_member(channel_id, user_id)
-                            if member.status == enums.ChatMemberStatus.MEMBER or member.status == enums.ChatMemberStatus.ADMINISTRATOR or member.status == enums.ChatMemberStatus.OWNER:
+              if member.status == enums.ChatMemberStatus.MEMBER or member.status == enums.ChatMemberStatus.ADMINISTRATOR or member.status == enums.ChatMemberStatus.OWNER:
                   member_statuses[channel_id] = "✅"
               else:
                   # User is not a member, continue to the next block
