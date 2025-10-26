@@ -105,14 +105,6 @@ async def join_channels(client: Client, message: Message):
 # ==========================================================
 #                     SETTINGS MENU
 # ==========================================================
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message
-
-# Example global variable
-JOIN_CHANNELS_ENABLED = True
-ADMIN_USER_ID = 123456789  # Replace with your Telegram user ID
-
-
 def build_settings_keyboard():
     """
     Builds the settings keyboard with the Join Channels toggle button and a close button.
