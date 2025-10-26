@@ -105,6 +105,14 @@ async def join_channels(client: Client, message: Message):
 # ==========================================================
 #                     SETTINGS MENU
 # ==========================================================
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message
+
+# Example global variable
+JOIN_CHANNELS_ENABLED = True
+ADMIN_USER_ID = 123456789  # Replace with your Telegram user ID
+
+
 def build_settings_keyboard():
     """
     Builds the settings keyboard with the Join Channels toggle button and a close button.
@@ -126,8 +134,7 @@ def build_settings_keyboard():
         ]
     )
     return keyboard
-    
-    
+
 
 @Client.on_message(filters.command("settings") & filters.private)
 async def settings_command(client: Client, message: Message):
@@ -141,27 +148,30 @@ async def settings_command(client: Client, message: Message):
     text = (
         "⚙️ ʙᴏᴛ ꜱᴇᴛᴛɪɴɢꜱ\n\n"
         f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
-        "ʏᴏᴜ ᴄᴀɴ ᴇɴᴀʙʟᴇ ᴏʀ ᴅɪꜱᴀʙʟᴇᴅ:\n"
-        "ᴛʜᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʀᴇ`/joinchannelon` or `/joinchanneloff` 👈."
+        "ʏᴏᴜ ᴄᴀɴ ᴇɴᴀʙʟᴇ ᴏʀ ᴅɪꜱᴀʙʟᴇᴅ ᴛʜᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ꜰᴇᴀᴛᴜʀᴇ ʜᴇʀᴇ:\n"
+        "`/joinchannelon` or `/joinchanneloff` 👈"
     )
 
-    await message.reply_text(text, reply_markup=build_settings_keyboard())
+    await message.reply_text(
+        text,
+        reply_markup=build_settings_keyboard(),
+        disable_web_page_preview=True
+    )
 
 
 @Client.on_callback_query(filters.regex(r"^close_settings$"))
 async def close_settings(client: Client, callback_query: CallbackQuery):
     """
     Handles the "Close" button callback query.
-    Best practice: answer the callback first, then delete or edit the message.
     """
-    # acknowledge the callback immediately (prevents "button stuck" UI)
+    # Acknowledge the callback (prevents UI issues)
     await callback_query.answer()
 
-    # then try to delete the settings message
+    # Try to delete the message
     try:
         await callback_query.message.delete()
     except Exception:
-        # if delete fails (rare), attempt a fallback edit or ignore
+        # Fallback if deletion fails
         try:
             await callback_query.message.edit_text("Closed.")
         except Exception:
