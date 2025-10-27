@@ -317,8 +317,6 @@ async def handle_callback_query(client, callback_query):
     )
     await callback_query.answer(feedback_text) # Show a popup notification to the user
 
-# --- Pyrogram Setup ---
-app = Client("auto_delete_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 @client.on_message(filters.command("settings"))
 async def settings_command(client, message):
