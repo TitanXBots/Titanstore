@@ -279,7 +279,7 @@ def create_settings_keyboard():
 async def handle_settings_command(client, message):
     """Handles the /settings command to display auto-delete settings."""
     keyboard = create_settings_keyboard()
-        await message.reply_text("Auto-Delete Settings:", reply_markup=keyboard)
+    await message.reply_text("Auto-Delete Settings:", reply_markup=keyboard)
 
 async def handle_callback_query(client, callback_query):
     """Handles inline button presses."""
