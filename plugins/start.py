@@ -221,7 +221,6 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         await msg.delete()
 
 
-
 async def delete_files(messages, client, k, command_payload=None):
     global AUTO_DELETE_ENABLED  # Access the global variable
 
@@ -265,15 +264,44 @@ def toggle_auto_delete():
     global AUTO_DELETE_ENABLED
     AUTO_DELETE_ENABLED = not AUTO_DELETE_ENABLED
     return AUTO_DELETE_ENABLED
-async def handle_toggle_command(client, message):
-    """Handles the /autodelete command to toggle auto-delete."""
-    new_state = toggle_auto_delete()
-    if new_state:
-        text = "Auto-delete is now **enabled**."
-    else:
-        text = "Auto-delete is now **disabled**."
-    await message.reply_text(text, parse_mode="markdown")
-            
+
+# Function to create the settings keyboard
+def create_settings_keyboard():
+    global AUTO_DELETE_ENABLED
+    text = "Disable Auto-Delete" if AUTO_DELETE_ENABLED else "Enable Auto-Delete"
+    keyboard = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton(text, callback_data="toggle_autodelete")],
+        ]
+    )
+    return keyboard
+
+async def handle_settings_command(client, message):
+    """Handles the /settings command to display auto-delete settings."""
+    keyboard = create_settings_keyboard()
+        await message.reply_text("Auto-Delete Settings:", reply_markup=keyboard)
+
+async def handle_callback_query(client, callback_query):
+    """Handles inline button presses."""
+    if callback_query.data == "toggle_autodelete":
+        new_state = toggle_auto_delete()
+        if new_state:
+            text = "Auto-delete is now **enabled**."
+        else:
+            text = "Auto-delete is now **disabled**."
+
+        #Edit original message.
+        keyboard = create_settings_keyboard()
+        await callback_query.edit_message_text("Auto-Delete Settings:", reply_markup=keyboard)
+        await callback_query.answer(text)  # Optional: Show a popup notification
+
+
+
+
+# Example usage within your existing command handler (where delete_files is called)
+# This part would vary depending on your bot's structure
+
+# Example send media handler that calls delete_files 
 
 # Dont Remove Credit
 # Update Channel - TitanXBots
