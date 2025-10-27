@@ -4,10 +4,10 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQ
 
 # --- Configuration ---
 # IMPORTANT: Replace these with your actual values
-ADMIN_USER_ID = 1234567890  # Replace with the actual admin user ID
-F_SUB1 = -1001234567890    # Replace with your first channel ID (e.g., -100XXXXXXXXXX)
-F_SUB2 = -1009876543210    # Replace with your second channel ID
-F_SUB3 = -1001122334455    # Replace with your third channel ID
+ADMIN_USER_ID = 5356695781  # Replace with the actual admin user ID
+F_SUB1 = -1001593340575   # Replace with your first channel ID (e.g., -100XXXXXXXXXX)
+F_SUB2 = -1001917804203   # Replace with your second channel ID
+F_SUB3 = -1002109163181   # Replace with your third channel ID
 # --- End Configuration ---
 
 # Global state variable for the feature
