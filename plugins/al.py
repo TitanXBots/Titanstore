@@ -41,7 +41,7 @@ def generate_settings_keyboard():
     return keyboard
 
 # --- Command Handler for /settings ---
-@app.on_message(filters.command("settings") & filters.user(ADMIN_ID))
+@client.on_message(filters.command("settings") & filters.user(ADMIN_ID))
 async def settings_command(client: Client, message: Message):
     """Handles the /settings command, showing the current bot settings."""
     await message.reply_text(
@@ -50,7 +50,7 @@ async def settings_command(client: Client, message: Message):
     )
 
 # --- Callback Query Handler for Buttons ---
-@app.on_callback_query()
+@client.on_callback_query()
 async def callback_handler(client: Client, callback_query: CallbackQuery):
     """Handles button presses from the settings menu."""
     user_id = callback_query.from_user.id
