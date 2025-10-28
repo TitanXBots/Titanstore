@@ -1,31 +1,134 @@
 from pyrogram import Client, filters, enums
-from pyrogram.types import *
-from pyrogram.errors import *
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Message
 import os
 import asyncio
 
-# --- Environment variables for channel IDs ---
+# ==========================================================
+#                     BOT CONFIGURATION
+# ==========================================================
+
+API_ID = int(os.environ.get("API_ID", "123456"))  # replace if needed
+API_HASH = os.environ.get("API_HASH", "your_api_hash_here")
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "your_bot_token_here")
+
+# --- Channels ---
 F_SUB1 = int(os.environ.get('F_SUB1', '-1001593340575'))
 F_SUB2 = int(os.environ.get('F_SUB2', '-1001917804203'))
 F_SUB3 = int(os.environ.get('F_SUB3', '-1002109163181'))
 
-# --- Admin user ID ---
+# --- Admin ID ---
 ADMIN_USER_ID = int(os.environ.get("ADMIN_USER_ID", "5356695781"))
 
-# --- Feature toggle variable ---
-JOIN_CHANNELS_ENABLED = True
-
-# --- Settings message deletion delay (in seconds) ---
-SETTINGS_MESSAGE_DELAY = 30
+# --- Bot Settings ---
+JOIN_CHANNELS_ENABLED = True   # Default: ON
+SETTINGS_MESSAGE_DELAY = 30    # Auto-delete after 30s
 
 # ==========================================================
-#                     ADMIN TOGGLE COMMANDS (Removed direct commands)
+#                     START BOT CLIENT
 # ==========================================================
+app = Client("TitanStoreBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+
 
 # ==========================================================
-#                  JOIN CHANNELS COMMAND
+#                     AUTO DELETE MESSAGE
 # ==========================================================
-@Client.on_message(filters.command("joinchannels") & filters.private)
+async def delete_message_after_delay(client, chat_id, message_id, delay):
+    await asyncio.sleep(delay)
+    try:
+        await client.delete_messages(chat_id, message_id)
+    except Exception as e:
+        print("Delete message error:", e)
+
+
+# ==========================================================
+#                     SETTINGS COMMAND
+# ==========================================================
+@app.on_message(filters.command("settings") & filters.private)
+async def settings_command(client: Client, message: Message):
+    global JOIN_CHANNELS_ENABLED
+
+    if message.from_user.id != ADMIN_USER_ID:
+        await message.reply_text("Only the admin can access settings.")
+        return
+
+    text = (
+        "⚙️ **BOT SETTINGS**\n\n"
+        f"Join Channels: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
+        "Press the button below to toggle ⬇️"
+    )
+
+    keyboard = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    text=f"Toggle Join Channels: {'ON ✅' if JOIN_CHANNELS_ENABLED else 'OFF ❌'}",
+                    callback_data="toggle_joinchannels"
+                )
+            ],
+            [InlineKeyboardButton("Close ❌", callback_data="close_settings")]
+        ]
+    )
+
+    sent = await message.reply_text(text, reply_markup=keyboard)
+
+    # Schedule auto-deletion after 30 seconds
+    asyncio.create_task(delete_message_after_delay(client, sent.chat.id, sent.id, SETTINGS_MESSAGE_DELAY))
+
+
+# ==========================================================
+#                     CALLBACK HANDLER
+# ==========================================================
+@app.on_callback_query()
+async def callback_handler(client: Client, query: CallbackQuery):
+    global JOIN_CHANNELS_ENABLED
+
+    print(f"Callback received: {query.data} from {query.from_user.id}")
+
+    if query.data == "toggle_joinchannels":
+        if query.from_user.id != ADMIN_USER_ID:
+            await query.answer("Only the admin can toggle this.", show_alert=True)
+            return
+
+        # Toggle ON/OFF
+        JOIN_CHANNELS_ENABLED = not JOIN_CHANNELS_ENABLED
+
+        new_text = (
+            "⚙️ **BOT SETTINGS**\n\n"
+            f"Join Channels: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
+            "Press the button below to toggle ⬇️"
+        )
+
+        new_keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        text=f"Toggle Join Channels: {'ON ✅' if JOIN_CHANNELS_ENABLED else 'OFF ❌'}",
+                        callback_data="toggle_joinchannels"
+                    )
+                ],
+                [InlineKeyboardButton("Close ❌", callback_data="close_settings")]
+            ]
+        )
+
+        try:
+            await query.message.edit_text(new_text, reply_markup=new_keyboard)
+        except Exception as e:
+            print("Edit error:", e)
+
+        await query.answer(f"Join Channels feature {'enabled ✅' if JOIN_CHANNELS_ENABLED else 'disabled 🚫'}!")
+
+    elif query.data == "close_settings":
+        try:
+            await query.message.delete()
+        except Exception as e:
+            print("Close error:", e)
+        await query.answer("Closed settings menu.")
+
+
+# ==========================================================
+#                     JOIN CHANNELS COMMAND
+# ==========================================================
+@app.on_message(filters.command("joinchannels") & filters.private)
 async def join_channels(client: Client, message: Message):
     global JOIN_CHANNELS_ENABLED
 
@@ -46,7 +149,7 @@ async def join_channels(client: Client, message: Message):
                 enums.ChatMemberStatus.OWNER,
             ]:
                 member_statuses[channel_id] = "✅"
-        except UserNotParticipant:
+        except Exception:
             try:
                 invite_link = await client.export_chat_invite_link(channel_id)
                 channel = await client.get_chat(channel_id)
@@ -56,7 +159,7 @@ async def join_channels(client: Client, message: Message):
                 print(f"Error getting info for channel {channel_id}: {e}")
                 member_statuses[channel_id] = "⚠️"
 
-    response = "⚡️ 𝐂𝐇𝐄𝐂𝐊 𝐎𝐔𝐓 𝐎𝐔𝐑 𝐂𝐇𝐀𝐍𝐍𝐄𝐋𝐒 ⚡️\n\n"
+    response = "⚡️ **CHECK OUT OUR CHANNELS** ⚡️\n\n"
     for channel_id in [F_SUB1, F_SUB2, F_SUB3]:
         try:
             channel_title = (await client.get_chat(channel_id)).title
@@ -74,92 +177,5 @@ async def join_channels(client: Client, message: Message):
 
 
 # ==========================================================
-#                     SETTINGS MENU WITH TOGGLE
+#                     BOT START
 # ==========================================================
-@Client.on_message(filters.command("settings") & filters.private)
-async def settings_command(client: Client, message: Message):
-    """
-    Displays settings menu with inline toggle button (admin only)
-    """
-    if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴀᴄᴄᴇꜱꜱ ꜱᴇᴛᴛɪɴɢꜱ.")
-        return
-
-    text = (
-        "⚙️ ʙᴏᴛ ꜱᴇᴛᴛɪɴɢꜱ\n\n"
-        f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
-        "ᴘʀᴇꜱꜱ ᴛʜᴇ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ ᴛᴏ ᴛᴏɢɢʟᴇ ⬇️"
-    )
-
-    keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton(
-                text=f"Toggle Join Channels: {'ON ✅' if JOIN_CHANNELS_ENABLED else 'OFF ❌'}",
-                callback_data="toggle_joinchannels"
-            )],
-            [InlineKeyboardButton("Close ❌", callback_data="close_settings")]
-        ]
-    )
-
-    sent_message = await message.reply_text(text, reply_markup=keyboard)
-
-    asyncio.create_task(delete_message_after_delay(client, sent_message.chat.id, sent_message.id, SETTINGS_MESSAGE_DELAY))
-
-
-async def delete_message_after_delay(client, chat_id, message_id, delay):
-    await asyncio.sleep(delay)
-    try:
-        await client.delete_messages(chat_id, message_id)
-    except Exception as e:
-        print(f"Error deleting message: {e}")
-
-
-# ==========================================================
-#                  CALLBACK HANDLERS
-# ==========================================================
-@Client.on_callback_query(filters.regex("toggle_joinchannels"))
-async def toggle_joinchannels_callback(client: Client, query: CallbackQuery):
-    """
-    Handles the toggle of the Join Channels feature.
-    """
-    global JOIN_CHANNELS_ENABLED
-
-    if query.from_user.id != ADMIN_USER_ID:
-        await query.answer("Only admin can toggle this.", show_alert=True)
-        return
-
-    # Toggle state
-    JOIN_CHANNELS_ENABLED = not JOIN_CHANNELS_ENABLED
-
-    # Update text and button
-    new_text = (
-        "⚙️ ʙᴏᴛ ꜱᴇᴛᴛɪɴɢꜱ\n\n"
-        f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
-        "ᴘʀᴇꜱꜱ ᴛʜᴇ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ ᴛᴏ ᴛᴏɢɢʟᴇ ⬇️"
-    )
-
-    new_keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton(
-                text=f"Toggle Join Channels: {'ON ✅' if JOIN_CHANNELS_ENABLED else 'OFF ❌'}",
-                callback_data="toggle_joinchannels"
-            )],
-            [InlineKeyboardButton("Close ❌", callback_data="close_settings")]
-        ]
-    )
-
-    await query.message.edit_text(new_text, reply_markup=new_keyboard)
-    await query.answer(f"Join Channels feature {'enabled ✅' if JOIN_CHANNELS_ENABLED else 'disabled 🚫'}!")
-
-
-@Client.on_callback_query(filters.regex("close_settings"))
-async def close_settings_callback(client: Client, query: CallbackQuery):
-    try:
-        await query.message.delete()
-    except:
-        pass
-    await query.answer("Closed settings menu.")
-
-
-# ==========================================================
-print("✅ Bot Started!")
