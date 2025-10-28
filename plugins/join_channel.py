@@ -145,7 +145,7 @@ async def callback_handler(client: Bot, query: CallbackQuery):
 # -------------------------
 # /joinchannels command (uses the toggle)
 # -------------------------
-@Clients.on_message(filters.command("joinchannels") & filters.private)
+@Client.on_message(filters.command("joinchannels") & filters.private)
 async def join_channels(client: Client, message: Message):
     global JOIN_CHANNELS_ENABLED
 
