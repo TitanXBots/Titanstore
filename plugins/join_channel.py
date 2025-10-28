@@ -2,6 +2,7 @@ from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Message
 import os
 import asyncio
+from bot import Bot
 
 # ==========================================================
 #                     BOT CONFIGURATION
