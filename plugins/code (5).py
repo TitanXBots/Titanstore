@@ -66,8 +66,8 @@ async def settings_command(client: Client, message):
     keyboard = InlineKeyboardMarkup(
         [
             [
-                InlineKeyboardButton("✅ Enable Join Channels", callback_data="joinchannelon_btn"),
-                InlineKeyboardButton("❌ Disable Join Channels", callback_data="joinchanneloff_btn"),
+                InlineKeyboardButton("✅ Enable Join Channels", callback_data="joinchannelon"),
+                InlineKeyboardButton("❌ Disable Join Channels", callback_data="joinchanneloff"),
             ]
         ]
     )
@@ -91,13 +91,13 @@ async def callback_handler(client: Client, query: CallbackQuery):
         await query.answer("⚠️ Admin only!", show_alert=True)
         return
 
-    if data == "joinchannelon_btn":
+    if data == "joinchannelon":
         JOIN_CHANNELS_ENABLED = True
         await query.message.edit_text(
             "✅ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴇɴᴀʙʟᴇᴅ."
         )
 
-    elif data == "joinchanneloff_btn":
+    elif data == "joinchanneloff":
         JOIN_CHANNELS_ENABLED = False
         await query.message.edit_text(
             "❌ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅɪꜱᴀʙʟᴇᴅ."
