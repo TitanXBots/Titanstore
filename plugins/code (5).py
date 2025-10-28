@@ -19,37 +19,93 @@ JOIN_CHANNELS_ENABLED = True  # Default ON
 # --- Settings message deletion delay (in seconds) ---
 SETTINGS_MESSAGE_DELAY = 30  # Example: 30 seconds
 
-# ==========================================================
-#                  ADMIN ON / OFF COMMANDS
-# ==========================================================
+# ===============================
+# /joinchannelon command
+# ===============================
 @Client.on_message(filters.command("joinchannelon") & filters.private)
-async def join_channel_on(client: Client, message: Message):
-    """
-    Enables the join channels feature (admin only).
-    """
+async def join_channel_on(client: Client, message):
     global JOIN_CHANNELS_ENABLED
 
     if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
+        await message.reply_text("⚠️ ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
         return
 
     JOIN_CHANNELS_ENABLED = True
-    await message.reply_text("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴇɴᴀʙʟᴇᴅ ✅.")
+    await message.reply_text("✅ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴇɴᴀʙʟᴇᴅ.")
 
 
+# ===============================
+# /joinchanneloff command
+# ===============================
 @Client.on_message(filters.command("joinchanneloff") & filters.private)
-async def join_channel_off(client: Client, message: Message):
-    """
-    Disables the join channels feature (admin only).
-    """
+async def join_channel_off(client: Client, message):
     global JOIN_CHANNELS_ENABLED
 
     if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
+        await message.reply_text("⚠️ ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
         return
 
     JOIN_CHANNELS_ENABLED = False
-    await message.reply_text("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴅɪꜱᴀʙʟᴇᴅ 🚫.")
+    await message.reply_text("❌ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅɪꜱᴀʙʟᴇᴅ.")
+
+
+# ===============================
+# /settings command
+# ===============================
+@Client.on_message(filters.command("settings") & filters.private)
+async def settings_command(client: Client, message):
+    """
+    Admin settings panel showing join channel control buttons.
+    """
+    if message.from_user.id != ADMIN_USER_ID:
+        await message.reply_text("⚠️ ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
+        return
+
+    status = "✅ ON" if JOIN_CHANNELS_ENABLED else "❌ OFF"
+
+    keyboard = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("✅ Enable Join Channels", callback_data="joinchannelon_btn"),
+                InlineKeyboardButton("❌ Disable Join Channels", callback_data="joinchanneloff_btn"),
+            ]
+        ]
+    )
+
+    await message.reply_text(
+        text=f"⚙️ **Bot Settings Panel**\n\n📡 Join Channels: **{status}**",
+        reply_markup=keyboard
+    )
+
+
+# ===============================
+# Callback Query Handler
+# ===============================
+@Client.on_callback_query()
+async def callback_handler(client: Client, query: CallbackQuery):
+    global JOIN_CHANNELS_ENABLED
+
+    data = query.data
+
+    if query.from_user.id != ADMIN_USER_ID:
+        await query.answer("⚠️ Admin only!", show_alert=True)
+        return
+
+    if data == "joinchannelon_btn":
+        JOIN_CHANNELS_ENABLED = True
+        await query.message.edit_text(
+            "✅ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴇɴᴀʙʟᴇᴅ."
+        )
+
+    elif data == "joinchanneloff_btn":
+        JOIN_CHANNELS_ENABLED = False
+        await query.message.edit_text(
+            "❌ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅɪꜱᴀʙʟᴇᴅ."
+        )
+
+# ==========================================================
+#                  ADMIN ON / OFF COMMANDS
+# ==========================================================
 
 
 # ==========================================================
@@ -111,43 +167,3 @@ async def join_channels(client: Client, message: Message):
 #                     SETTINGS MENU
 # ==========================================================
 
-
-@Client.on_message(filters.command("settings") & filters.private)
-async def settings_command(client: Client, message: Message):
-    """
-    Displays a settings menu (admin only).
-    """
-    if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴀᴄᴄᴇꜱꜱ ꜱᴇᴛᴛɪɴɢꜱ.")
-        return
-
-    text = (
-        "⚙️ ʙᴏᴛ ꜱᴇᴛᴛɪɴɢꜱ\n\n"
-        f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
-        "ʏᴏᴜ ᴄᴀɴ ᴇɴᴀʙʟᴇ ᴏʀ ᴅɪꜱᴀʙʟᴇᴅ:\n"
-        "ᴛʜᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʀᴇ`/joinchannelon` or `/joinchanneloff` 👈."
-    )
-
-    sent_message = await message.reply_text(text)
-
-    # Schedule the message deletion after the specified delay
-    asyncio.create_task(delete_message_after_delay(client, sent_message.chat.id, sent_message.id, SETTINGS_MESSAGE_DELAY))
-
-
-async def delete_message_after_delay(client, chat_id, message_id, delay):
-    """
-    Deletes a message after a specified delay.
-    """
-    await asyncio.sleep(delay)
-    try:
-        await client.delete_messages(chat_id, message_id)
-    except Exception as e:
-        print(f"Error deleting message: {e}")
-
-
-# No toggle_joinchannels_callback function needed
-# because there is no toggle button anymore.
-
-
-# ==========================================================
-print("✅ Bot Started!")
