@@ -69,7 +69,7 @@ async def settings_command(client: Client, message: Message):
 # Callback handler (catch-all)
 # -------------------------
 @Bot.on_callback_query()
-async def callback_handler(client: Client, query: CallbackQuery):
+async def callback_handler(client: Bot, query: CallbackQuery): 
     global JOIN_CHANNELS_ENABLED
 
     # DEBUG INFO: always log
