@@ -3,7 +3,7 @@ from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Message
 import os
 import asyncio
-import bot 
+from bot import Bot 
 
 # -------------------------
 # Configuration (use env vars)
