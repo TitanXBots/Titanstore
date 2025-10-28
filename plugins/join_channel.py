@@ -5,11 +5,7 @@ import asyncio
 
 # ==========================================================
 #                     BOT CONFIGURATION
-# ==========================================================
-
-API_ID = int(os.environ.get("API_ID", "123456"))  # replace if needed
-API_HASH = os.environ.get("API_HASH", "your_api_hash_here")
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "your_bot_token_here")
+# ========================================================
 
 # --- Channels ---
 F_SUB1 = int(os.environ.get('F_SUB1', '-1001593340575'))
@@ -25,10 +21,7 @@ SETTINGS_MESSAGE_DELAY = 30    # Auto-delete after 30s
 
 # ==========================================================
 #                     START BOT CLIENT
-# ==========================================================
-app = Client("TitanStoreBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-
-
+# ======================================
 # ==========================================================
 #                     AUTO DELETE MESSAGE
 # ==========================================================
@@ -43,7 +36,7 @@ async def delete_message_after_delay(client, chat_id, message_id, delay):
 # ==========================================================
 #                     SETTINGS COMMAND
 # ==========================================================
-@app.on_message(filters.command("settings") & filters.private)
+@Client.on_message(filters.command("settings") & filters.private)
 async def settings_command(client: Client, message: Message):
     global JOIN_CHANNELS_ENABLED
 
@@ -78,7 +71,7 @@ async def settings_command(client: Client, message: Message):
 # ==========================================================
 #                     CALLBACK HANDLER
 # ==========================================================
-@app.on_callback_query()
+@Bot.on_callback_query()
 async def callback_handler(client: Client, query: CallbackQuery):
     global JOIN_CHANNELS_ENABLED
 
@@ -128,7 +121,7 @@ async def callback_handler(client: Client, query: CallbackQuery):
 # ==========================================================
 #                     JOIN CHANNELS COMMAND
 # ==========================================================
-@app.on_message(filters.command("joinchannels") & filters.private)
+@Client.on_message(filters.command("joinchannels") & filters.private)
 async def join_channels(client: Client, message: Message):
     global JOIN_CHANNELS_ENABLED
 
