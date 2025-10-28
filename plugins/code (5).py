@@ -3,7 +3,6 @@ from pyrogram import Client, filters, enums
 from pyrogram.types import *
 from pyrogram.errors import *
 import os
-import asyncio  # Import the asyncio library
 
 # --- Environment variables for channel IDs ---
 F_SUB1 = int(os.environ.get('F_SUB1', '-1001593340575'))
@@ -16,117 +15,102 @@ ADMIN_USER_ID = int(os.environ.get("ADMIN_USER_ID", "5356695781"))
 # --- Variable to control the join channels feature ---
 JOIN_CHANNELS_ENABLED = True  # Default ON
 
-# --- Settings message deletion delay (in seconds) ---
-SETTINGS_MESSAGE_DELAY = 30  # Example: 30 seconds
-
-# ===============================
-# /joinchannelon command
-# ===============================
-@Client.on_message(filters.command("joinchannelon") & filters.private)
-async def join_channel_on(client: Client, message):
-    global JOIN_CHANNELS_ENABLED
-
-    if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("⚠️ ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
-        return
-
-    JOIN_CHANNELS_ENABLED = True
-    await message.reply_text("✅ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴇɴᴀʙʟᴇᴅ.")
+# ============================
+# Environment Variables
+# =======================
 
 
-# ===============================
-# /joinchanneloff command
-# ===============================
-@Client.on_message(filters.command("joinchanneloff") & filters.private)
-async def join_channel_off(client: Client, message):
-    global JOIN_CHANNELS_ENABLED
 
-    if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("⚠️ ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
-        return
-
-    JOIN_CHANNELS_ENABLED = False
-    await message.reply_text("❌ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅɪꜱᴀʙʟᴇᴅ.")
-
-
-# ===============================
-# /settings command
-# ===============================
+# ============================
+# /settings Command
+# ============================
 @Client.on_message(filters.command("settings") & filters.private)
-async def settings_command(client: Client, message):
-    """
-    Admin settings panel showing join channel control buttons.
-    """
+async def settings_command(client: Client, message: Message):
     if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("⚠️ ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
+        await message.reply_text("⚙️ Only the admin can access settings.")
         return
 
-    status = "✅ ON" if JOIN_CHANNELS_ENABLED else "❌ OFF"
+    text = "⚙️ **Bot Settings**\n\nUse the buttons below to manage features."
 
     keyboard = InlineKeyboardMarkup(
         [
             [
-                InlineKeyboardButton("✅ Enable Join Channels", callback_data="joinchannelon"),
-                InlineKeyboardButton("❌ Disable Join Channels", callback_data="joinchanneloff"),
-            ]
+                InlineKeyboardButton(
+                    text=f"Join Channels: {'ON ✅' if JOIN_CHANNELS_ENABLED else 'OFF ❌'}",
+                    callback_data="toggle_joinchannels",
+                )
+            ],
+            [
+                InlineKeyboardButton(text="View Join Channels", callback_data="view_joinchannels")
+            ],
         ]
     )
 
-    await message.reply_text(
-        text=f"⚙️ **Bot Settings Panel**\n\n📡 Join Channels: **{status}**",
-        reply_markup=keyboard
-    )
+    await message.reply_text(text, reply_markup=keyboard)
 
 
-# ===============================
-# Callback Query Handler
-# ===============================
+# ============================
+# Callback Handler
+# ============================
 @Client.on_callback_query()
-async def callback_handler(client: Client, query: CallbackQuery):
+async def settings_callback(client: Client, query: CallbackQuery):
     global JOIN_CHANNELS_ENABLED
 
     data = query.data
 
-    if query.from_user.id != ADMIN_USER_ID:
-        await query.answer("⚠️ Admin only!", show_alert=True)
+    # Toggle Join Channels Feature
+    if data == "toggle_joinchannels":
+        if query.from_user.id != ADMIN_USER_ID:
+            await query.answer("Only admin can toggle this!", show_alert=True)
+            return
+
+        JOIN_CHANNELS_ENABLED = not JOIN_CHANNELS_ENABLED
+        status = "ON ✅" if JOIN_CHANNELS_ENABLED else "OFF ❌"
+        await query.message.edit_text(
+            f"⚙️ **Bot Settings**\n\nJoin Channels feature is now **{status}**.",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text=f"Join Channels: {status}",
+                            callback_data="toggle_joinchannels",
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="View Join Channels", callback_data="view_joinchannels"
+                        )
+                    ],
+                ]
+            ),
+        )
         return
 
-    if data == "joinchannelon":
-        JOIN_CHANNELS_ENABLED = True
-        await query.message.edit_text(
-            "✅ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴇɴᴀʙʟᴇᴅ."
-        )
-
-    elif data == "joinchanneloff":
-        JOIN_CHANNELS_ENABLED = False
-        await query.message.edit_text(
-            "❌ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅɪꜱᴀʙʟᴇᴅ."
-        )
-
-# ==========================================================
-#                  ADMIN ON / OFF COMMANDS
-# ==========================================================
+    # View Join Channels list
+    if data == "view_joinchannels":
+        await join_channels(client, query.message)
+        await query.answer()
 
 
-# ==========================================================
-#                  JOIN CHANNELS COMMAND
-# ==========================================================
+# ============================
+# /joinchannels Command
+# ============================
 @Client.on_message(filters.command("joinchannels") & filters.private)
 async def join_channels(client: Client, message: Message):
-    """
-    Checks user's membership in specified channels and prompts to join if not a member.
-    """
-    global JOIN_CHANNELS_ENABLED
+    user_id = message.from_user.id
 
     if not JOIN_CHANNELS_ENABLED:
-        await message.reply_text("⚙️ ᴛʜɪꜱ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ ᴅɪꜱᴀʙʟᴇᴅ ʙʏ ᴛʜᴇ ᴀᴅᴍɪɴ.")
+        await message.reply_text("🚫 Join Channels feature is currently disabled.")
         return
 
-    user_id = message.from_user.id
-    member_statuses = {}
+    channels = [F_SUB1, F_SUB2, F_SUB3]
+    response_lines = ["⚡️ **Checkout Our Channels** ⚡️\n"]
     keyboard_buttons = []
 
-    for channel_id in [F_SUB1, F_SUB2, F_SUB3]:
+    for channel_id in channels:
+        if not channel_id:
+            continue
+
         try:
             member = await client.get_chat_member(channel_id, user_id)
             if member.status in [
@@ -134,35 +118,26 @@ async def join_channels(client: Client, message: Message):
                 enums.ChatMemberStatus.ADMINISTRATOR,
                 enums.ChatMemberStatus.OWNER,
             ]:
-                member_statuses[channel_id] = "✅"
+                status = "✅"
+            else:
+                status = "❌"
         except UserNotParticipant:
-            try:
-                invite_link = await client.export_chat_invite_link(channel_id)
-                channel = await client.get_chat(channel_id)
-                channel_title = channel.title
-                keyboard_buttons.append(InlineKeyboardButton(text=channel_title, url=invite_link))
-                member_statuses[channel_id] = "❌"
-            except Exception as e:
-                print(f"Error getting info for channel {channel_id}: {e}")
-                member_statuses[channel_id] = "⚠️"
+            channel = await client.get_chat(channel_id)
+            invite_link = await client.export_chat_invite_link(channel_id)
+            keyboard_buttons.append([InlineKeyboardButton(text=channel.title, url=invite_link)])
+            status = "❌"
 
-    response = "⚡️ 𝐂𝐇𝐄𝐂𝐊 𝐎𝐔𝐓 𝐎𝐔𝐑 𝐂𝐇𝐀𝐍𝐍𝐄𝐋𝐒 ⚡️\n\n"
-    for channel_id in [F_SUB1, F_SUB2, F_SUB3]:
         try:
             channel_title = (await client.get_chat(channel_id)).title
         except Exception:
-            channel_title = f"Channel ID: {channel_id}"
-        response += f"{channel_title} {member_statuses.get(channel_id, '⚠️')}\n"
+            channel_title = f"Channel {channel_id}"
 
-    response += "\nJoin @TitanXBots For More 🔥"
+        response_lines.append(f"{channel_title} {status}")
+
+    response_lines.append("\n📢 Join @sd_bots For More Updates")
+    response = "\n".join(response_lines)
 
     if keyboard_buttons:
-        keyboard = InlineKeyboardMarkup([[btn] for btn in keyboard_buttons])
-        await message.reply_text(response, reply_markup=keyboard)
+        await message.reply_text(response, reply_markup=InlineKeyboardMarkup(keyboard_buttons))
     else:
-        await message.reply_text(response)
-
-
-# ==========================================================
-#                     SETTINGS MENU
-# ==========================================================
+        await message.reply_text("✅ You’ve already joined all required channels!\n\n" + response)
