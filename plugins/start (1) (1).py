@@ -98,12 +98,29 @@ async def start_command(client: Client, message: Message):
         return
     else:
         reply_markup = InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data = "help"),
-                    InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data = "about")
-                ]
-            ]
+    [
+        [
+            InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
+            InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
+        ],
+        [
+            InlineKeyboardButton("⚠️ ᴅɪꜱᴄʟᴀɪᴍᴇʀ", callback_data="disclaimer")
+        ],
+        [
+            InlineKeyboardButton("💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", url="https://t.me/TitanOwner"),
+            InlineKeyboardButton("🔐 ꜱᴏᴜʀᴄᴇ ᴄᴏᴅᴇ", url="https://github.com/TitanXBots/FileStore-Bot")
+        ],
+        [
+            InlineKeyboardButton("ʜᴏᴡ ᴛᴏ ᴜꜱᴇ ʙᴏᴛ", url="https://t.me/TitanXBackup/33")
+        ],
+        [
+            InlineKeyboardButton("☆ ᴍᴏᴠɪᴇ ʀᴇQᴜᴇꜱᴛ ɢʀᴏᴜᴘ ☆", url="https://t.me/TitanMoviess")
+        ],
+        [
+            InlineKeyboardButton("🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/TitanXBots"),
+            InlineKeyboardButton("🔍 ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ", url="https://t.me/TitanMattersSupport")
+        ]
+    ]
         )
         await message.reply_photo(
             photo= START_PIC,
