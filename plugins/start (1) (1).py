@@ -1,6 +1,4 @@
 import os
-import logging 
-from logging.handlers import RotatingFileHandler
 import asyncio
 import humanize
 from pyrogram import Client, filters
@@ -261,11 +259,7 @@ FILE_AUTO_DELETE = 60  # Default auto-delete delay in seconds
 # Global variable to control auto-delete state
 AUTO_DELETE_ENABLED = True  # Default state
 
-# Configure logging
-logging.basicConfig(level=logging.logging.INFO,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
+# Configu
 # --- Core Auto-Delete Logic ---
 
 async def delete_files(messages: list[Message], client: Client, k: Message, command_payload: str = None):
