@@ -4,9 +4,12 @@ from config import *
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import add_user, del_user, full_userbase, present_user
 
+# Add your disclaimer text her
+
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
+
     if data == "help":
         await query.message.edit_text(
             text=HELP_TXT.format(first=query.from_user.first_name),
@@ -20,6 +23,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 ]
             )
         )
+
     elif data == "about":
         await query.message.edit_text(
             text=ABOUT_TXT.format(first=query.from_user.first_name),
@@ -33,6 +37,21 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 ]
             )
         )
+
+    elif data == "disclaimer":
+        await query.message.edit_text(
+            text=DISCLAIMER_TXT,
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
+                        InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
+                    ]
+                ]
+            )
+        )
+
     elif data == "start":
         await query.message.edit_text(
             text=START_MSG.format(first=query.from_user.first_name),
@@ -45,6 +64,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                     [
                         InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
                         InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
+                    ],
+                    [
+                        InlineKeyboardButton("📜 ᴅɪꜱᴄʟᴀɪᴍᴇʀ", callback_data="disclaimer")
                     ],
                     [
                         InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", user_id=5356695781),
@@ -60,6 +82,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 ]
             )
         )
+
     elif data == "close":
         await query.message.delete()
         try:
