@@ -6,7 +6,6 @@ from database.database import add_user, del_user, full_userbase, present_user
 
 
 # --- Global variable to control the join channels feature ---
-JOIN_CHANNELS_ENABLED = True  # Default ON
 ADMIN_USER_ID = int(os.environ.get("ADMIN_USER_ID", "5356695781"))
 
 
