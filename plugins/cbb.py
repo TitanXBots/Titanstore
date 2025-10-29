@@ -5,10 +5,18 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from database.database import add_user, del_user, full_userbase, present_user
 
 
+# --- Global variable to control the join channels feature ---
+JOIN_CHANNELS_ENABLED = True  # Default ON
+ADMIN_USER_ID = int(os.environ.get("ADMIN_USER_ID", "5356695781"))
+
+
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
 
+    # ==========================================================
+    #                      HELP SECTION
+    # ==========================================================
     if data == "help":
         await query.message.edit_text(
             text=HELP_TXT.format(first=query.from_user.first_name),
@@ -23,6 +31,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
+    # ==========================================================
+    #                      ABOUT SECTION
+    # ==========================================================
     elif data == "about":
         await query.message.edit_text(
             text=ABOUT_TXT.format(first=query.from_user.first_name),
@@ -37,6 +48,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
+    # ==========================================================
+    #                    DISCLAIMER SECTION
+    # ==========================================================
     elif data == "disclaimer":
         await query.message.edit_text(
             text=DISCLAIMER_TXT.format(first=query.from_user.first_name),
@@ -51,6 +65,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
+    # ==========================================================
+    #                    START / MAIN MENU
+    # ==========================================================
     elif data == "start":
         await query.message.edit_text(
             text=START_MSG.format(first=query.from_user.first_name),
@@ -68,6 +85,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                         InlineKeyboardButton("⚠️ ᴅɪꜱᴄʟᴀɪᴍᴇʀ", callback_data="disclaimer")
                     ],
                     [
+                        InlineKeyboardButton("🧩 ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")
+                    ],
+                    [
                         InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", user_id=5356695781),
                         InlineKeyboardButton("🔐 ꜱᴏᴜʀᴄᴇ ᴄᴏᴅᴇ", url="https://github.com/TitanXBots/FileStore-Bot")
                     ],
@@ -82,6 +102,71 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
+    # ==========================================================
+    #                    SETTINGS SECTION
+    # ==========================================================
+    elif data == "settings":
+        if query.from_user.id != ADMIN_USER_ID:
+            await query.answer("🚫 Only the admin can access settings.", show_alert=True)
+            return
+
+        text = (
+            "⚙️ **ʙᴏᴛ ꜱᴇᴛᴛɪɴɢꜱ**\n\n"
+            f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ꜰᴇᴀᴛᴜʀᴇ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
+            "ᴘʀᴇꜱꜱ ʙᴇʟᴏᴡ ᴛᴏ ᴇɴᴀʙʟᴇ/ᴅɪꜱᴀʙʟᴇ 👇"
+        )
+
+        keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton(
+                    text=f"{'🟢 Disable' if JOIN_CHANNELS_ENABLED else '🟢 Enable'} Join Channels",
+                    callback_data="toggle_joinchannels"
+                )
+            ],
+            [
+                InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start")
+            ]
+        ])
+
+        await query.message.edit_text(text, reply_markup=keyboard)
+
+    # ==========================================================
+    #                    TOGGLE JOIN CHANNELS
+    # ==========================================================
+    elif data == "toggle_joinchannels":
+        global JOIN_CHANNELS_ENABLED
+
+        if query.from_user.id != ADMIN_USER_ID:
+            await query.answer("🚫 You are not allowed to do this.", show_alert=True)
+            return
+
+        # Toggle ON/OFF
+        JOIN_CHANNELS_ENABLED = not JOIN_CHANNELS_ENABLED
+
+        new_text = (
+            "⚙️ **ʙᴏᴛ ꜱᴇᴛᴛɪɴɢꜱ (ᴜᴘᴅᴀᴛᴇᴅ)**\n\n"
+            f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ꜰᴇᴀᴛᴜʀᴇ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
+            "ᴘʀᴇꜱꜱ ʙᴇʟᴏᴡ ᴛᴏ ᴇɴᴀʙʟᴇ/ᴅɪꜱᴀʙʟᴇ 👇"
+        )
+
+        new_keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton(
+                    text=f"{'🟢 Disable' if JOIN_CHANNELS_ENABLED else '🟢 Enable'} Join Channels",
+                    callback_data="toggle_joinchannels"
+                )
+            ],
+            [
+                InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start")
+            ]
+        ])
+
+        await query.message.edit_text(new_text, reply_markup=new_keyboard)
+        await query.answer("✅ Settings updated!")
+
+    # ==========================================================
+    #                       CLOSE SECTION
+    # ==========================================================
     elif data == "close":
         await query.message.delete()
         try:
