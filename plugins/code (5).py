@@ -14,6 +14,7 @@ ADMIN_USER_ID = int(os.environ.get("ADMIN_USER_ID", "5356695781"))
 # --- Variable to control the join channels feature ---
 JOIN_CHANNELS_ENABLED = True  # Default ON
 
+
 # ==========================================================
 #                  JOIN CHANNELS COMMAND
 # ==========================================================
@@ -72,7 +73,6 @@ async def join_channels(client: Client, message: Message):
 # ==========================================================
 #                     SETTINGS MENU
 # ==========================================================
-
 @Client.on_message(filters.command("settings") & filters.private)
 async def settings_command(client: Client, message: Message):
     """
@@ -94,8 +94,7 @@ async def settings_command(client: Client, message: Message):
                 text=f"{'🟢 Disable' if JOIN_CHANNELS_ENABLED else '🟢 Enable'} Join Channels",
                 callback_data="toggle_joinchannels"
             )
-        ],
-        [InlineKeyboardButton(text="❌ Close", callback_data="close_settings")]
+        ]
     ])
 
     await message.reply_text(text, reply_markup=keyboard)
@@ -128,21 +127,11 @@ async def toggle_joinchannels_callback(client: Client, callback_query: CallbackQ
                 text=f"{'🟢 Disable' if JOIN_CHANNELS_ENABLED else '🟢 Enable'} Join Channels",
                 callback_data="toggle_joinchannels"
             )
-        ],
-        [InlineKeyboardButton(text="❌ Close", callback_data="close_settings")]
+        ]
     ])
 
     await callback_query.message.edit_text(new_text, reply_markup=new_keyboard)
     await callback_query.answer("✅ Settings updated!")
-
-
-@Client.on_callback_query(filters.regex("close_settings"))
-async def close_settings_callback(client: Client, callback_query: CallbackQuery):
-    """
-    Closes the settings message.
-    """
-    await callback_query.message.delete()
-    await callback_query.answer("❌ Closed.")
 
 
 # ==========================================================
