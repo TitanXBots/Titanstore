@@ -133,6 +133,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     #                    TOGGLE JOIN CHANNELS
     # ==========================================================
     elif data == "toggle_joinchannels":
+        if JOIN_CHANNELS_ENABLED:  # ❌ Python sees this first
             global JOIN_CHANNELS_ENABLED  # <--- moved here to the top
 
         if query.from_user.id != ADMIN_USER_ID:
