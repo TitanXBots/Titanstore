@@ -134,7 +134,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     #                    TOGGLE JOIN CHANNELS
     # ==========================================================
     elif data == "toggle_joinchannels":
-        global JOIN_CHANNELS_ENABLED
+        global JOIN_CHANNELS_ENABLED  # <--- moved here to the top
 
         if query.from_user.id != ADMIN_USER_ID:
             await query.answer("🚫 You are not allowed to do this.", show_alert=True)
@@ -163,7 +163,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         await query.message.edit_text(new_text, reply_markup=new_keyboard)
         await query.answer("✅ Settings updated!")
-
     # ==========================================================
     #                       CLOSE SECTION
     # ==========================================================
