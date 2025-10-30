@@ -5,18 +5,6 @@ from Script import *
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import add_user, del_user, full_userbase, present_user
 
-# Example commands text (you can edit freely)
-COMMANDS_TXT = """
-**🧾 Available Commands**
-
-/start - Start the bot  
-/help - Get help about bot usage  
-/about - Learn more about this bot  
-/stats - Check database or bot stats (Admin only)  
-/clear - Clear all stored files (Admin only)
-
-Use these responsibly ⚡
-"""
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
