@@ -28,6 +28,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
+                        InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", user_id=5356695781)
+                    ],
+                    [
                         InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
                         InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
                     ]
@@ -42,7 +45,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("📜 ᴅɪꜱᴄʟᴀɪᴍᴇʀ", callback_data="disclaimer")
+                        InlineKeyboardButton("📜 ᴅɪꜱᴄʟᴀɪᴍᴇʀ", callback_data="disclaimer"),
+                        InlineKeyboardButton("🔐 ꜱᴏᴜʀᴄᴇ ᴄᴏᴅᴇ", url="https://github.com/TitanXBots/FileStore-Bot")
                     ],
                     [
                         InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
@@ -81,10 +85,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                     [
                         InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
                         InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
-                    ],
-                    [
-                        InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", user_id=5356695781),
-                        InlineKeyboardButton("🔐 ꜱᴏᴜʀᴄᴇ ᴄᴏᴅᴇ", url="https://github.com/TitanXBots/FileStore-Bot")
                     ],
                     [
                         InlineKeyboardButton("🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/TitanXBots"),
