@@ -4,7 +4,18 @@ from config import *
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import add_user, del_user, full_userbase, present_user
 
-# Add your disclaimer text her
+# Disclaimer text
+DISCLAIMER_TXT = """
+**📜 Disclaimer**
+
+This bot does not host or promote any files or copyrighted content.  
+All files are user-generated and shared from publicly available sources.  
+The developer and hosting platform are **not responsible** for any misuse or copyright violations.  
+
+Use this bot responsibly and follow Telegram’s Terms of Service.
+
+— Team TitanXBots ⚡
+"""
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -31,6 +42,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
+                        InlineKeyboardButton("📜 ᴅɪꜱᴄʟᴀɪᴍᴇʀ", callback_data="disclaimer")
+                    ],
+                    [
                         InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
                         InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
                     ]
@@ -44,6 +58,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
+                    [
+                        InlineKeyboardButton("🔰 ʙᴀᴄᴋ ᴛᴏ ᴀʙᴏᴜᴛ", callback_data="about")
+                    ],
                     [
                         InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
                         InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
@@ -64,9 +81,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                     [
                         InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
                         InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
-                    ],
-                    [
-                        InlineKeyboardButton("📜 ᴅɪꜱᴄʟᴀɪᴍᴇʀ", callback_data="disclaimer")
                     ],
                     [
                         InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", user_id=5356695781),
