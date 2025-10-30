@@ -1,20 +1,21 @@
 from pyrogram import Client
 from bot import Bot
 from config import *
+from Script import * 
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import add_user, del_user, full_userbase, present_user
 
-# Disclaimer text
-DISCLAIMER_TXT = """
-**📜 Disclaimer**
+# Example commands text (you can edit freely)
+COMMANDS_TXT = """
+**🧾 Available Commands**
 
-This bot does not host or promote any files or copyrighted content.  
-All files are user-generated and shared from publicly available sources.  
-The developer and hosting platform are **not responsible** for any misuse or copyright violations.  
+/start - Start the bot  
+/help - Get help about bot usage  
+/about - Learn more about this bot  
+/stats - Check database or bot stats (Admin only)  
+/clear - Clear all stored files (Admin only)
 
-Use this bot responsibly and follow Telegram’s Terms of Service.
-
-— Team TitanXBots ⚡
+Use these responsibly ⚡
 """
 
 @Bot.on_callback_query()
@@ -28,7 +29,27 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
+                        InlineKeyboardButton("🧾 ᴄᴏᴍᴍᴀɴᴅꜱ", callback_data="commands")
+                    ],
+                    [
                         InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", user_id=5356695781)
+                    ],
+                    [
+                        InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
+                        InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
+                    ]
+                ]
+            )
+        )
+
+    elif data == "commands":
+        await query.message.edit_text(
+            text=COMMANDS_TXT.format(first=query.from_user.first_name),
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("🔙 ʙᴀᴄᴋ ᴛᴏ ʜᴇʟᴘ", callback_data="help")
                     ],
                     [
                         InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
@@ -58,7 +79,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     elif data == "disclaimer":
         await query.message.edit_text(
-            text=DISCLAIMER_TXT,
+            text=DISCLAIMER_TXT.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
