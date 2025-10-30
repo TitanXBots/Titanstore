@@ -104,10 +104,6 @@ async def start_command(client: Client, message: Message):
             InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
         ],
         [
-            InlineKeyboardButton("💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", url="https://t.me/TitanOwner"),
-            InlineKeyboardButton("🔐 ꜱᴏᴜʀᴄᴇ ᴄᴏᴅᴇ", url="https://github.com/TitanXBots/FileStore-Bot")
-        ],
-        [
             InlineKeyboardButton("ʜᴏᴡ ᴛᴏ ᴜꜱᴇ ʙᴏᴛ", url="https://t.me/TitanXBackup/33")
         ],
         [
