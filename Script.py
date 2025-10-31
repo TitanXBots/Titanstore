@@ -11,7 +11,7 @@ DISCLAIMER_TXT = """
 ɪꜰ ʏᴏᴜ ʙᴇʟɪᴇᴠᴇ ᴛʜɪꜱ ʙᴏᴛ ɪꜱ ᴠɪᴏʟᴀᴛɪɴɢ ʏᴏᴜʀ ɪɴᴛᴇʟʟᴇᴄᴛᴜᴀʟ ᴘʀᴏᴘᴇʀᴛʏ, ᴄᴏɴᴛᴀᴄᴛ ᴛʜᴇ ʀᴇꜱᴘᴇᴄᴛɪᴠᴇ ᴄʜᴀɴɴᴇʟꜱ ꜰᴏʀ ʀᴇᴍᴏᴠᴀʟ. 
 ᴛʜᴇ ʙᴏᴛ ᴅᴏᴇꜱ ɴᴏᴛ ᴏᴡɴ ᴀɴʏ ᴏꜰ ᴛʜᴇꜱᴇ ᴄᴏɴᴛᴇɴᴛꜱ — ɪᴛ ᴏɴʟʏ ɪɴᴅᴇxᴇꜱ ᴛʜᴇ ꜰɪʟᴇꜱ ꜰʀᴏᴍ ᴛᴇʟᴇɢʀᴀᴍ. 
 
-<blockquote><b>🌿 ᴍᴀɪɴᴛᴀɪɴᴇᴅ ʙʏ :</b> <a href="https://t.me/TitanXBots">TitanXBots</a></blockquote>
+<blockquote><b>🌿 ᴍᴀɪɴᴛᴀɪɴᴇᴅ ʙʏ :</b> <a href="https://t.me/TitanXBots">ᴛɪᴛᴀɴxʙᴏᴛꜱ</a></blockquote>
 """
 
 # Example commands text (you can edit freely)
