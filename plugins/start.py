@@ -290,13 +290,13 @@ def set_auto_delete(state: bool):
 @Client.on_message(filters.command("autodeleteon") & filters.user(ADMINS))
 async def handle_autodelete_on(client, message):
     set_auto_delete(True)
-    await message.reply_text("✅ Auto-delete is now **ENABLED**.", parse_mode="markdown")
+    await message.reply_text("✅ Auto-delete is now **ENABLED**.", parse_mode="markdownv2")
 
 
 @Client.on_message(filters.command("autodeleteoff") & filters.user(ADMINS))
 async def handle_autodelete_off(client, message):
     set_auto_delete(False)
-    await message.reply_text("❌ Auto-delete is now **DISABLED**.", parse_mode="markdown")
+    await message.reply_text("❌ Auto-delete is now **DISABLED**.", parse_mode="markdownv2")
 
 
 
