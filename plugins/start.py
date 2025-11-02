@@ -11,6 +11,7 @@ from config import *
 from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 
+AUTO_DELETE_ENABLED = True  # Default state
 
 titanxofficials = FILE_AUTO_DELETE
 titandeveloper = titanxofficials
@@ -229,14 +230,6 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         await msg.delete()
 
 
-
-import asyncio
-import logging
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
-FILE_AUTO_DELETE = 60  # Delay before auto-delete (seconds)
-AUTO_DELETE_ENABLED = True  # Default state
 
 # ====== CORE FUNCTION ======
 async def delete_files(messages, client, k, command_payload=None):
