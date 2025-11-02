@@ -12,6 +12,7 @@ from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 
 AUTO_DELETE_ENABLED = True  # Default state
+ADMINS = [5356695781]  
 
 titanxofficials = FILE_AUTO_DELETE
 titandeveloper = titanxofficials
