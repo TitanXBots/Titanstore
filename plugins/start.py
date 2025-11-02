@@ -230,35 +230,81 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
 
 
 
+import asyncio
+import logging
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+FILE_AUTO_DELETE = 60  # Delay before auto-delete (seconds)
+AUTO_DELETE_ENABLED = True  # Default state
+
+# ====== CORE FUNCTION ======
 async def delete_files(messages, client, k, command_payload=None):
-    await asyncio.sleep(FILE_AUTO_DELETE)  # Wait for the duration specified in config.py
-    
-    # Delete all messages first
+    """Deletes messages after FILE_AUTO_DELETE seconds if enabled."""
+    global AUTO_DELETE_ENABLED
+
+    if not AUTO_DELETE_ENABLED:
+        logging.info("Auto-delete is disabled. Skipping deletion.")
+        return
+
+    await asyncio.sleep(FILE_AUTO_DELETE)
+
+    # Delete all messages in list
     for msg in messages:
         try:
             await client.delete_messages(chat_id=msg.chat.id, message_ids=[msg.id])
+            logging.info(f"Deleted message {msg.id} in chat {msg.chat.id}")
         except Exception as e:
-            print(f"The attempt to delete the media {msg.id} was unsuccessful: {e}")
+            logging.error(f"Failed to delete message {msg.id}: {e}")
 
-    # Safeguard against k.command being None or having insufficient parts
-    command_part = command_payload
-
-    if command_part:
-        button_url = f"https://t.me/{client.username}?start={command_part}"
+    # Add “get file again” button if payload is present
+    keyboard = None
+    if command_payload:
+        button_url = f"https://t.me/{client.username}?start={command_payload}"
         keyboard = InlineKeyboardMarkup(
-            [
-                [InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=button_url)]
-            ]
+            [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=button_url)]]
         )
-    else:
-        keyboard = None
 
-    # Edit message with the button (outside the for loop)
+    # Edit message after deletion
     try:
-        await k.edit_text("ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ ✅\nɴᴏᴡ ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇", reply_markup=keyboard)
+        await k.edit_text(
+            "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ ✅\n"
+            "ɴᴏᴡ ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇",
+            reply_markup=keyboard,
+        )
+        logging.info(f"Edited message {k.id} in chat {k.chat.id}")
     except Exception as e:
-        logging.error(f"Error editing the message: {e}")
-            
+        logging.error(f"Error editing message after deletion: {e}")
+
+# ====== HELPER: CHECK ADMIN ======
+async def is_admin(client, chat_id, user_id):
+    """Returns True if the user is admin or creator."""
+    try:
+        member = await client.get_chat_member(chat_id, user_id)
+        return member.status in ["administrator", "creator"]
+    except Exception as e:
+        logging.warning(f"Admin check failed: {e}")
+        return False
+
+# ====== TOGGLE HANDLERS ======
+def set_auto_delete(state: bool):
+    global AUTO_DELETE_ENABLED
+    AUTO_DELETE_ENABLED = state
+    return AUTO_DELETE_ENABLED
+
+async def handle_autodelete_on(client, message):
+    if not await is_admin(client, message.chat.id, message.from_user.id):
+        await message.reply_text("🚫 Only **admins** can use this command.")
+        return
+    set_auto_delete(True)
+    await message.reply_text("✅ Auto-delete is now **ENABLED**.", parse_mode="markdown")
+
+async def handle_autodelete_off(client, message):
+    if not await is_admin(client, message.chat.id, message.from_user.id):
+        await message.reply_text("🚫 Only **admins** can use this command.")
+        return
+    set_auto_delete(False)
+    await message.reply_text("❌ Auto-delete is now **DISABLED**.", parse_mode="markdown")
 
 # Dont Remove Credit
 # Update Channel - TitanXBots
