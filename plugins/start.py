@@ -231,7 +231,10 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
 
 
 
-# ====== CORE FUNCTION ======
+# ====== CORE FUNCTION =====
+
+
+# ====== AUTO DELETE FUNCTION ======
 async def delete_files(messages, client, k, command_payload=None):
     """Deletes messages after FILE_AUTO_DELETE seconds if enabled."""
     global AUTO_DELETE_ENABLED
@@ -253,15 +256,19 @@ async def delete_files(messages, client, k, command_payload=None):
     # Add “get file again” button if payload is present
     keyboard = None
     if command_payload:
-        button_url = f"https://t.me/{client.username}?start={command_payload}"
-        keyboard = InlineKeyboardMarkup(
-            [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=button_url)]]
-        )
+        try:
+            me = await client.get_me()
+            button_url = f"https://t.me/{me.username}?start={command_payload}"
+            keyboard = InlineKeyboardMarkup(
+                [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=button_url)]]
+            )
+        except Exception as e:
+            logging.error(f"Failed to build 'get file' button: {e}")
 
-    # Edit message after deletion
+    # Edit the main message after deletion
     try:
         await k.edit_text(
-            "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ ✅\n"
+            "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴇꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ ✅\n"
             "ɴᴏᴡ ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇",
             reply_markup=keyboard,
         )
@@ -269,37 +276,28 @@ async def delete_files(messages, client, k, command_payload=None):
     except Exception as e:
         logging.error(f"Error editing message after deletion: {e}")
 
-# ====== HELPER: CHECK ADMIN ======
-async def is_admin(client, chat_id, user_id):
-    """Returns True if the user is admin or creator."""
-    try:
-        member = await client.get_chat_member(chat_id, user_id)
-        return member.status in ["administrator", "creator"]
-    except Exception as e:
-        logging.warning(f"Admin check failed: {e}")
-        return False
 
-# ====== TOGGLE HANDLERS ======
+# ====== TOGGLE STATE ======
 def set_auto_delete(state: bool):
+    """Toggle global auto-delete."""
     global AUTO_DELETE_ENABLED
     AUTO_DELETE_ENABLED = state
     return AUTO_DELETE_ENABLED
-    
-@Client.on_message(filters.command("autodeleteon") & filters.private & filters.user(ADMINS))
+
+
+# ====== COMMAND HANDLERS ======
+@Client.on_message(filters.command("autodeleteon") & filters.user(ADMINS))
 async def handle_autodelete_on(client, message):
-    if not await is_admin(client, message.chat.id, message.from_user.id):
-        await message.reply_text("🚫 Only **admins** can use this command.")
-        return
     set_auto_delete(True)
     await message.reply_text("✅ Auto-delete is now **ENABLED**.", parse_mode="markdown")
-    
-@Client.on_message(filters.command("autodeleteoff") & filters.private & filters.user(ADMINS))
+
+
+@Client.on_message(filters.command("autodeleteoff") & filters.user(ADMINS))
 async def handle_autodelete_off(client, message):
-    if not await is_admin(client, message.chat.id, message.from_user.id):
-        await message.reply_text("🚫 Only **admins** can use this command.")
-        return
     set_auto_delete(False)
     await message.reply_text("❌ Auto-delete is now **DISABLED**.", parse_mode="markdown")
+
+
 
 # Dont Remove Credit
 # Update Channel - TitanXBots
