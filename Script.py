@@ -36,10 +36,6 @@ By  Team -TitanXBots ⚡
 """
 
 
-By  Team -TitanXBots ⚡
-"""
-
-
 NEW_USER_TXT = """#New_User {}
 
 ≈ ɪᴅ:- {}
