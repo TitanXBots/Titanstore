@@ -18,16 +18,22 @@ DISCLAIMER_TXT = """
 COMMANDS_TXT = """
 🧾 Available Commands
 
-/start - To start the bot
-/restart - To restart the bot
-/batch - Create link for more than one posts
-/genlink - Create link for one post
-/users - view bot statistics (Admin only)
-/broadcast - Broadcast any message to bot users (Admin only)
-/stats - checking your bot uptime
-/joinchannel - Channel list
-/joinchannelon - To enable joinchannels (Admin only) 
-/joinchannelsoff - To disable joinchannels (Admin only)
+/start - ᴛᴏ ꜱᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ
+/restart - ᴛᴏ ʀᴇꜱᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ
+/batch - ᴄʀᴇᴀᴛᴇ ʟɪɴᴋ ꜰᴏʀ ᴍᴏʀᴇ ᴛʜᴀɴ ᴏɴᴇ ᴘᴏꜱᴛꜱ
+/genlink - ᴄʀᴇᴀᴛᴇ ʟɪɴᴋ ꜰᴏʀ ᴏɴᴇ ᴘᴏꜱᴛ
+/users - ᴠɪᴇᴡ ʙᴏᴛ ꜱᴛᴀᴛɪꜱᴛɪᴄꜱ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
+/broadcast - ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴀɴʏ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ ʙᴏᴛ ᴜꜱᴇʀꜱ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
+/stats - ᴄʜᴇᴄᴋɪɴɢ ʏᴏᴜʀ ʙᴏᴛ ᴜᴘᴛɪᴍᴇ
+/autodeleteon - ᴇɴᴀʙʟᴇ ᴀᴜᴛᴏᴅᴇʟᴇᴛᴇ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
+/autodeleteoff - ᴅɪꜱᴀʙʟᴇ ᴀᴜᴛᴏᴅᴇʟᴇᴛᴇ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
+/joinchannel - ᴄʜᴀɴɴᴇʟ ʟɪꜱᴛ
+/joinchannelon - ᴛᴏ ᴇɴᴀʙʟᴇ ᴄʜᴀɴɴᴇʟꜱ ʟɪꜱᴛ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
+/joinchannelsoff - ᴛᴏ ᴅɪꜱᴀʙʟᴇ ᴄʜᴀɴɴᴇʟꜱ ʟɪꜱᴛ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
+
+
+By  Team -TitanXBots ⚡
+"""
 
 
 By  Team -TitanXBots ⚡
