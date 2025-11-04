@@ -30,6 +30,8 @@ COMMANDS_TXT = """
 /joinchannel - ᴄʜᴀɴɴᴇʟ ʟɪꜱᴛ
 /joinchannelon - ᴛᴏ ᴇɴᴀʙʟᴇ ᴄʜᴀɴɴᴇʟꜱ ʟɪꜱᴛ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
 /joinchannelsoff - ᴛᴏ ᴅɪꜱᴀʙʟᴇ ᴄʜᴀɴɴᴇʟꜱ ʟɪꜱᴛ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
+/maintenanceon - ʙᴏᴛ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴏɴ
+/maintenanceoff - ʙᴏᴛ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴏꜰꜰ
 
 
 By  Team -TitanXBots ⚡
