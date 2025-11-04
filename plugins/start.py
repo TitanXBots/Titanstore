@@ -14,8 +14,7 @@ import logging
 from pymongo import MongoClient
 
 
-AUTO_DELETE_ENABLED = True  # Default state
-ADMINS = [5356695781]  
+AUTO_DELETE_ENABLED = True  # Default state  
 
 client = MongoClient(DB_URI)
 db = client[DB_NAME]
