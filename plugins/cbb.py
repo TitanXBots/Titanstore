@@ -8,8 +8,6 @@ from database.database import add_user, del_user, full_userbase, present_user
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
-    await query.answer()  # Always acknowledge callback
-
     if data == "help":
         await query.message.edit_text(
             text=HELP_TXT.format(first=query.from_user.first_name),
