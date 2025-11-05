@@ -1,16 +1,16 @@
 from pyrogram import Client, filters, enums
 from pyrogram.types import *
 from pyrogram.errors import *
-import os
 import asyncio  # Import the asyncio library
+import os
+
+# --- Import admin list and other configs ---
+from config import ADMINS  # ADMINS must be a list of integers in config.py
 
 # --- Environment variables for channel IDs ---
 F_SUB1 = int(os.environ.get('F_SUB1', '-1001593340575'))
 F_SUB2 = int(os.environ.get('F_SUB2', '-1001917804203'))
 F_SUB3 = int(os.environ.get('F_SUB3', '-1002109163181'))
-
-# --- Admin user IDs (multiple admins supported) ---
-ADMINS = list(map(int, os.environ.get("ADMINS", "5356695781 1234567890").split()))
 
 # --- Variable to control the join channels feature ---
 JOIN_CHANNELS_ENABLED = True  # Default ON
