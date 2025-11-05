@@ -1,4 +1,3 @@
-
 from pyrogram import Client, filters, enums
 from pyrogram.types import *
 from pyrogram.errors import *
@@ -10,8 +9,8 @@ F_SUB1 = int(os.environ.get('F_SUB1', '-1001593340575'))
 F_SUB2 = int(os.environ.get('F_SUB2', '-1001917804203'))
 F_SUB3 = int(os.environ.get('F_SUB3', '-1002109163181'))
 
-# --- Admin user ID (replace with the actual admin user ID) ---
-ADMIN_USER_ID = int(os.environ.get("ADMIN_USER_ID", "5356695781"))
+# --- Admin user IDs (multiple admins supported) ---
+ADMINS = list(map(int, os.environ.get("ADMINS", "5356695781 1234567890").split()))
 
 # --- Variable to control the join channels feature ---
 JOIN_CHANNELS_ENABLED = True  # Default ON
@@ -19,37 +18,38 @@ JOIN_CHANNELS_ENABLED = True  # Default ON
 # --- Settings message deletion delay (in seconds) ---
 SETTINGS_MESSAGE_DELAY = 30  # Example: 30 seconds
 
+
 # ==========================================================
 #                  ADMIN ON / OFF COMMANDS
 # ==========================================================
 @Client.on_message(filters.command("joinchannelon") & filters.private)
 async def join_channel_on(client: Client, message: Message):
     """
-    Enables the join channels feature (admin only).
+    Enables the join channels feature (admins only).
     """
     global JOIN_CHANNELS_ENABLED
 
-    if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
+    if message.from_user.id not in ADMINS:
+        await message.reply_text("🚫 ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
         return
 
     JOIN_CHANNELS_ENABLED = True
-    await message.reply_text("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴇɴᴀʙʟᴇᴅ ✅.")
+    await message.reply_text("✅ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴇɴᴀʙʟᴇᴅ.")
 
 
 @Client.on_message(filters.command("joinchanneloff") & filters.private)
 async def join_channel_off(client: Client, message: Message):
     """
-    Disables the join channels feature (admin only).
+    Disables the join channels feature (admins only).
     """
     global JOIN_CHANNELS_ENABLED
 
-    if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
+    if message.from_user.id not in ADMINS:
+        await message.reply_text("🚫 ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ.")
         return
 
     JOIN_CHANNELS_ENABLED = False
-    await message.reply_text("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴅɪꜱᴀʙʟᴇᴅ 🚫.")
+    await message.reply_text("🚫 ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ɴᴏᴡ ᴅɪꜱᴀʙʟᴇᴅ.")
 
 
 # ==========================================================
@@ -63,7 +63,7 @@ async def join_channels(client: Client, message: Message):
     global JOIN_CHANNELS_ENABLED
 
     if not JOIN_CHANNELS_ENABLED:
-        await message.reply_text("⚙️ ᴛʜɪꜱ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ ᴅɪꜱᴀʙʟᴇᴅ ʙʏ ᴛʜᴇ ᴀᴅᴍɪɴ.")
+        await message.reply_text("⚙️ ᴛʜɪꜱ ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ ᴅɪꜱᴀʙʟᴇᴅ ʙʏ ᴀᴅᴍɪɴꜱ.")
         return
 
     user_id = message.from_user.id
@@ -110,27 +110,23 @@ async def join_channels(client: Client, message: Message):
 # ==========================================================
 #                     SETTINGS MENU
 # ==========================================================
-
-
 @Client.on_message(filters.command("settings") & filters.private)
 async def settings_command(client: Client, message: Message):
     """
-    Displays a settings menu (admin only).
+    Displays a settings menu (admins only).
     """
-    if message.from_user.id != ADMIN_USER_ID:
-        await message.reply_text("ᴏɴʟʏ ᴛʜᴇ ᴀᴅᴍɪɴ ᴄᴀɴ ᴀᴄᴄᴇꜱꜱ ꜱᴇᴛᴛɪɴɢꜱ.")
+    if message.from_user.id not in ADMINS:
+        await message.reply_text("🚫 ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴄᴀɴ ᴀᴄᴄᴇꜱꜱ ꜱᴇᴛᴛɪɴɢꜱ.")
         return
 
     text = (
         "⚙️ ʙᴏᴛ ꜱᴇᴛᴛɪɴɢꜱ\n\n"
         f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ: {'✅ ON' if JOIN_CHANNELS_ENABLED else '❌ OFF'}\n\n"
-        "ʏᴏᴜ ᴄᴀɴ ᴇɴᴀʙʟᴇ ᴏʀ ᴅɪꜱᴀʙʟᴇᴅ:\n"
-        "ᴛʜᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ᴄᴏᴍᴍᴀɴᴅ ʜᴇʀᴇ`/joinchannelon` or `/joinchanneloff` 👈."
+        "ʏᴏᴜ ᴄᴀɴ ᴇɴᴀʙʟᴇ ᴏʀ ᴅɪꜱᴀʙʟᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ ᴜꜱɪɴɢ:\n"
+        "`/joinchannelon` or `/joinchanneloff` 👈"
     )
 
     sent_message = await message.reply_text(text)
-
-    # Schedule the message deletion after the specified delay
     asyncio.create_task(delete_message_after_delay(client, sent_message.chat.id, sent_message.id, SETTINGS_MESSAGE_DELAY))
 
 
@@ -143,10 +139,6 @@ async def delete_message_after_delay(client, chat_id, message_id, delay):
         await client.delete_messages(chat_id, message_id)
     except Exception as e:
         print(f"Error deleting message: {e}")
-
-
-# No toggle_joinchannels_callback function needed
-# because there is no toggle button anymore.
 
 
 # ==========================================================
