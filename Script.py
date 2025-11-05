@@ -27,9 +27,9 @@ COMMANDS_TXT = """
 /stats - ᴄʜᴇᴄᴋɪɴɢ ʏᴏᴜʀ ʙᴏᴛ ᴜᴘᴛɪᴍᴇ
 /autodeleteon - ᴇɴᴀʙʟᴇ ᴀᴜᴛᴏᴅᴇʟᴇᴛᴇ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
 /autodeleteoff - ᴅɪꜱᴀʙʟᴇ ᴀᴜᴛᴏᴅᴇʟᴇᴛᴇ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
-/joinchannel - ᴄʜᴀɴɴᴇʟ ʟɪꜱᴛ
+/joinchannels - ᴄʜᴀɴɴᴇʟ ʟɪꜱᴛ
 /joinchannelon - ᴛᴏ ᴇɴᴀʙʟᴇ ᴄʜᴀɴɴᴇʟꜱ ʟɪꜱᴛ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
-/joinchannelsoff - ᴛᴏ ᴅɪꜱᴀʙʟᴇ ᴄʜᴀɴɴᴇʟꜱ ʟɪꜱᴛ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
+/joinchanneloff - ᴛᴏ ᴅɪꜱᴀʙʟᴇ ᴄʜᴀɴɴᴇʟꜱ ʟɪꜱᴛ (ᴀᴅᴍɪɴ ᴏɴʟʏ)
 /maintenance on - ʙᴏᴛ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴏɴ
 /maintenance off - ʙᴏᴛ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴏꜰꜰ
 
