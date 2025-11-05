@@ -10,7 +10,12 @@ from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
+import logging
+from pymongo import MongoClient
 
+client = MongoClient(DB_URI)
+db = client[DB_NAME]
+collection = db["TelegramFiles"]
 
 AUTO_DELETE_ENABLED = True  # Default state  
 
