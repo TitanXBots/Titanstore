@@ -19,6 +19,13 @@ titandeveloper = titanxofficials
 file_auto_delete = humanize.naturaldelta(titandeveloper)
 
 
+async def is_maintenance(client, user_id:int)->bool:
+    check_msg = collection.find_one({"maintenance": "on"})
+    if check_msg and user_id not in ADMINS:
+        return True
+    return False
+
+
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
@@ -31,6 +38,9 @@ async def start_command(client: Client, message: Message):
         except:
             pass
 
+    if await is_maintenance(client, user_id):
+      await message.reply_text("Maintenance mode is currently active. Please try again later.")
+      return
     text = message.text
     if len(text)>7:
         try:
