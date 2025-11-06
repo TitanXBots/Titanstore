@@ -39,13 +39,13 @@ async def maintenance(client: Client, message: Message):
         if check_msg:
             on_off = check_msg["maintenance"]
             if on_off == 'on':
-                await message.reply_text("Maintenance mode is already on.")
+                await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴏɴ.")
             elif on_off == 'off':
                 collection.update_one({"admin_id": user_id}, {"$set": {"maintenance": "on"}})
-                await message.reply_text("Maintenance mode turned on.")
+                await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏɴ.")
         else:
             collection.insert_one({"admin_id": user_id, "maintenance": "on"})
-            await message.reply_text("Maintenance mode turned on (new entry).")
+            await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏɴ (new entry).")
     elif status is False:
         check_msg1 = collection.find_one({"admin_id": user_id})
         if check_msg1:
@@ -60,3 +60,4 @@ async def maintenance(client: Client, message: Message):
             await message.reply_text("Maintenance mode turned off (new entry).")
     else:
         await message.reply_text("None")
+
