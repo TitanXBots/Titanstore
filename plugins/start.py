@@ -257,6 +257,47 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         await asyncio.sleep(8)
         await msg.delete()
 
+# --- Ban Command ---
+@Bot.on_message(filters.command("ban") & filters.user(ADMINS))
+async def ban_command(client, message):
+    if len(message.command) < 2:
+        return await message.reply_text("Usage: `/ban user_id [reason]`", quote=True)
+
+    try:
+        user_id = int(message.command[1])
+        reason = " ".join(message.command[2:]) or "No reason provided"
+        await ban_user(user_id, reason)
+        await message.reply_text(f"🚫 User `{user_id}` banned.\n**Reason:** {reason}")
+        try:
+            await client.send_message(
+                user_id,
+                f"⚠️ You have been **banned** from using this bot.\n**Reason:** {reason}"
+            )
+        except:
+            pass
+    except Exception as e:
+        await message.reply_text(f"❌ Error: {e}")
+
+
+# --- Unban Command ---
+@Bot.on_message(filters.command("unban") & filters.user(ADMINS))
+async def unban_command(client, message):
+    if len(message.command) < 2:
+        return await message.reply_text("Usage: `/unban user_id`", quote=True)
+
+    try:
+        user_id = int(message.command[1])
+        await unban_user(user_id)
+        await message.reply_text(f"✅ User `{user_id}` has been **unbanned**.")
+        try:
+            await client.send_message(
+                user_id,
+                "✅ You have been **unbanned**. You can now use the bot again!"
+            )
+        except:
+            pass
+    except Exception as e:
+        await message.reply_text(f"❌ Error: {e}")
 
 
 # ====== CORE FUNCTION =====
