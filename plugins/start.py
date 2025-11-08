@@ -34,6 +34,16 @@ async def is_maintenance(client, user_id:int)->bool:
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
+
+    # 🚫 Ban check first
+    if await is_banned(user_id):
+        reason = await get_ban_reason(user_id)
+        await message.reply_text(
+            f"🚫 You are banned from using this bot.\n\n**Reason:** {reason}"
+        )
+        return
+
+    # ✅ Proceed normally if not banned
     if not await present_user(user_id):
         try:
             await add_user(user_id)
@@ -44,8 +54,8 @@ async def start_command(client: Client, message: Message):
             pass
 
     if await is_maintenance(client, user_id):
-      await message.reply_text("Maintenance mode is currently active. Please try again later.")
-      return
+        await message.reply_text("⚙️ Maintenance mode is currently active. Please try again later.")
+        return
     text = message.text
     if len(text)>7:
         try:
