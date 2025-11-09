@@ -9,7 +9,7 @@ from Script import NEW_USER_TXT
 from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
-from database.database import add_user, del_user, full_userbase, present_user, is_banned, get_ban_reason, ban_user, unban_user
+from database.database import add_user, del_user, full_userbase, present_user, banned_users, ban_user, unban_user, is_banned, get_ban_reason
 import logging
 from pymongo import MongoClient
 
