@@ -27,27 +27,24 @@ async def del_user(user_id: int):
     user_data.delete_one({'_id': user_id})
 
 # -------------------------------
-# Ban system
+# DATABASE HELPER FUNCTIONS
 # -------------------------------
-async def ban_user(user_id: int, reason: str = "No reason provided"):
-    """Ban a user with an optional reason."""
+async def is_banned(user_id: int) -> bool:
+    return banned_users.find_one({"_id": user_id}) is not None
+
+
+async def get_ban_reason(user_id: int) -> str:
+    data = banned_users.find_one({"_id": user_id})
+    return data.get("reason", "No reason provided") if data else "No reason provided"
+
+
+async def ban_user(user_id: int, reason: str):
     banned_users.update_one(
-        {'_id': user_id},
-        {'$set': {'reason': reason}},
+        {"_id": user_id},
+        {"$set": {"reason": reason}},
         upsert=True
     )
 
+
 async def unban_user(user_id: int):
-    """Unban a user."""
-    banned_users.delete_one({'_id': user_id})
-
-async def is_banned(user_id: int):
-    """Check if user is banned."""
-    return banned_users.find_one({'_id': user_id}) is not None
-
-async def get_ban_reason(user_id: int):
-    """Get ban reason."""
-    user = banned_users.find_one({'_id': user_id})
-    return user['reason'] if user else None
-
-#TitanXBots
+    banned_users.delete_one({"_id": user_id})
