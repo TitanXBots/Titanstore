@@ -262,6 +262,9 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
 # --- MongoDB Connection (for banned list)
 
 # -------------------------------
+
+
+# -------------------------------
 # BAN COMMAND
 # -------------------------------
 @Bot.on_message(filters.command("ban") & filters.user(ADMINS))
@@ -297,7 +300,7 @@ async def ban_command(client: Client, message: Message):
             f"📄 **Reason:** {reason}"
         )
 
-        # Try to notify the user
+        # Notify banned user
         try:
             await client.send_message(
                 user_id,
@@ -321,7 +324,6 @@ async def unban_command(client: Client, message: Message):
     try:
         user_id = int(message.command[1])
 
-        # Fetch user info
         user = await client.get_users(user_id)
         name = user.first_name or "Unknown"
         if user.last_name:
@@ -329,11 +331,9 @@ async def unban_command(client: Client, message: Message):
         if user.username:
             name += f" (@{user.username})"
 
-        # Check if banned
         if not await is_banned(user_id):
             return await message.reply_text(f"ℹ️ **{name}** is not banned.")
 
-        # Remove from banned list
         await unban_user(user_id)
 
         await message.reply_text(
@@ -341,7 +341,6 @@ async def unban_command(client: Client, message: Message):
             f"👤 **User ID:** `{user_id}`"
         )
 
-        # Try to notify the user
         try:
             await client.send_message(
                 user_id,
@@ -365,9 +364,7 @@ async def banned_list(client: Client, message: Message):
             return await message.reply_text("✅ No users are currently banned.")
 
         text = "🚫 **Banned Users List** 🚫\n\n"
-        count = 0
-
-        for user in banned:
+        for count, user in enumerate(banned, start=1):
             user_id = user["_id"]
             reason = user.get("reason", "No reason provided")
 
@@ -381,10 +378,9 @@ async def banned_list(client: Client, message: Message):
             except:
                 name = "User not found (left Telegram)"
 
-            text += f"**{count + 1}. {name}**\n🆔 `{user_id}`\n📝 {reason}\n\n"
-            count += 1
+            text += f"**{count}. {name}**\n🆔 `{user_id}`\n📝 {reason}\n\n"
 
-            if count >= 50:  # Limit output
+            if count >= 50:
                 text += f"⚠️ Showing first {count} banned users only."
                 break
 
@@ -392,7 +388,6 @@ async def banned_list(client: Client, message: Message):
 
     except Exception as e:
         await message.reply_text(f"❌ Error: {e}")
-
 
 
 # ====== CORE FUNCTION =====
