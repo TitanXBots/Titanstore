@@ -9,6 +9,7 @@ from database.database import add_user, del_user, full_userbase, present_user
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
+
     if data == "help":
         await query.message.edit_text(
             text=HELP_TXT.format(first=query.from_user.first_name),
@@ -71,10 +72,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     elif data == "commands":
         await query.message.edit_text(
-            text=COMMANDS_TXT,  # You can define COMMANDS_TXT in Script.py or config
+            text=COMMANDS_TXT,
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
+                    [
+                        InlineKeyboardButton("🔙 ʙᴀᴄᴋ ᴛᴏ ʜᴇʟᴘ", callback_data="help")
+                    ],
                     [
                         InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
                         InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
@@ -85,10 +89,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     elif data == "disclaimer":
         await query.message.edit_text(
-            text=DISCLAIMER_TXT,  # Define DISCLAIMER_TXT in Script.py or config
+            text=DISCLAIMER_TXT,
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
+                    [
+                        InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
+                    ],
                     [
                         InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
                         InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
