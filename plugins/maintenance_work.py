@@ -2,7 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.types import *
 from pymongo import MongoClient
 from config import DB_URI, DB_NAME, ADMINS
-from permissions import owner_only, admin_only
+from plugins.permissions import owner_only, admin_only
 
 client = MongoClient(DB_URI)
 db = client[DB_NAME]
@@ -62,6 +62,7 @@ async def maintenance(client: Client, message: Message):
             await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏꜰꜰ (ɴᴇᴡ ᴇɴᴛʀʏ).")
     else:
         await message.reply_text("None")
+
 
 
 
