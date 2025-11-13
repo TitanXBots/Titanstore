@@ -1,7 +1,7 @@
 #TitanXBots - Admin Commands
 from pyrogram import Client, filters
 from config import OWNER_ID
-from database import add_admin, remove_admin, list_admins, is_admin
+from database.database import add_admin, remove_admin, list_admins, is_admin
 from permissions import owner_only, admin_only  # ✅ Centralized permissions
 
 # -------------------------------
