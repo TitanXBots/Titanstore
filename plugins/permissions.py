@@ -1,6 +1,6 @@
 #TitanXBots - permissions.py
 from config import OWNER_ID
-from database import is_admin
+from database.database import is_admin
 
 def owner_only(func):
     """Allow only the bot owner to run this command."""
