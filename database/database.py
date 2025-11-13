@@ -8,6 +8,7 @@ database = dbclient[DB_NAME]
 
 user_data = database['users']
 banned_users = database['banned_users']
+admin_data = database['admins']  # <-- NEW COLLECTION
 
 # -------------------------------
 # User management
