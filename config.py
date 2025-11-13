@@ -77,7 +77,8 @@ BOT_STATS_TEXT = "<b>BOT UPTIME</b>\n{uptime}"
 USER_REPLY_TEXT = "👋ʜᴇʏ ꜰʀɪᴇɴᴅ, 🚫ᴅᴏɴ'ᴛ ꜱᴇɴᴅ ᴀɴʏ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ ᴍᴇ ᴅɪʀᴇᴄᴛʟʏ ɪ'ᴍ ᴏɴʟʏ ꜰɪʟᴇ ꜱʜᴀʀᴇ ʙᴏᴛ!"
 
 ADMINS.append(OWNER_ID)
-ADMINS.append(5356695781)
+# Remove duplicates automatically
+ADMINS = list(set(ADMINS))
 
 LOG_FILE_NAME = "filesharingbot.txt"
 
