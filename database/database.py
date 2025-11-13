@@ -27,7 +27,7 @@ async def del_user(user_id: int):
     user_data.delete_one({'_id': user_id})
 
 # -------------------------------
-# DATABASE HELPER FUNCTIONS
+# Ban and Unban management 
 # -------------------------------
 async def is_banned(user_id: int) -> bool:
     return banned_users.find_one({"_id": user_id}) is not None
