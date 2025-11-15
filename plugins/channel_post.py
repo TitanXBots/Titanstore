@@ -8,6 +8,7 @@ from pyrogram.errors import FloodWait
 from bot import Bot
 from config import ADMINS, CHANNEL_ID, DISABLE_CHANNEL_BUTTON
 from helper_func import encode
+from plugins.permissions import owner_only, admin_only
 
 @Bot.on_message(filters.private & ~filters.command(['start','users','broadcast','batch','genlink','stats','joinchannels','pypi','restart','settings','joinchannelon','joinchanneloff','admin','autodeleteon','autodeleteoff','maintenance','ban','unban','bannedlist','addadmin','removeadmin','adminlist']))
 async def channel_post(client: Client, message: Message):
