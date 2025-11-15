@@ -258,12 +258,6 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         await msg.delete()
 
 
-#TitanXBots
-# --- MongoDB Connection (for banned list)
-
-# -------------------------------
-
-
 # -------------------------------
 # BAN COMMAND
 # -------------------------------
@@ -274,7 +268,7 @@ async def ban_command(client: Client, message: Message):
 
     try:
         user_id = int(message.command[1])
-        reason = " ".join(message.command[2:]) or "No reason provided"
+        reason = " ".join(message.command[2:]) or "ɴᴏ ʀᴇᴀꜱᴏɴ ᴘʀᴏᴠɪᴅᴇᴅ"
 
         # Fetch user info
         user = await client.get_users(user_id)
@@ -288,23 +282,23 @@ async def ban_command(client: Client, message: Message):
         if await is_banned(user_id):
             current_reason = await get_ban_reason(user_id)
             return await message.reply_text(
-                f"⚠️ **{name}** is already banned.\n📝 **Reason:** {current_reason}"
+                f"⚠️ {name} ɪꜱ ᴀʟʀᴇᴀᴅʏ ʙᴀɴɴᴇᴅ.\n📝 ʀᴇᴀꜱᴏɴ: {current_reason}"
             )
 
         # Add user to banned list
         await ban_user(user_id, reason)
 
         await message.reply_text(
-            f"🚫 **User Banned:** {name}\n"
-            f"👤 **User ID:** `{user_id}`\n"
-            f"📄 **Reason:** {reason}"
+            f"🚫 User Banned: {name}\n"
+            f"👤 User ID: `{user_id}`\n"
+            f"📄 Reason: {reason}"
         )
 
         # Notify banned user
         try:
             await client.send_message(
                 user_id,
-                f"⚠️ You have been **banned** from using this bot.\n**Reason:** {reason}"
+                f"⚠️ ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴜꜱɪɴɢ ᴛʜɪꜱ ʙᴏᴛ.\nʀᴇᴀꜱᴏɴ: {reason}"
             )
         except:
             pass
@@ -332,19 +326,19 @@ async def unban_command(client: Client, message: Message):
             name += f" (@{user.username})"
 
         if not await is_banned(user_id):
-            return await message.reply_text(f"ℹ️ **{name}** is not banned.")
+            return await message.reply_text(f"ℹ️ {name} ɪꜱ ɴᴏᴛ ʙᴀɴɴᴇᴅ.")
 
         await unban_user(user_id)
 
         await message.reply_text(
-            f"✅ **User Unbanned:** {name}\n"
-            f"👤 **User ID:** `{user_id}`"
+            f"✅ User Unbanned: {name}\n"
+            f"👤 User ID: `{user_id}`"
         )
 
         try:
             await client.send_message(
                 user_id,
-                "✅ You have been **unbanned**. You can now use the bot again!"
+                "✅ ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴜɴʙᴀɴɴᴇᴅ. ʏᴏᴜ ᴄᴀɴ ɴᴏᴡ ᴜꜱᴇ ᴛʜᴇ ʙᴏᴛ ᴀɢᴀɪɴ!"
             )
         except:
             pass
@@ -361,12 +355,12 @@ async def banned_list(client: Client, message: Message):
     try:
         banned = list(banned_users.find())
         if not banned:
-            return await message.reply_text("✅ No users are currently banned.")
+            return await message.reply_text("✅ ɴᴏ ᴜꜱᴇʀꜱ ᴀʀᴇ ᴄᴜʀʀᴇɴᴛʟʏ ʙᴀɴɴᴇᴅ.")
 
-        text = "🚫 **Banned Users List** 🚫\n\n"
+        text = "🚫 𝐁𝐀𝐍𝐍𝐄𝐃 𝐔𝐒𝐄𝐑𝐒 𝐋𝐈𝐒𝐓 🚫\n\n"
         for count, user in enumerate(banned, start=1):
             user_id = user["_id"]
-            reason = user.get("reason", "No reason provided")
+            reason = user.get("ʀᴇᴀꜱᴏɴ", "ɴᴏ ʀᴇᴀꜱᴏɴ ᴘʀᴏᴠɪᴅᴇᴅ")
 
             try:
                 tg_user = await client.get_users(user_id)
@@ -376,9 +370,9 @@ async def banned_list(client: Client, message: Message):
                 if tg_user.username:
                     name += f" (@{tg_user.username})"
             except:
-                name = "User not found (left Telegram)"
+                name = "ᴜꜱᴇʀ ɴᴏᴛ ꜰᴏᴜɴᴅ (ʟᴇꜰᴛ ᴛᴇʟᴇɢʀᴀᴍ)"
 
-            text += f"**{count}. {name}**\n🆔 `{user_id}`\n📝 {reason}\n\n"
+            text += f"{count}. {name}\n🆔 `{user_id}`\n📝 {reason}\n\n"
 
             if count >= 50:
                 text += f"⚠️ Showing first {count} banned users only."
