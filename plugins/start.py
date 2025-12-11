@@ -13,6 +13,8 @@ from database.database import add_user, del_user, full_userbase, present_user, b
 import logging
 from pymongo import MongoClient
 
+logging.basicConfig(level=logging.INFO)
+
 client = MongoClient(DB_URI)
 db = client[DB_NAME]
 collection = db["TelegramFiles"]
@@ -408,7 +410,7 @@ async def delete_files(messages, client, k, command_payload=None):
         except Exception as e:
             logging.error(f"Failed to delete message {msg.id}: {e}")
 
-    # Add “get file again” button if payload is present
+    # Add "get file again" button if payload is present
     keyboard = None
     if command_payload:
         try:
@@ -436,6 +438,7 @@ def set_auto_delete(state: bool):
     """Toggle global auto-delete."""
     global AUTO_DELETE_ENABLED
     AUTO_DELETE_ENABLED = state
+    logging.info(f"Auto-delete set to {AUTO_DELETE_ENABLED}")
     return AUTO_DELETE_ENABLED
 
 # ====== COMMAND HANDLERS ======
@@ -455,16 +458,21 @@ async def auto_delete_menu(client, message):
     )
 
 # ====== CALLBACK HANDLER ======
-@Client.on_callback_query()
+@Client.on_callback_query(filters.regex("^autodelete_"))
 async def callback_handler(client, query):
-    if query.data == "autodelete_on":
+    data = query.data
+
+    if data == "autodelete_on":
         set_auto_delete(True)
         await query.message.edit_text("✅ Auto-Delete is now **ENABLED**.")
         await query.answer("Enabled ✔")
-    elif query.data == "autodelete_off":
+    elif data == "autodelete_off":
         set_auto_delete(False)
         await query.message.edit_text("❌ Auto-Delete is now **DISABLED**.")
         await query.answer("Disabled ✖")
+    else:
+        await query.answer("Unknown action ❌", show_alert=True)
+
 
 # ====== EXAMPLE BOT START =
 
