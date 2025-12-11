@@ -13,8 +13,6 @@ from database.database import add_user, del_user, full_userbase, present_user, b
 import logging
 from pymongo import MongoClient
 
-logging.basicConfig(level=logging.INFO)
-
 client = MongoClient(DB_URI)
 db = client[DB_NAME]
 collection = db["TelegramFiles"]
@@ -392,6 +390,7 @@ async def banned_list(client: Client, message: Message):
 # ====== AUTO DELETE FUNCTION ======
 
 # ====== DELETE FILE FUNCTION ======
+
 async def delete_files(messages, client, k, command_payload=None):
     """Deletes messages after FILE_AUTO_DELETE seconds if enabled."""
     global AUTO_DELETE_ENABLED
@@ -410,7 +409,7 @@ async def delete_files(messages, client, k, command_payload=None):
         except Exception as e:
             logging.error(f"Failed to delete message {msg.id}: {e}")
 
-    # Add "get file again" button if payload is present
+    # Add “get file again” button if payload is present
     keyboard = None
     if command_payload:
         try:
@@ -434,14 +433,15 @@ async def delete_files(messages, client, k, command_payload=None):
         logging.error(f"Error editing message after deletion: {e}")
 
 # ====== TOGGLE STATE ======
+
 def set_auto_delete(state: bool):
     """Toggle global auto-delete."""
     global AUTO_DELETE_ENABLED
     AUTO_DELETE_ENABLED = state
-    logging.info(f"Auto-delete set to {AUTO_DELETE_ENABLED}")
     return AUTO_DELETE_ENABLED
 
 # ====== COMMAND HANDLERS ======
+
 @Client.on_message(filters.command("autodelete") & filters.user(ADMINS))
 async def auto_delete_menu(client, message):
     keyboard = InlineKeyboardMarkup(
@@ -453,26 +453,24 @@ async def auto_delete_menu(client, message):
         ]
     )
     await message.reply_text(
-        "⚙️ **Auto-Delete Control Panel**\nChoose an option below:",
+        "⚙️ Auto-Delete Control Panel\nChoose an option below:",
         reply_markup=keyboard
     )
 
 # ====== CALLBACK HANDLER ======
-@Client.on_callback_query(filters.regex("^autodelete_"))
+
+@Client.on_callback_query()
 async def callback_handler(client, query):
-    data = query.data
-
-    if data == "autodelete_on":
+    if query.data == "autodelete_on":
         set_auto_delete(True)
-        await query.message.edit_text("✅ Auto-Delete is now **ENABLED**.")
+        await query.message.edit_text("✅ Auto-Delete is now ENABLED.")
         await query.answer("Enabled ✔")
-    elif data == "autodelete_off":
+    elif query.data == "autodelete_off":
         set_auto_delete(False)
-        await query.message.edit_text("❌ Auto-Delete is now **DISABLED**.")
+        await query.message.edit_text("❌ Auto-Delete is now DISABLED.")
         await query.answer("Disabled ✖")
-    else:
-        await query.answer("Unknown action ❌", show_alert=True)
 
+# ====== EXAMPLE BOT START ======
 
 # ====== EXAMPLE BOT START =
 
