@@ -387,11 +387,7 @@ async def banned_list(client: Client, message: Message):
 
 
 # ====== AUTO DELETE FUNCTION ======
-
-# ====== DELETE FILE FUNCTION =====
-
-# === Existing delete_files function ===
-async def delete_files(messages: list[Message], client: Client, k: Message, command_payload: str = None):
+async def delete_files(messages, client, k, command_payload=None):
     """Deletes messages after FILE_AUTO_DELETE seconds if enabled."""
     global AUTO_DELETE_ENABLED
 
@@ -414,14 +410,10 @@ async def delete_files(messages: list[Message], client: Client, k: Message, comm
     if command_payload:
         try:
             me = await client.get_me()
-            # Ensure me.username is not None before using in f-string
-            if me and me.username:
-                button_url = f"https://t.me/{me.username}?start={command_payload}"
-                keyboard = InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=button_url)]]
-                )
-            else:
-                logging.warning("Bot username not found, cannot build 'get file' button URL.")
+            button_url = f"https://t.me/{me.username}?start={command_payload}"
+            keyboard = InlineKeyboardMarkup(
+                [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=button_url)]]
+            )
         except Exception as e:
             logging.error(f"Failed to build 'get file' button: {e}")
 
@@ -442,80 +434,20 @@ def set_auto_delete(state: bool):
     """Toggle global auto-delete."""
     global AUTO_DELETE_ENABLED
     AUTO_DELETE_ENABLED = state
-    logging.info(f"Auto-delete is now {'ENABLED' if state else 'DISABLED'}")
     return AUTO_DELETE_ENABLED
 
 
-# ====== COMMAND HANDLERS (for direct commands, can coexist with buttons) ======
+# ====== COMMAND HANDLERS ======
 @Client.on_message(filters.command("autodeleteon") & filters.user(ADMINS))
-async def handle_autodelete_on(client: Client, message: Message):
+async def handle_autodelete_on(client, message):
     set_auto_delete(True)
     await message.reply_text("✅ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ɪꜱ ɴᴏᴡ ᴇɴᴀʙʟᴇᴅ.")
 
 
 @Client.on_message(filters.command("autodeleteoff") & filters.user(ADMINS))
-async def handle_autodelete_off(client: Client, message: Message):
+async def handle_autodelete_off(client, message):
     set_auto_delete(False)
     await message.reply_text("❌ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ɪꜱ ɴᴏᴡ ᴅɪꜱᴀʙʟᴇᴅ.")
-
-
-# ====== NEW: COMMAND TO DISPLAY AUTO-DELETE BUTTONS ======
-def get_autodelete_keyboard():
-    """Helper function to create the inline keyboard."""
-    current_state_emoji = "✅" if AUTO_DELETE_ENABLED else "❌"
-    button_text_on = f"Turn On Auto-Delete"
-    button_text_off = f"Turn Off Auto-Delete"
-
-    return InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(button_text_on, callback_data="autodelete_toggle_on"),
-                InlineKeyboardButton(button_text_off, callback_data="autodelete_toggle_off")
-            ]
-        ]
-    )
-
-@Client.on_message(filters.command("autodelete") & filters.user(ADMINS))
-async def autodelete_menu(client: Client, message: Message):
-    """Sends a message with inline buttons to toggle auto-delete."""
-    status = "enabled" if AUTO_DELETE_ENABLED else "disabled"
-    await message.reply_text(
-        f"⚙️ Auto-delete is currently {status.upper()}.\n\n" # Removed **
-        "Use the buttons below to change its state:",
-        reply_markup=get_autodelete_keyboard()
-        # parse_mode="MarkdownV2" # REMOVED THIS LINE
-    )
-
-# ====== NEW: CALLBACK QUERY HANDLER FOR AUTO-DELETE BUTTONS ======
-@Client.on_callback_query(filters.regex("^autodelete_toggle_(on|off)$") & filters.user(ADMINS))
-async def handle_autodelete_button(client: Client, callback_query: CallbackQuery):
-    action = callback_query.data.split('_')[-1] # Extracts 'on' or 'off'
-
-    if action == "on":
-        new_state = True
-        response_text = "✅ Auto-delete enabled!"
-    else: # action == "off"
-        new_state = False
-        response_text = "❌ Auto-delete disabled!"
-
-    set_auto_delete(new_state)
-
-    # Answer the callback query to remove the loading spinner and provide feedback
-    await callback_query.answer(response_text, show_alert=False)
-
-    # Edit the original message to reflect the new state
-    status = "enabled" if AUTO_DELETE_ENABLED else "disabled"
-    await callback_query.edit_message_text(
-        f"⚙️ Auto-delete is currently {status.upper()}.\n\n" # Removed **
-        "Use the buttons below to change its state:",
-        reply_markup=get_autodelete_keyboard()
-        # parse_mode="MarkdownV2" # REMOVED THIS LINE
-    )
-    
-    
-# ====== EXAMPLE BOT START ======
-
-# ====== EXAMPLE BOT START =
 
 # Dont Remove Credit
 # Update Channel - TitanXBots
