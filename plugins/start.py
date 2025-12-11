@@ -388,6 +388,10 @@ async def banned_list(client: Client, message: Message):
 
 
 # ====== AUTO DELETE FUNCTION ======
+FILE_AUTO_DELETE = 30  # seconds
+AUTO_DELETE_ENABLED = True
+
+# ====== DELETE FILE FUNCTION ======
 async def delete_files(messages, client, k, command_payload=None):
     """Deletes messages after FILE_AUTO_DELETE seconds if enabled."""
     global AUTO_DELETE_ENABLED
@@ -429,7 +433,6 @@ async def delete_files(messages, client, k, command_payload=None):
     except Exception as e:
         logging.error(f"Error editing message after deletion: {e}")
 
-
 # ====== TOGGLE STATE ======
 def set_auto_delete(state: bool):
     """Toggle global auto-delete."""
@@ -437,19 +440,35 @@ def set_auto_delete(state: bool):
     AUTO_DELETE_ENABLED = state
     return AUTO_DELETE_ENABLED
 
-
 # ====== COMMAND HANDLERS ======
-@Client.on_message(filters.command("autodeleteon") & filters.user(ADMINS))
-async def handle_autodelete_on(client, message):
-    set_auto_delete(True)
-    await message.reply_text("✅ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ɪꜱ ɴᴏᴡ ᴇɴᴀʙʟᴇᴅ.")
+@Client.on_message(filters.command("autodelete") & filters.user(ADMINS))
+async def auto_delete_menu(client, message):
+    keyboard = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("🟢 Enable Auto-Delete", callback_data="autodelete_on"),
+                InlineKeyboardButton("🔴 Disable Auto-Delete", callback_data="autodelete_off"),
+            ]
+        ]
+    )
+    await message.reply_text(
+        "⚙️ **Auto-Delete Control Panel**\nChoose an option below:",
+        reply_markup=keyboard
+    )
 
+# ====== CALLBACK HANDLER ======
+@Client.on_callback_query()
+async def callback_handler(client, query):
+    if query.data == "autodelete_on":
+        set_auto_delete(True)
+        await query.message.edit_text("✅ Auto-Delete is now **ENABLED**.")
+        await query.answer("Enabled ✔")
+    elif query.data == "autodelete_off":
+        set_auto_delete(False)
+        await query.message.edit_text("❌ Auto-Delete is now **DISABLED**.")
+        await query.answer("Disabled ✖")
 
-@Client.on_message(filters.command("autodeleteoff") & filters.user(ADMINS))
-async def handle_autodelete_off(client, message):
-    set_auto_delete(False)
-    await message.reply_text("❌ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ɪꜱ ɴᴏᴡ ᴅɪꜱᴀʙʟᴇᴅ.")
-
+# ====== EXAMPLE BOT START =
 
 # Dont Remove Credit
 # Update Channel - TitanXBots
