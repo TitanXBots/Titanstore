@@ -10,6 +10,11 @@ from database.database import add_admin, remove_admin, list_admins, is_admin
 @Client.on_message(filters.command("addadmin") & filters.private)
 async def add_admin_cmd(client, message):
     """Add a user as admin (Owner only)."""
+
+    # Security check: Only owner can use
+    if message.from_user.id != OWNER_ID:
+        return await message.reply_text("⛔ Only the owner can add admins.")
+
     if len(message.command) < 2:
         return await message.reply_text("Usage: `/addadmin user_id`", quote=True)
 
@@ -24,6 +29,11 @@ async def add_admin_cmd(client, message):
 @Client.on_message(filters.command("removeadmin") & filters.private)
 async def remove_admin_cmd(client, message):
     """Remove a user from the admin list (Owner only)."""
+
+    # Security check: Only owner can remove admins
+    if message.from_user.id != OWNER_ID:
+        return await message.reply_text("⛔ Only the owner can remove admins.")
+
     if len(message.command) < 2:
         return await message.reply_text("Usage: `/removeadmin user_id`", quote=True)
 
@@ -42,6 +52,11 @@ async def remove_admin_cmd(client, message):
 @Client.on_message(filters.command("adminlist") & filters.private)
 async def admin_list_cmd(client, message):
     """View all admins (Accessible by Admins + Owner)."""
+
+    # Check if user is admin or owner
+    if message.from_user.id != OWNER_ID and not await is_admin(message.from_user.id):
+        return await message.reply_text("⛔ Only admins can view the admin list.")
+
     admins = await list_admins()
     if not admins:
         return await message.reply_text("📭 No admins found in the database.")
