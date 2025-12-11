@@ -442,7 +442,7 @@ def set_auto_delete(state: bool):
 
 # ====== COMMAND HANDLERS ======
 
-@Client.on_message(filters.command("autodelete") & filters.user(ADMINS))
+@Bot.on_message(filters.command("autodelete") & filters.user(ADMINS))
 async def auto_delete_menu(client, message):
     keyboard = InlineKeyboardMarkup(
         [
@@ -459,7 +459,7 @@ async def auto_delete_menu(client, message):
 
 # ====== CALLBACK HANDLER ======
 
-@Client.on_callback_query()
+@Bot.on_callback_query()
 async def callback_handler(client, query):
     if query.data == "autodelete_on":
         set_auto_delete(True)
