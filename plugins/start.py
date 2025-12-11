@@ -367,8 +367,7 @@ async def banned_list(client: Client, message: Message):
                 name = tg_user.first_name or "Unknown"
                 if tg_user.last_name:
                     name += f" {tg_user.last_name}"
-                if tg_user.username:
-                    name += f" (@{tg_user.username})"
+                if tg_user.username:                    name += f" (@{tg_user.username})"
             except:
                 name = "ᴜꜱᴇʀ ɴᴏᴛ ꜰᴏᴜɴᴅ (ʟᴇꜰᴛ ᴛᴇʟᴇɢʀᴀᴍ)"
 
@@ -390,27 +389,6 @@ async def banned_list(client: Client, message: Message):
 # ====== AUTO DELETE FUNCTION ======
 
 # ====== DELETE FILE FUNCTION =====
-
-# === Existing delete_files function ===
-
-import asyncio
-import logging
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
-
-# --- Configuration (replace with your actual values) ---
-ADMINS = [123456789] # Replace with your admin user ID(s)
-# Example: ADMINS = [12345, 67890]
-
-# Global state for auto-delete
-AUTO_DELETE_ENABLED = False # Initial state
-
-# Time to wait before deleting files
-FILE_AUTO_DELETE = 30 # seconds (example value)
-
-# Initialize your Pyrogram client (assuming 'app' or 'client' is your Client instance)
-# client = Client("my_bot", api_id=YOUR_API_ID, api_hash=YOUR_API_HASH, bot_token=YOUR_BOT_TOKEN)
-
 
 # === Existing delete_files function ===
 async def delete_files(messages: list[Message], client: Client, k: Message, command_payload: str = None):
@@ -502,11 +480,10 @@ async def autodelete_menu(client: Client, message: Message):
     """Sends a message with inline buttons to toggle auto-delete."""
     status = "enabled" if AUTO_DELETE_ENABLED else "disabled"
     await message.reply_text(
-        f"⚙️ Auto-delete is currently **{status.upper()}**.\n\n"
+        f"⚙️ Auto-delete is currently {status.upper()}.\n\n" # Removed **
         "Use the buttons below to change its state:",
-        reply_markup=get_autodelete_keyboard(),
-        # CHANGE THIS LINE:
-        parse_mode="None" # Changed from "markdown" to "MarkdownV2"
+        reply_markup=get_autodelete_keyboard()
+        # parse_mode="MarkdownV2" # REMOVED THIS LINE
     )
 
 # ====== NEW: CALLBACK QUERY HANDLER FOR AUTO-DELETE BUTTONS ======
@@ -529,11 +506,10 @@ async def handle_autodelete_button(client: Client, callback_query: CallbackQuery
     # Edit the original message to reflect the new state
     status = "enabled" if AUTO_DELETE_ENABLED else "disabled"
     await callback_query.edit_message_text(
-        f"⚙️ Auto-delete is currently **{status.upper()}**.\n\n"
+        f"⚙️ Auto-delete is currently {status.upper()}.\n\n" # Removed **
         "Use the buttons below to change its state:",
-        reply_markup=get_autodelete_keyboard(),
-        # CHANGE THIS LINE:
-        parse_mode="None" # Changed from "markdown" to "MarkdownV2"
+        reply_markup=get_autodelete_keyboard()
+        # parse_mode="MarkdownV2" # REMOVED THIS LINE
     )
     
     
