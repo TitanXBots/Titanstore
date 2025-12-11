@@ -2,14 +2,12 @@
 from pyrogram import Client, filters
 from config import OWNER_ID
 from database.database import add_admin, remove_admin, list_admins, is_admin
-from plugins.permissions import owner_only, admin_only  # ✅ Centralized permissions
 
 # -------------------------------
 # Owner-only Commands
 # -------------------------------
 
 @Client.on_message(filters.command("addadmin") & filters.private)
-@owner_only
 async def add_admin_cmd(client, message):
     """Add a user as admin (Owner only)."""
     if len(message.command) < 2:
@@ -24,7 +22,6 @@ async def add_admin_cmd(client, message):
 
 
 @Client.on_message(filters.command("removeadmin") & filters.private)
-@owner_only
 async def remove_admin_cmd(client, message):
     """Remove a user from the admin list (Owner only)."""
     if len(message.command) < 2:
@@ -43,7 +40,6 @@ async def remove_admin_cmd(client, message):
 # -------------------------------
 
 @Client.on_message(filters.command("adminlist") & filters.private)
-@admin_only
 async def admin_list_cmd(client, message):
     """View all admins (Accessible by Admins + Owner)."""
     admins = await list_admins()
