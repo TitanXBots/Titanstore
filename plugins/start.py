@@ -124,26 +124,24 @@ async def start_command(client: Client, message: Message):
         # Schedule the file deletion
         asyncio.create_task(delete_files(titanx_msgs, client, k, base64_string if 'base64_string' in locals() else None))
         
+        
         return
     else:
         reply_markup = InlineKeyboardMarkup(
     [
         [
-            InlineKeyboardButton("☆ ᴍᴏᴠɪᴇ ʀᴇQᴜᴇꜱᴛ ɢʀᴏᴜᴘ ☆", url="https://t.me/TitanMoviess")
-        ],
-        [
             InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
             InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
         ],
         [
-            InlineKeyboardButton("🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/TitanXBots"),
-            InlineKeyboardButton("🔍 ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ", url="https://t.me/TitanMattersSupport")
+            InlineKeyboardButton("⚙️  Sᴇᴛᴛɪɴɢs", callback_data="settings")
         ],
         [
-            InlineKeyboardButton("📖 ʜᴏᴡ ᴛᴏ ᴜꜱᴇ ʙᴏᴛ", url="https://t.me/TitanXBackup/33")
+            InlineKeyboardButton("🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/TitanXBots"),
+            InlineKeyboardButton("🔍 ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ", url="https://t.me/TitanMattersSupport")
         ]
     ]
-        )
+        )  
         await message.reply_photo(
             photo=START_PIC,
             caption=START_MSG.format(
