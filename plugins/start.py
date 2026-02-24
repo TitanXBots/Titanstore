@@ -24,12 +24,56 @@ titandeveloper = titanxofficials
 file_auto_delete = humanize.naturaldelta(titandeveloper)
 
 
-async def is_maintenance(client, user_id:int)->bool:
+# Command to show maintenance buttons
+@Bot.on_message(filters.command("maintenance") & filters.user(ADMINS))
+async def maintenance_buttons(client, message):
+    keyboard = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("⚙️ Maintenance ON", callback_data="maintenance_on"),
+                InlineKeyboardButton("❌ Maintenance OFF", callback_data="maintenance_off")
+            ]
+        ]
+    )
+    await message.reply_text(
+        "Select maintenance mode:",
+        reply_markup=keyboard
+    )
+
+# Callback handler for buttons
+@Bot.on_callback_query(filters.user(ADMINS))
+async def maintenance_callback(client, callback_query: CallbackQuery):
+    data = callback_query.data
+
+    if data == "maintenance_on":
+        if collection.find_one({"maintenance": "on"}):
+            await callback_query.answer("⚙️ Maintenance mode is already ON.", show_alert=True)
+        else:
+            collection.update_one({}, {"$set": {"maintenance": "on"}}, upsert=True)
+            await callback_query.answer("⚙️ Maintenance mode turned ON.", show_alert=True)
+
+    elif data == "maintenance_off":
+        if collection.find_one({"maintenance": "off"}):
+            await callback_query.answer("❌ Maintenance mode is already OFF.", show_alert=True)
+        else:
+            collection.update_one({}, {"$set": {"maintenance": "off"}}, upsert=True)
+            await callback_query.answer("❌ Maintenance mode turned OFF.", show_alert=True)
+
+    # Edit the original message to show the current status
+    status = collection.find_one({}).get("maintenance", "off")
+    await callback_query.message.edit_text(
+        f"Current maintenance status: **{status.upper()}**",
+        reply_markup=callback_query.message.reply_markup
+    )
+
+# Utility function to check maintenance mode for users
+async def is_maintenance(user_id: int) -> bool:
     check_msg = collection.find_one({"maintenance": "on"})
+    from config import ADMINS
     if check_msg and user_id not in ADMINS:
         return True
     return False
-
+#==================================#
 
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
