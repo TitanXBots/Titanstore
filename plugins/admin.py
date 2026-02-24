@@ -1,65 +1,177 @@
-#TitanXBots - Admin Commands
+# TitanXBots - Premium Admin Settings UI
+
 from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from config import OWNER_ID
 from database.database import add_admin, remove_admin, list_admins, is_admin
 
 # -------------------------------
-# Owner-only Commands
+# SETTINGS MENU ENTRY
 # -------------------------------
 
-@Client.on_message(filters.command("addadmin") & filters.private)
-async def add_admin_cmd(client, message):
-    """Add a user as admin (Owner only)."""
+@Client.on_message(filters.command("settings") & filters.private)
+async def settings_menu(client, message):
 
-    # Security check: Only owner can use
     if message.from_user.id != OWNER_ID:
-        return await message.reply_text("⛔ Only the owner can add admins.")
+        return await message.reply_text("⛔ Access Denied.")
 
-    if len(message.command) < 2:
-        return await message.reply_text("Usage: `/addadmin user_id`", quote=True)
+    buttons = InlineKeyboardMarkup([
+        [InlineKeyboardButton("👑 Admin Management", callback_data="admin_panel")]
+    ])
 
-    try:
-        user_id = int(message.command[1])
-        await add_admin(user_id)
-        await message.reply_text(f"✅ User `{user_id}` has been added as admin.")
-    except ValueError:
-        await message.reply_text("⚠️ Invalid user ID format.")
-
-
-@Client.on_message(filters.command("removeadmin") & filters.private)
-async def remove_admin_cmd(client, message):
-    """Remove a user from the admin list (Owner only)."""
-
-    # Security check: Only owner can remove admins
-    if message.from_user.id != OWNER_ID:
-        return await message.reply_text("⛔ Only the owner can remove admins.")
-
-    if len(message.command) < 2:
-        return await message.reply_text("Usage: `/removeadmin user_id`", quote=True)
-
-    try:
-        user_id = int(message.command[1])
-        await remove_admin(user_id)
-        await message.reply_text(f"❌ User `{user_id}` has been removed from admin list.")
-    except ValueError:
-        await message.reply_text("⚠️ Invalid user ID format.")
+    await message.reply_text(
+        "⚙️ <b>Settings Panel</b>\n\nManage your bot configuration.",
+        reply_markup=buttons
+    )
 
 
 # -------------------------------
-# Admin + Owner Commands
+# ADMIN PANEL
 # -------------------------------
 
-@Client.on_message(filters.command("adminlist") & filters.private)
-async def admin_list_cmd(client, message):
-    """View all admins (Accessible by Admins + Owner)."""
+@Client.on_callback_query(filters.regex("^admin_panel$"))
+async def admin_panel(client, query: CallbackQuery):
 
-    # Check if user is admin or owner
-    if message.from_user.id != OWNER_ID and not await is_admin(message.from_user.id):
-        return await message.reply_text("⛔ Only admins can view the admin list.")
+    buttons = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("➕ Add Admin", callback_data="add_admin"),
+            InlineKeyboardButton("➖ Remove Admin", callback_data="remove_admin")
+        ],
+        [
+            InlineKeyboardButton("📋 Admin List", callback_data="admin_list")
+        ],
+        [
+            InlineKeyboardButton("🔙 Back", callback_data="back_settings")
+        ]
+    ])
+
+    await query.message.edit_text(
+        "👑 <b>Admin Management Panel</b>\n\nSelect an option below:",
+        reply_markup=buttons
+    )
+
+
+# -------------------------------
+# ADMIN LIST
+# -------------------------------
+
+@Client.on_callback_query(filters.regex("^admin_list$"))
+async def admin_list_callback(client, query: CallbackQuery):
 
     admins = await list_admins()
+
     if not admins:
-        return await message.reply_text("📭 No admins found in the database.")
-    
-    text = "<b>👑 Current Admins:</b>\n" + "\n".join([f"• <code>{x}</code>" for x in admins])
-    await message.reply_text(text)
+        text = "📭 No admins found."
+    else:
+        text = "<b>👑 Current Admins:</b>\n\n"
+        text += "\n".join([f"• <code>{x}</code>" for x in admins])
+
+    buttons = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 Back", callback_data="admin_panel")]
+    ])
+
+    await query.message.edit_text(text, reply_markup=buttons)
+
+
+# -------------------------------
+# ADD ADMIN (Step 1: Ask ID)
+# -------------------------------
+
+@Client.on_callback_query(filters.regex("^add_admin$"))
+async def ask_add_admin(client, query: CallbackQuery):
+
+    await query.message.edit_text(
+        "➕ <b>Add Admin</b>\n\nSend the <code>User ID</code> to add as admin.\n\n🔙 Press /cancel to stop."
+    )
+
+    client.add_admin_mode = query.from_user.id
+
+
+@Client.on_message(filters.private & filters.text)
+async def receive_admin_id(client, message):
+
+    if getattr(client, "add_admin_mode", None) != message.from_user.id:
+        return
+
+    try:
+        user_id = int(message.text.strip())
+        await add_admin(user_id)
+        await message.reply_text(f"✅ User <code>{user_id}</code> added as admin.")
+        client.add_admin_mode = None
+    except:
+        await message.reply_text("⚠️ Invalid User ID.")
+
+
+# -------------------------------
+# REMOVE ADMIN (Step 1: Show List)
+# -------------------------------
+
+@Client.on_callback_query(filters.regex("^remove_admin$"))
+async def remove_admin_menu(client, query: CallbackQuery):
+
+    admins = await list_admins()
+
+    if not admins:
+        return await query.answer("No admins available.", show_alert=True)
+
+    buttons = [
+        [InlineKeyboardButton(f"❌ {x}", callback_data=f"confirm_remove_{x}")]
+        for x in admins
+    ]
+
+    buttons.append([InlineKeyboardButton("🔙 Back", callback_data="admin_panel")])
+
+    await query.message.edit_text(
+        "➖ <b>Select Admin to Remove:</b>",
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
+
+
+# -------------------------------
+# CONFIRM REMOVE
+# -------------------------------
+
+@Client.on_callback_query(filters.regex("^confirm_remove_"))
+async def confirm_remove(client, query: CallbackQuery):
+
+    user_id = query.data.split("_")[-1]
+
+    buttons = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✅ Confirm", callback_data=f"remove_yes_{user_id}"),
+            InlineKeyboardButton("❌ Cancel", callback_data="remove_admin")
+        ]
+    ])
+
+    await query.message.edit_text(
+        f"⚠️ Are you sure you want to remove admin <code>{user_id}</code>?",
+        reply_markup=buttons
+    )
+
+
+@Client.on_callback_query(filters.regex("^remove_yes_"))
+async def remove_admin_confirmed(client, query: CallbackQuery):
+
+    user_id = int(query.data.split("_")[-1])
+    await remove_admin(user_id)
+
+    await query.message.edit_text(
+        f"❌ Admin <code>{user_id}</code> removed successfully."
+    )
+
+
+# -------------------------------
+# BACK BUTTON
+# -------------------------------
+
+@Client.on_callback_query(filters.regex("^back_settings$"))
+async def back_settings(client, query: CallbackQuery):
+
+    buttons = InlineKeyboardMarkup([
+        [InlineKeyboardButton("👑 Admin Management", callback_data="admin_panel")]
+    ])
+
+    await query.message.edit_text(
+        "⚙️ <b>Settings Panel</b>\n\nManage your bot configuration.",
+        reply_markup=buttons
+    )
