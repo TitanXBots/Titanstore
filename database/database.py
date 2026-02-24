@@ -2,7 +2,6 @@
 
 import pymongo, os
 from config import DB_URI, DB_NAME
-from pymongo import MongoClient
 
 dbclient = pymongo.MongoClient(DB_URI)
 database = dbclient[DB_NAME]
@@ -10,25 +9,6 @@ database = dbclient[DB_NAME]
 user_data = database['users']
 banned_users = database['banned_users']
 admin_data = database['admins']  # <-- NEW COLLECTION
-
-settings_collection = db["BotSettings"]
-
-# ================= SETTINGS SYSTEM ================= #
-
-async def get_setting(name: str, default: bool = True):
-    data = settings_collection.find_one({"_id": name})
-    if data:
-        return data.get("value", default)
-    return default
-
-
-async def set_setting(name: str, value: bool):
-    settings_collection.update_one(
-        {"_id": name},
-        {"$set": {"value": value}},
-        upsert=True
-    )
-    return value
 
 # -------------------------------
 # User management
