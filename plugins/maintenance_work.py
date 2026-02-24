@@ -7,13 +7,6 @@ client = MongoClient(DB_URI)
 db = client[DB_NAME]
 collection = db["TelegramFiles"]
 
-async def convertmsg(msg: str) -> str:
-    words = msg.lower().split()
-    if len(words) > 1:
-        return " ".join(words[1:])
-    else:
-        return ""
-
 async def checkmsg(msg: str) -> bool:
     if msg == 'on':
         return True
@@ -22,41 +15,53 @@ async def checkmsg(msg: str) -> bool:
     else:
         return None
 
+# Command to show the maintenance buttons
 @Client.on_message(filters.command("maintenance") & filters.user(ADMINS))
-async def maintenance(client: Client, message: Message):
-    user_id = message.from_user.id
-    m = message.text
+async def maintenance_buttons(client: Client, message: Message):
+    keyboard = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("Maintenance ON", callback_data="maintenance_on"),
+                InlineKeyboardButton("Maintenance OFF", callback_data="maintenance_off")
+            ]
+        ]
+    )
+    await message.reply_text("Select Maintenance Mode:", reply_markup=keyboard)
 
-    if not message.text.split()[1:]:
-        await message.reply_text("Correct the command format. Usage: /maintenance [on/off]")
-        return
+# Callback handler for buttons
+@Client.on_callback_query(filters.user(ADMINS))
+async def maintenance_callback(client: Client, callback_query: CallbackQuery):
+    user_id = callback_query.from_user.id
+    data = callback_query.data
 
-    msg = await convertmsg(m)
-    status = await checkmsg(msg)
-
-    if status is True:
+    if data == "maintenance_on":
         check_msg = collection.find_one({"admin_id": user_id})
         if check_msg:
-            on_off = check_msg["maintenance"]
-            if on_off == 'on':
-                await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴏɴ.")
-            elif on_off == 'off':
+            if check_msg["maintenance"] == "on":
+                await callback_query.answer("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴏɴ.", show_alert=True)
+            else:
                 collection.update_one({"admin_id": user_id}, {"$set": {"maintenance": "on"}})
-                await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏɴ.")
+                await callback_query.answer("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏɴ.", show_alert=True)
         else:
             collection.insert_one({"admin_id": user_id, "maintenance": "on"})
-            await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏɴ (ɴᴇᴡ ᴇɴᴛʀʏ).")
-    elif status is False:
-        check_msg1 = collection.find_one({"admin_id": user_id})
-        if check_msg1:
-            on_off1 = check_msg1["maintenance"]
-            if on_off1 == 'off':
-                await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴏꜰꜰ.")
-            elif on_off1 == 'on':
+            await callback_query.answer("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏɴ (ɴᴇᴡ ᴇɴᴛʀʏ).", show_alert=True)
+
+    elif data == "maintenance_off":
+        check_msg = collection.find_one({"admin_id": user_id})
+        if check_msg:
+            if check_msg["maintenance"] == "off":
+                await callback_query.answer("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴏꜰꜰ.", show_alert=True)
+            else:
                 collection.update_one({"admin_id": user_id}, {"$set": {"maintenance": "off"}})
-                await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏꜰꜰ.")
+                await callback_query.answer("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏꜰꜰ.", show_alert=True)
         else:
             collection.insert_one({"admin_id": user_id, "maintenance": "off"})
-            await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏꜰꜰ (ɴᴇᴡ ᴇɴᴛʀʏ).")
-    else:
-        await message.reply_text("None")
+            await callback_query.answer("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏꜰꜰ (ɴᴇᴡ ᴇɴᴛʀʏ).", show_alert=True)
+
+    # Optionally, edit the original message to show current status
+    status = collection.find_one({"admin_id": user_id})["maintenance"]
+    await callback_query.message.edit_text(
+        f"Maintenance mode is now: **{status.upper()}**",
+        reply_markup=callback_query.message.reply_markup
+    )
+
