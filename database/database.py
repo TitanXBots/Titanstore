@@ -11,7 +11,6 @@ user_data = database['users']
 banned_users = database['banned_users']
 admin_data = database['admins']  # <-- NEW COLLECTION
 
-collection = db["TelegramFiles"]
 settings_collection = db["BotSettings"]
 
 # ================= SETTINGS SYSTEM ================= #
