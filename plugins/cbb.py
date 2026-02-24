@@ -46,28 +46,25 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
-    elif data == "start":
-        await query.message.edit_text(
-            text=START_MSG.format(first=query.from_user.first_name),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton("☆ ᴍᴏᴠɪᴇ ʀᴇQᴜᴇꜱᴛ ɢʀᴏᴜᴘ ☆", url="https://t.me/TitanMoviess")
-                    ],
-                    [
-                        InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
-                        InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
-                    ],
-                    [
-                        InlineKeyboardButton("🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/TitanXBots"),
-                        InlineKeyboardButton("🔍 ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ", url="https://t.me/TitanMattersSupport")
-                    ],
-                    [
-                        InlineKeyboardButton("ʜᴏᴡ ᴛᴏ ᴜꜱᴇ ʙᴏᴛ", url="https://t.me/TitanXBackup/33")
-                    ]
-                ]
-            )
+    elif data == "start":  
+        await query.message.edit_text(  
+            text=START_MSG.format(first=query.from_user.first_name),  
+            disable_web_page_preview=True,  
+            reply_markup=InlineKeyboardMarkup(  
+                [  
+                    [  
+                        InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),  
+                        InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")  
+                    ],  
+                    [  
+                        InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")  # <- New button added
+                    ],  
+                    [  
+                        InlineKeyboardButton("🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/TitanXBots"),  
+                        InlineKeyboardButton("🔍 ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ", url="https://t.me/TitanMattersSupport")  
+                    ]  
+                ]  
+            )  
         )
 
     elif data == "commands":
