@@ -17,7 +17,8 @@ client = MongoClient(DB_URI)
 db = client[DB_NAME]
 collection = db["TelegramFiles"]
 
-AUTO_DELETE_ENABLED = True  # Default state  
+auto_delete = await get_setting("auto_delete", True)
+if not auto_delete:
 
 titanxofficials = FILE_AUTO_DELETE
 titandeveloper = titanxofficials
