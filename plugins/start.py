@@ -24,11 +24,7 @@ titandeveloper = titanxofficials
 file_auto_delete = humanize.naturaldelta(titandeveloper)
 
 
-async def is_maintenance(client, user_id:int)->bool:
-    check_msg = collection.find_one({"maintenance": "on"})
-    if check_msg and user_id not in ADMINS:
-        return True
-    return False
+if await is_maintenance(user_id):
 
 
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
@@ -382,45 +378,40 @@ async def banned_list(client: Client, message: Message):
 
 # ====== AUTO DELETE FUNCTION ======
 async def delete_files(messages, client, k, command_payload=None):
-    """Deletes messages after FILE_AUTO_DELETE seconds if enabled."""
-    global AUTO_DELETE_ENABLED
 
-    if not AUTO_DELETE_ENABLED:
-        logging.info("Auto-delete is disabled. Skipping deletion.")
+    auto_delete = await get_setting("auto_delete", True)
+
+    if not auto_delete:
         return
 
     await asyncio.sleep(FILE_AUTO_DELETE)
 
-    # Delete all messages in list
     for msg in messages:
         try:
-            await client.delete_messages(chat_id=msg.chat.id, message_ids=[msg.id])
-            logging.info(f"Deleted message {msg.id} in chat {msg.chat.id}")
-        except Exception as e:
-            logging.error(f"Failed to delete message {msg.id}: {e}")
-
-    # Add “get file again” button if payload is present
-    keyboard = None
-    if command_payload:
-        try:
-            me = await client.get_me()
-            button_url = f"https://t.me/{me.username}?start={command_payload}"
-            keyboard = InlineKeyboardMarkup(
-                [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=button_url)]]
+            await client.delete_messages(
+                chat_id=msg.chat.id,
+                message_ids=[msg.id]
             )
-        except Exception as e:
-            logging.error(f"Failed to build 'get file' button: {e}")
+        except:
+            pass
 
-    # Edit the main message after deletion
-    try:
-        await k.edit_text(
-            "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴇꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ ✅\n"
-            "ɴᴏᴡ ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇",
-            reply_markup=keyboard,
+    keyboard = None
+
+    if command_payload:
+        me = await client.get_me()
+        button_url = f"https://t.me/{me.username}?start={command_payload}"
+
+        keyboard = InlineKeyboardMarkup(
+            [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=button_url)]]
         )
-        logging.info(f"Edited message {k.id} in chat {k.chat.id}")
-    except Exception as e:
-        logging.error(f"Error editing message after deletion: {e}")
+
+    await k.edit_text(
+        "ʏᴏᴜʀ ꜰɪʟᴇ ɪꜱ ᴅᴇʟᴇᴛᴇᴅ ✅\n\n"
+        "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ᴛᴏ ɢᴇᴛ ɪᴛ ᴀɢᴀɪɴ 👇",
+        reply_markup=keyboard
+    )
+    
+
 
 
 # ====== TOGGLE STATE ======
