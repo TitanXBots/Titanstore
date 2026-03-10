@@ -1,11 +1,13 @@
 import asyncio
 from bot import Bot
-from pyrogram import filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
-from config import OWNER_ID
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
+from config import *
 from database.database import ban_user, unban_user, is_banned, get_ban_reason, banned_users
 from database.database import is_admin
 from pyrogram.errors import PeerIdInvalid
+
+
 
 # SETTINGS COMMAND
 
