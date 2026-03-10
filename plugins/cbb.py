@@ -101,19 +101,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
-    elif data == "settings":
-        buttons = InlineKeyboardMarkup(
-            [
-                [InlineKeyboardButton("Enable Auto-Delete", callback_data="disclaimer")],
-                [InlineKeyboardButton("Disable Auto-Delete", callback_data="commands")],
-                [InlineKeyboardButton("🔙 Back", callback_data="start")]
-            ]
-        )
-        await query.message.edit_text(
-            "⚙️ ᴛʜɪꜱ ɪꜱ ᴛʜᴇ ꜱᴇᴛᴛɪɴɢꜱ ᴍᴇɴᴜ. ᴄʜᴏᴏꜱᴇ ᴀɴ ᴏᴘᴛɪᴏɴ:",
-            reply_markup=buttons
-        )
-    
     elif data == "close":
         await query.message.delete()
         try:
