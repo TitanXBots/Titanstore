@@ -49,6 +49,9 @@ async def ban_user(user_id: int, reason: str):
 
 async def unban_user(user_id: int):
     banned_users.delete_one({"_id": user_id})
+
+async def banned_users_list():
+    return list(banned_users.find())
     
 # -------------------------------
 # Admin Management
