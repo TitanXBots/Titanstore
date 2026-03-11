@@ -14,7 +14,8 @@ async def settings_command(client: Bot, message: Message):
 
     user_id = message.from_user.id
 
-    if not (user_id == OWNER_ID
+    # OWNER + ADMIN CHECK
+    if not (user_id == OWNER_ID or await is_admin(user_id)):
         return await message.reply("❌ Only admins can use this.")
 
     keyboard = InlineKeyboardMarkup([
