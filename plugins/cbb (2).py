@@ -17,12 +17,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
     user_id = query.from_user.id
 
-    await query.answer()
+    try:
+        await query.answer()
+    except:
+        pass
 
     # OWNER + ADMIN CHECK
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS
 
-
+    
 # -------------------------------
 # HELP
 # -------------------------------
