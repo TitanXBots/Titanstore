@@ -134,7 +134,7 @@ async def start_command(client: Client, message: Message):
             InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
         ],
         [
-            InlineKeyboardButton("⚙️  Sᴇᴛᴛɪɴɢs", callback_data="settings_main")
+            InlineKeyboardButton("⚙️  Sᴇᴛᴛɪɴɢs", callback_data="settings")
         ],
         [
             InlineKeyboardButton("🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/TitanXBots"),
