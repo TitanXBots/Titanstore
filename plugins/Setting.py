@@ -1,7 +1,7 @@
 from bot import Bot
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from config import OWNER_ID, ADMINS
+from config import *
 
 
 # -------------------------------
