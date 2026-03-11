@@ -4,92 +4,109 @@ from config import *
 from Script import COMMANDS_TXT, DISCLAIMER_TXT
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import add_user, del_user, full_userbase, present_user
-from database.database import is_admin, ban_user, unban_user, banned_users
+from database.database import ban_user, unban_user, banned_users_list
 
 import asyncio
 from pyrogram.errors import PeerIdInvalid
 from pyromod import listen
 
 
+
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
-
-    await query.answer()
 
     data = query.data
     user_id = query.from_user.id
 
+    await query.answer()
+
     # OWNER + ADMIN CHECK
-    is_admin_user = user_id == OWNER_ID or await is_admin(user_id)
+    is_admin_user = user_id == OWNER_ID or user_id in ADMINS
+
 
 # -------------------------------
 # HELP
 # -------------------------------
 
     if data == "help":
+
         await query.message.edit_text(
             text=HELP_TXT.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", user_id=OWNER_ID),
-                        InlineKeyboardButton("💬 ᴄᴏᴍᴍᴀɴᴅꜱ", callback_data="commands")
+                        InlineKeyboardButton("🧑‍💻 Contact Owner", user_id=OWNER_ID),
+                        InlineKeyboardButton("💬 Commands", callback_data="commands")
                     ],
                     [
-                        InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
-                        InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
+                        InlineKeyboardButton("⚓ Home", callback_data="start"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
                     ]
                 ]
             )
         )
+
 
 # -------------------------------
 # ABOUT
 # -------------------------------
 
     elif data == "about":
+
         await query.message.edit_text(
             text=ABOUT_TXT.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("📜 ᴅɪꜱᴄʟᴀɪᴍᴇʀ", callback_data="disclaimer"),
-                        InlineKeyboardButton("🔐 ꜱᴏᴜʀᴄᴇ ᴄᴏᴅᴇ", url="https://github.com/TitanXBots/FileStore-Bot")
+                        InlineKeyboardButton("📜 Disclaimer", callback_data="disclaimer"),
+                        InlineKeyboardButton(
+                            "🔐 Source Code",
+                            url="https://github.com/TitanXBots/FileStore-Bot"
+                        )
                     ],
                     [
-                        InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
-                        InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
+                        InlineKeyboardButton("⚓ Home", callback_data="start"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
                     ]
                 ]
             )
         )
 
+
 # -------------------------------
-# START
+# START PANEL
 # -------------------------------
 
     elif data == "start":
+
         await query.message.edit_text(
             text=START_MSG.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
-                        InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
+                        InlineKeyboardButton("🧠 Help", callback_data="help"),
+                        InlineKeyboardButton("🔰 About", callback_data="about")
                     ],
                     [
-                        InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")
+                        InlineKeyboardButton("⚙️ Settings", callback_data="settings")
                     ],
                     [
-                        InlineKeyboardButton("🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/TitanXBots"),
-                        InlineKeyboardButton("🔍 ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ", url="https://t.me/TitanMattersSupport")
+                        InlineKeyboardButton(
+                            "🤖 Update Channel",
+                            url="https://t.me/TitanXBots"
+                        ),
+                        InlineKeyboardButton(
+                            "🔍 Support Group",
+                            url="https://t.me/TitanMattersSupport"
+                        )
                     ]
                 ]
             )
         )
+
 
 # -------------------------------
 # SETTINGS PANEL
@@ -100,15 +117,16 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
-        btn = [
+        buttons = [
             [InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
             [InlineKeyboardButton("⚓ Home", callback_data="start")]
         ]
 
         await query.message.edit_text(
             "⚙️ **Bot Settings Panel**",
-            reply_markup=InlineKeyboardMarkup(btn)
+            reply_markup=InlineKeyboardMarkup(buttons)
         )
+
 
 # -------------------------------
 # BAN MENU
@@ -119,7 +137,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
-        btn = [
+        buttons = [
             [
                 InlineKeyboardButton("🚫 Ban User", callback_data="ban_user"),
                 InlineKeyboardButton("✅ Unban User", callback_data="unban_user")
@@ -134,8 +152,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         await query.message.edit_text(
             "🚫 **Ban Control Panel**",
-            reply_markup=InlineKeyboardMarkup(btn)
+            reply_markup=InlineKeyboardMarkup(buttons)
         )
+
 
 # -------------------------------
 # BAN USER
@@ -157,17 +176,20 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             parts = msg.text.split(maxsplit=1)
 
             if not parts[0].isdigit():
-                return await msg.reply("❌ Invalid user ID")
+                return await msg.reply_text("❌ Invalid user ID")
 
             uid = int(parts[0])
             reason = parts[1] if len(parts) > 1 else "No reason"
 
             await ban_user(uid, reason)
 
-            await msg.reply(f"✅ User `{uid}` banned\nReason: {reason}")
+            await msg.reply_text(
+                f"✅ User `{uid}` banned\nReason: {reason}"
+            )
 
         except asyncio.TimeoutError:
-            await query.message.reply("⏰ Time expired")
+            await query.message.reply_text("⏰ Time expired")
+
 
 # -------------------------------
 # UNBAN USER
@@ -185,16 +207,19 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             msg = await client.listen(query.message.chat.id, timeout=120)
 
             if not msg.text.isdigit():
-                return await msg.reply("❌ Invalid user ID")
+                return await msg.reply_text("❌ Invalid user ID")
 
             uid = int(msg.text)
 
             await unban_user(uid)
 
-            await msg.reply(f"✅ User `{uid}` unbanned")
+            await msg.reply_text(
+                f"✅ User `{uid}` unbanned"
+            )
 
         except asyncio.TimeoutError:
-            await query.message.reply("⏰ Time expired")
+            await query.message.reply_text("⏰ Time expired")
+
 
 # -------------------------------
 # BANNED LIST
@@ -209,21 +234,23 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         text = "🚫 **Banned Users**\n\n"
 
-        for user in users:
-
-            uid = user["_id"]
-            reason = user.get("reason", "No reason")
-
-            try:
-                user_obj = await client.get_users(uid)
-                name = user_obj.mention
-            except PeerIdInvalid:
-                name = f"`{uid}`"
-
-            text += f"• {name} — {reason}\n"
-
-        if len(users) == 0:
+        if not users:
             text += "No banned users."
+
+        else:
+
+            for user in users:
+
+                uid = user["_id"]
+                reason = user.get("reason", "No reason")
+
+                try:
+                    user_obj = await client.get_users(uid)
+                    name = user_obj.mention
+                except PeerIdInvalid:
+                    name = f"`{uid}`"
+
+                text += f"• {name} — {reason}\n"
 
         await query.message.edit_text(
             text,
@@ -232,43 +259,48 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
+
 # -------------------------------
 # COMMANDS
 # -------------------------------
 
     elif data == "commands":
+
         await query.message.edit_text(
             text=COMMANDS_TXT,
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
-                    [InlineKeyboardButton("🔙 ʙᴀᴄᴋ ᴛᴏ ʜᴇʟᴘ", callback_data="help")],
+                    [InlineKeyboardButton("🔙 Back to Help", callback_data="help")],
                     [
-                        InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
-                        InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
+                        InlineKeyboardButton("⚓ Home", callback_data="start"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
                     ]
                 ]
             )
         )
+
 
 # -------------------------------
 # DISCLAIMER
 # -------------------------------
 
     elif data == "disclaimer":
+
         await query.message.edit_text(
             text=DISCLAIMER_TXT,
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
-                    [InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")],
+                    [InlineKeyboardButton("🔰 About", callback_data="about")],
                     [
-                        InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
-                        InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
+                        InlineKeyboardButton("⚓ Home", callback_data="start"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
                     ]
                 ]
             )
         )
+
 
 # -------------------------------
 # CLOSE
