@@ -12,18 +12,23 @@ from database.database import is_admin
 @Bot.on_message(filters.command("settings") & filters.private)
 async def settings_command(client: Bot, message: Message):
 
+    if not message.from_user:
+        return
+
     user_id = message.from_user.id
 
     # OWNER + ADMIN CHECK
     if not (user_id == OWNER_ID or await is_admin(user_id)):
         return await message.reply("❌ Only admins can use this.")
 
-    keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
-        [InlineKeyboardButton("❌ Close", callback_data="close")]
-    ])
+    buttons = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
+            [InlineKeyboardButton("❌ Close", callback_data="close")]
+        ]
+    )
 
-    await message.reply(
+    await message.reply_text(
         "⚙️ **Bot Settings Panel**",
-        reply_markup=keyboard
+        reply_markup=buttons
     )
