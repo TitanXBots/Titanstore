@@ -11,7 +11,6 @@ from pyrogram.errors import PeerIdInvalid
 from pyromod import listen
 
 
-
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
 
@@ -166,7 +165,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return await query.answer("Admins only.", show_alert=True)
 
         await query.message.edit_text(
-            "Send **User ID and reason**\n\nExample:\n`123456789 spam`"
+            "Send **User ID and reason**\n\nExample:\n`123456789 spam`",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
+                    ]
+                ]
+            )
         )
 
         try:
@@ -200,7 +207,17 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
-        await query.message.edit_text("Send **User ID** to unban")
+        await query.message.edit_text(
+            "Send **User ID** to unban",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
+                    ]
+                ]
+            )
+        )
 
         try:
 
@@ -255,7 +272,12 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await query.message.edit_text(
             text,
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("⬅ Back", callback_data="ban_menu")]]
+                [
+                    [
+                        InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
+                    ]
+                ]
             )
         )
 
