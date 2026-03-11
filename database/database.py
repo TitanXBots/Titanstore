@@ -1,4 +1,4 @@
-#TitanXBots
+# TitanXBots Database Manager
 
 import pymongo
 from config import DB_URI, DB_NAME
@@ -6,40 +6,38 @@ from config import DB_URI, DB_NAME
 dbclient = pymongo.MongoClient(DB_URI)
 database = dbclient[DB_NAME]
 
-user_data = database['users']
-banned_users = database['banned_users']
-admin_data = database['admins']
+user_data = database["users"]
+banned_users = database["banned_users"]
+admin_data = database["admins"]
 
 
-# -------------------------------
+# --------------------------------
 # User Management
-# -------------------------------
+# --------------------------------
 
-async def present_user(user_id: int):
-    found = user_data.find_one({'_id': user_id})
-    return bool(found)
+async def present_user(user_id: int) -> bool:
+    return user_data.find_one({"_id": user_id}) is not None
 
 
 async def add_user(user_id: int):
     user_data.update_one(
-        {'_id': user_id},
-        {'$set': {'_id': user_id}},
+        {"_id": user_id},
+        {"$set": {"_id": user_id}},
         upsert=True
     )
 
 
 async def full_userbase():
-    users = user_data.find()
-    return [doc['_id'] for doc in users]
+    return [user["_id"] for user in user_data.find({}, {"_id": 1})]
 
 
 async def del_user(user_id: int):
-    user_data.delete_one({'_id': user_id})
+    user_data.delete_one({"_id": user_id})
 
 
-# -------------------------------
+# --------------------------------
 # Ban System
-# -------------------------------
+# --------------------------------
 
 async def is_banned(user_id: int) -> bool:
     return banned_users.find_one({"_id": user_id}) is not None
@@ -47,11 +45,12 @@ async def is_banned(user_id: int) -> bool:
 
 async def get_ban_reason(user_id: int) -> str:
     data = banned_users.find_one({"_id": user_id})
-    return data.get("reason", "No reason provided") if data else "No reason provided"
+    if data:
+        return data.get("reason", "No reason provided")
+    return None
 
 
-async def ban_user(user_id: int, reason: str):
-
+async def ban_user(user_id: int, reason: str = "No reason provided"):
     banned_users.update_one(
         {"_id": user_id},
         {"$set": {"reason": reason}},
@@ -64,32 +63,28 @@ async def unban_user(user_id: int):
 
 
 async def banned_users_list():
-    return list(banned_users.find())
+    return [user for user in banned_users.find()]
 
 
-# -------------------------------
+# --------------------------------
 # Admin Management
-# -------------------------------
+# --------------------------------
 
 async def add_admin(user_id: int):
-
     admin_data.update_one(
-        {'_id': user_id},
-        {'$set': {'_id': user_id}},
+        {"_id": user_id},
+        {"$set": {"_id": user_id}},
         upsert=True
     )
 
 
 async def remove_admin(user_id: int):
-
-    admin_data.delete_one({'_id': user_id})
+    admin_data.delete_one({"_id": user_id})
 
 
 async def list_admins():
-
-    return [doc['_id'] for doc in admin_data.find()]
+    return [admin["_id"] for admin in admin_data.find({}, {"_id": 1})]
 
 
 async def is_admin(user_id: int) -> bool:
-
-    return admin_data.find_one({'_id': user_id}) is not None
+    return admin_data.find_one({"_id": user_id}) is not None
