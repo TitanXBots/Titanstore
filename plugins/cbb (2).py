@@ -18,7 +18,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     data = query.data
     user_id = query.from_user.id
-    is_admin_user = user_id == OWNER_ID
+
+    # OWNER + ADMIN CHECK
+    is_admin_user = user_id == OWNER_ID or await is_admin(user_id)
 
 # -------------------------------
 # HELP
@@ -31,7 +33,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", user_id=5356695781),
+                        InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", user_id=OWNER_ID),
                         InlineKeyboardButton("💬 ᴄᴏᴍᴍᴀɴᴅꜱ", callback_data="commands")
                     ],
                     [
@@ -144,7 +146,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
-        await query.message.edit_text("Send **User ID and reason**\n\nExample:\n`123456789 spam`")
+        await query.message.edit_text(
+            "Send **User ID and reason**\n\nExample:\n`123456789 spam`"
+        )
 
         try:
 
@@ -201,7 +205,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
-        users = banned_users.find()
+        users = await banned_users_list()
 
         text = "🚫 **Banned Users**\n\n"
 
@@ -218,7 +222,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
             text += f"• {name} — {reason}\n"
 
-        if text == "🚫 **Banned Users**\n\n":
+        if len(users) == 0:
             text += "No banned users."
 
         await query.message.edit_text(
