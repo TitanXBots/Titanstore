@@ -18,7 +18,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     data = query.data
     user_id = query.from_user.id
-    is_admin_user = user_id == OWNER_ID or await is_admin(user_id)
+    is_admin_user = user_id == OWNER_ID
 
 # -------------------------------
 # HELP
