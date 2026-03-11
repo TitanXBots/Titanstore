@@ -5,11 +5,11 @@ from config import OWNER_ID
 from database.database import is_admin
 
 
--------------------------------
+###-------------------------------
 
 SETTINGS COMMAND
 
--------------------------------
+###-------------------------------
 
 @Bot.on_message(filters.command("settings") & filters.private)
 async def settings_command(client: Bot, message: Message):
