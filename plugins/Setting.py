@@ -1,8 +1,7 @@
 from bot import Bot
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from config import OWNER_ID
-from database.database import is_admin
+from config import OWNER_ID, ADMINS
 
 
 # -------------------------------
@@ -18,10 +17,10 @@ async def settings_command(client: Bot, message: Message):
     user_id = message.from_user.id
 
     # OWNER + ADMIN CHECK
-    if not (user_id == OWNER_ID or await is_admin(user_id)):
-        return await message.reply("❌ Only admins can use this.")
+    if user_id != OWNER_ID and user_id not in ADMINS:
+        return await message.reply_text("❌ Only admins can use this.")
 
-    buttons = InlineKeyboardMarkup(
+    keyboard = InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
             [InlineKeyboardButton("❌ Close", callback_data="close")]
@@ -30,5 +29,5 @@ async def settings_command(client: Bot, message: Message):
 
     await message.reply_text(
         "⚙️ **Bot Settings Panel**",
-        reply_markup=buttons
+        reply_markup=keyboard
     )
