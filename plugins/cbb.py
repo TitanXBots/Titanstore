@@ -1,10 +1,8 @@
-from pyrogram import Client
 from bot import Bot
 from config import *
 from Script import COMMANDS_TXT, DISCLAIMER_TXT
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import (
-    add_user, del_user, full_userbase, present_user,
     ban_user, unban_user, banned_users_list,
     add_admin, remove_admin, list_admins
 )
@@ -12,6 +10,10 @@ from database.database import (
 import asyncio
 from pyrogram.errors import PeerIdInvalid
 from pyromod import listen
+
+
+# active admin input tracker
+admin_listeners = {}
 
 
 @Bot.on_callback_query()
@@ -80,7 +82,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
 
 # -------------------------------
-# START PANEL
+# START
 # -------------------------------
 
     elif data == "start":
@@ -113,7 +115,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
 
 # -------------------------------
-# SETTINGS PANEL
+# SETTINGS
 # -------------------------------
 
     elif data == "settings":
@@ -171,26 +173,37 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return await query.answer("Owner only.", show_alert=True)
 
         await query.message.edit_text(
-            "Send **User ID** to add as admin",
+            "👤 Send **User ID** to add as admin",
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("⬅ Back", callback_data="admin_menu")]]
+                [[InlineKeyboardButton("⬅ Cancel", callback_data="cancel_admin_input")]]
             )
         )
 
         try:
 
+            admin_listeners[user_id] = True
+
             msg = await client.listen(query.message.chat.id, timeout=120)
 
+            if user_id not in admin_listeners:
+                return
+
             if not msg.text.isdigit():
+                admin_listeners.pop(user_id, None)
                 return await msg.reply_text("❌ Invalid user ID")
 
             uid = int(msg.text)
 
             await add_admin(uid)
 
+            admin_listeners.pop(user_id, None)
+
             await msg.reply_text(f"✅ `{uid}` added as admin")
 
         except asyncio.TimeoutError:
+
+            admin_listeners.pop(user_id, None)
+
             await query.message.reply_text("⏰ Time expired")
 
 
@@ -204,27 +217,66 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return await query.answer("Owner only.", show_alert=True)
 
         await query.message.edit_text(
-            "Send **User ID** to remove from admin",
+            "👤 Send **User ID** to remove admin",
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("⬅ Back", callback_data="admin_menu")]]
+                [[InlineKeyboardButton("⬅ Cancel", callback_data="cancel_admin_input")]]
             )
         )
 
         try:
 
+            admin_listeners[user_id] = True
+
             msg = await client.listen(query.message.chat.id, timeout=120)
 
+            if user_id not in admin_listeners:
+                return
+
             if not msg.text.isdigit():
+                admin_listeners.pop(user_id, None)
                 return await msg.reply_text("❌ Invalid user ID")
 
             uid = int(msg.text)
 
             await remove_admin(uid)
 
+            admin_listeners.pop(user_id, None)
+
             await msg.reply_text(f"❌ `{uid}` removed from admin")
 
         except asyncio.TimeoutError:
+
+            admin_listeners.pop(user_id, None)
+
             await query.message.reply_text("⏰ Time expired")
+
+
+# -------------------------------
+# CANCEL ADMIN INPUT
+# -------------------------------
+
+    elif data == "cancel_admin_input":
+
+        if user_id in admin_listeners:
+            admin_listeners.pop(user_id)
+
+        buttons = [
+            [
+                InlineKeyboardButton("➕ Add Admin", callback_data="add_admin_btn"),
+                InlineKeyboardButton("➖ Remove Admin", callback_data="remove_admin_btn")
+            ],
+            [
+                InlineKeyboardButton("📜 Admin List", callback_data="admin_list_btn")
+            ],
+            [
+                InlineKeyboardButton("⬅ Back", callback_data="settings")
+            ]
+        ]
+
+        await query.message.edit_text(
+            "👑 **Admin Control Panel**",
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
 
 
 # -------------------------------
@@ -282,126 +334,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await query.message.edit_text(
             "🚫 **Ban Control Panel**",
             reply_markup=InlineKeyboardMarkup(buttons)
-        )
-
-
-# -------------------------------
-# BAN USER
-# -------------------------------
-
-    elif data == "ban_user":
-
-        if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
-
-        await query.message.edit_text(
-            "Send **User ID and reason**\n\nExample:\n`123456789 spam`",
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                        InlineKeyboardButton("⚡ Close", callback_data="close")
-                    ]
-                ]
-            )
-        )
-
-        try:
-
-            msg = await client.listen(query.message.chat.id, timeout=120)
-
-            parts = msg.text.split(maxsplit=1)
-
-            if not parts[0].isdigit():
-                return await msg.reply_text("❌ Invalid user ID")
-
-            uid = int(parts[0])
-            reason = parts[1] if len(parts) > 1 else "No reason"
-
-            await ban_user(uid, reason)
-
-            await msg.reply_text(f"✅ User `{uid}` banned\nReason: {reason}")
-
-        except asyncio.TimeoutError:
-            await query.message.reply_text("⏰ Time expired")
-
-
-# -------------------------------
-# UNBAN USER
-# -------------------------------
-
-    elif data == "unban_user":
-
-        if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
-
-        await query.message.edit_text(
-            "Send **User ID** to unban",
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                        InlineKeyboardButton("⚡ Close", callback_data="close")
-                    ]
-                ]
-            )
-        )
-
-        try:
-
-            msg = await client.listen(query.message.chat.id, timeout=120)
-
-            if not msg.text.isdigit():
-                return await msg.reply_text("❌ Invalid user ID")
-
-            uid = int(msg.text)
-
-            await unban_user(uid)
-
-            await msg.reply_text(f"✅ User `{uid}` unbanned")
-
-        except asyncio.TimeoutError:
-            await query.message.reply_text("⏰ Time expired")
-
-
-# -------------------------------
-# BANNED LIST
-# -------------------------------
-
-    elif data == "banned_list":
-
-        users = await banned_users_list()
-
-        text = "🚫 **Banned Users**\n\n"
-
-        if not users:
-            text += "No banned users."
-
-        else:
-
-            for user in users:
-
-                uid = user["_id"]
-                reason = user.get("reason", "No reason")
-
-                try:
-                    user_obj = await client.get_users(uid)
-                    name = user_obj.mention
-                except PeerIdInvalid:
-                    name = f"`{uid}`"
-
-                text += f"• {name} — {reason}\n"
-
-        await query.message.edit_text(
-            text,
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                        InlineKeyboardButton("⚡ Close", callback_data="close")
-                    ]
-                ]
-            )
         )
 
 
