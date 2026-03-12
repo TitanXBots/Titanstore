@@ -2,9 +2,12 @@ from pyrogram import Client
 from bot import Bot
 from config import *
 from Script import COMMANDS_TXT, DISCLAIMER_TXT
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from database.database import add_user, del_user, full_userbase, present_user
-from database.database import ban_user, unban_user, banned_users_list
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from database.database import (
+    add_user, del_user, full_userbase, present_user,
+    ban_user, unban_user, banned_users_list,
+    add_admin, remove_admin, list_admins
+)
 
 import asyncio
 from pyrogram.errors import PeerIdInvalid
@@ -22,10 +25,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     except:
         pass
 
-    # OWNER + ADMIN CHECK
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS
 
-    
+
 # -------------------------------
 # HELP
 # -------------------------------
@@ -120,6 +122,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return await query.answer("Admins only.", show_alert=True)
 
         buttons = [
+            [InlineKeyboardButton("👑 Admin Menu", callback_data="admin_menu")],
             [InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
             [InlineKeyboardButton("⚓ Home", callback_data="start")]
         ]
@@ -127,6 +130,130 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await query.message.edit_text(
             "⚙️ **Bot Settings Panel**",
             reply_markup=InlineKeyboardMarkup(buttons)
+        )
+
+
+# -------------------------------
+# ADMIN MENU
+# -------------------------------
+
+    elif data == "admin_menu":
+
+        if user_id != OWNER_ID:
+            return await query.answer("Owner only.", show_alert=True)
+
+        buttons = [
+            [
+                InlineKeyboardButton("➕ Add Admin", callback_data="add_admin_btn"),
+                InlineKeyboardButton("➖ Remove Admin", callback_data="remove_admin_btn")
+            ],
+            [
+                InlineKeyboardButton("📜 Admin List", callback_data="admin_list_btn")
+            ],
+            [
+                InlineKeyboardButton("⬅ Back", callback_data="settings")
+            ]
+        ]
+
+        await query.message.edit_text(
+            "👑 **Admin Control Panel**",
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
+
+
+# -------------------------------
+# ADD ADMIN
+# -------------------------------
+
+    elif data == "add_admin_btn":
+
+        if user_id != OWNER_ID:
+            return await query.answer("Owner only.", show_alert=True)
+
+        await query.message.edit_text(
+            "Send **User ID** to add as admin",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("⬅ Back", callback_data="admin_menu")]]
+            )
+        )
+
+        try:
+
+            msg = await client.listen(query.message.chat.id, timeout=120)
+
+            if not msg.text.isdigit():
+                return await msg.reply_text("❌ Invalid user ID")
+
+            uid = int(msg.text)
+
+            await add_admin(uid)
+
+            await msg.reply_text(f"✅ `{uid}` added as admin")
+
+        except asyncio.TimeoutError:
+            await query.message.reply_text("⏰ Time expired")
+
+
+# -------------------------------
+# REMOVE ADMIN
+# -------------------------------
+
+    elif data == "remove_admin_btn":
+
+        if user_id != OWNER_ID:
+            return await query.answer("Owner only.", show_alert=True)
+
+        await query.message.edit_text(
+            "Send **User ID** to remove from admin",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("⬅ Back", callback_data="admin_menu")]]
+            )
+        )
+
+        try:
+
+            msg = await client.listen(query.message.chat.id, timeout=120)
+
+            if not msg.text.isdigit():
+                return await msg.reply_text("❌ Invalid user ID")
+
+            uid = int(msg.text)
+
+            await remove_admin(uid)
+
+            await msg.reply_text(f"❌ `{uid}` removed from admin")
+
+        except asyncio.TimeoutError:
+            await query.message.reply_text("⏰ Time expired")
+
+
+# -------------------------------
+# ADMIN LIST
+# -------------------------------
+
+    elif data == "admin_list_btn":
+
+        admins = await list_admins()
+
+        text = "👑 **Admin List**\n\n"
+
+        if not admins:
+            text += "No admins found."
+
+        else:
+            for admin in admins:
+                text += f"• `{admin}`\n"
+
+        await query.message.edit_text(
+            text,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("⬅ Back", callback_data="admin_menu"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
+                    ]
+                ]
+            )
         )
 
 
@@ -193,9 +320,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
             await ban_user(uid, reason)
 
-            await msg.reply_text(
-                f"✅ User `{uid}` banned\nReason: {reason}"
-            )
+            await msg.reply_text(f"✅ User `{uid}` banned\nReason: {reason}")
 
         except asyncio.TimeoutError:
             await query.message.reply_text("⏰ Time expired")
@@ -233,9 +358,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
             await unban_user(uid)
 
-            await msg.reply_text(
-                f"✅ User `{uid}` unbanned"
-            )
+            await msg.reply_text(f"✅ User `{uid}` unbanned")
 
         except asyncio.TimeoutError:
             await query.message.reply_text("⏰ Time expired")
@@ -246,9 +369,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 # -------------------------------
 
     elif data == "banned_list":
-
-        if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
 
         users = await banned_users_list()
 
