@@ -8,6 +8,8 @@ from database.database import ban_user, unban_user, banned_users_list
 from pyrogram.errors import PeerIdInvalid, MessageNotModified
 from pyromod import listen
 
+# Track cancel state per admin
+cancel_states = {}
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -149,36 +151,39 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
+        cancel_states[user_id] = False
+
         await safe_edit(
             "Send **User ID and reason**\n\nExample:\n`123456789 spam`",
-            [[
-                InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                InlineKeyboardButton("⚡ Close", callback_data="close")
-            ]]
+            [[InlineKeyboardButton("❌ Cancel", callback_data="cancel_process")]]
         )
 
-        try:
+        while True:
+
             msg = await client.listen(
                 chat_id=query.message.chat.id,
-                filters=filters.user(user_id),
-                timeout=60
+                filters=filters.user(user_id)
             )
-        except asyncio.TimeoutError:
-            return await query.message.reply_text("⏱ Time expired. Try again.")
 
-        parts = msg.text.split(maxsplit=1)
+            if cancel_states.get(user_id):
+                cancel_states[user_id] = False
+                return await msg.reply_text("❌ Ban process cancelled.")
 
-        if not parts[0].isdigit():
-            return await msg.reply_text("❌ Invalid user ID")
+            parts = msg.text.split(maxsplit=1)
 
-        uid = int(parts[0])
-        reason = parts[1] if len(parts) > 1 else "No reason"
+            if not parts[0].isdigit():
+                await msg.reply_text("❌ Invalid user ID")
+                continue
 
-        await ban_user(uid, reason)
+            uid = int(parts[0])
+            reason = parts[1] if len(parts) > 1 else "No reason"
 
-        await msg.reply_text(
-            f"✅ User `{uid}` banned\nReason: {reason}"
-        )
+            await ban_user(uid, reason)
+
+            await msg.reply_text(
+                f"✅ User `{uid}` banned\nReason: {reason}"
+            )
+            break
 
 # -------------------------------
 # UNBAN USER
@@ -189,31 +194,47 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
+        cancel_states[user_id] = False
+
         await safe_edit(
             "Send **User ID** to unban",
-            [[
-                InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                InlineKeyboardButton("⚡ Close", callback_data="close")
-            ]]
+            [[InlineKeyboardButton("❌ Cancel", callback_data="cancel_process")]]
         )
 
-        try:
+        while True:
+
             msg = await client.listen(
                 chat_id=query.message.chat.id,
-                filters=filters.user(user_id),
-                timeout=60
+                filters=filters.user(user_id)
             )
-        except asyncio.TimeoutError:
-            return await query.message.reply_text("⏱ Time expired. Try again.")
 
-        if not msg.text.isdigit():
-            return await msg.reply_text("❌ Invalid user ID")
+            if cancel_states.get(user_id):
+                cancel_states[user_id] = False
+                return await msg.reply_text("❌ Unban process cancelled.")
 
-        uid = int(msg.text)
+            if not msg.text.isdigit():
+                await msg.reply_text("❌ Invalid user ID")
+                continue
 
-        await unban_user(uid)
+            uid = int(msg.text)
 
-        await msg.reply_text(f"✅ User `{uid}` unbanned")
+            await unban_user(uid)
+
+            await msg.reply_text(f"✅ User `{uid}` unbanned")
+            break
+
+# -------------------------------
+# CANCEL BUTTON
+# -------------------------------
+
+    elif data == "cancel_process":
+
+        cancel_states[user_id] = True
+
+        await safe_edit(
+            "❌ Process cancelled.",
+            [[InlineKeyboardButton("⚓ Home", callback_data="start")]]
+        )
 
 # -------------------------------
 # BANNED LIST
@@ -247,10 +268,12 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         await safe_edit(
             text,
-            [[
-                InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                InlineKeyboardButton("⚡ Close", callback_data="close")
-            ]]
+            [
+                [
+                    InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                    InlineKeyboardButton("⚡ Close", callback_data="close")
+                ]
+            ]
         )
 
 # -------------------------------
