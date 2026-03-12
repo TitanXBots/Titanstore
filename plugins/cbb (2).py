@@ -3,11 +3,11 @@ from bot import Bot
 from config import *
 from Script import COMMANDS_TXT, DISCLAIMER_TXT
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from database.database import add_user, del_user, full_userbase, present_user
 from database.database import ban_user, unban_user, banned_users_list
 import asyncio
 from pyrogram.errors import PeerIdInvalid
 from pyromod import listen
+
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -22,6 +22,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     except:
         pass
 
+    # Safe edit helper
     async def safe_edit(text, buttons=None, disable_preview=True):
         try:
             await query.message.edit_text(
@@ -30,7 +31,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 reply_markup=InlineKeyboardMarkup(buttons) if buttons else None
             )
         except:
-            # Message might be invalid; send as new message instead
+            # fallback: send new message if editing fails
             await client.send_message(
                 chat_id=query.message.chat.id,
                 text=text,
@@ -60,7 +61,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
     # -------------------------------
-    # HELP
+    # HELP PANEL
     # -------------------------------
     elif data == "help":
         await safe_edit(
@@ -78,7 +79,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
     # -------------------------------
-    # ABOUT
+    # ABOUT PANEL
     # -------------------------------
     elif data == "about":
         await safe_edit(
@@ -100,7 +101,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------------
     elif data == "settings":
         if not is_admin_user:
-            # Non-admin view-only panel
+            # View-only panel for non-admins
             await safe_edit(
                 text=(
                     "⚙️ **Settings Panel (View Only)**\n\n"
@@ -112,7 +113,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
             return
 
-        # Admin panel
         await safe_edit(
             text="⚙️ **Bot Settings Panel**",
             buttons=[
@@ -179,6 +179,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reason = parts[1] if len(parts) > 1 else "No reason"
             await ban_user(uid, reason)
 
+            # Send confirmation as new message
             await client.send_message(chat_id=msg.chat.id, text=f"✅ User `{uid}` banned\nReason: {reason}")
         except asyncio.TimeoutError:
             await client.send_message(chat_id=query.message.chat.id, text="⏰ Time expired")
@@ -211,6 +212,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
             uid = int(msg.text)
             await unban_user(uid)
+
+            # Send confirmation as new message
             await client.send_message(chat_id=msg.chat.id, text=f"✅ User `{uid}` unbanned")
         except asyncio.TimeoutError:
             await client.send_message(chat_id=query.message.chat.id, text="⏰ Time expired")
