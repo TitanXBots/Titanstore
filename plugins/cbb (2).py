@@ -4,16 +4,21 @@ from config import *
 from Script import COMMANDS_TXT, DISCLAIMER_TXT
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import ban_user, unban_user, banned_users_list
-import asyncio
 from pyrogram.errors import PeerIdInvalid
-from pyromod import listen
 
+# -------------------------------
+# In-memory user state for input
+# -------------------------------
+user_states = {}  # key: chat_id, value: {"action": "ban"/"unban"}
 
+# -------------------------------
+# CALLBACK QUERY HANDLER
+# -------------------------------
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
-
     data = query.data
     user_id = query.from_user.id
+    chat_id = query.message.chat.id
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS
 
     # Always answer callback to avoid "loading" state
@@ -31,9 +36,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 reply_markup=InlineKeyboardMarkup(buttons) if buttons else None
             )
         except:
-            # fallback: send new message if editing fails
             await client.send_message(
-                chat_id=query.message.chat.id,
+                chat_id=chat_id,
                 text=text,
                 disable_web_page_preview=disable_preview,
                 reply_markup=InlineKeyboardMarkup(buttons) if buttons else None
@@ -101,7 +105,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------------
     elif data == "settings":
         if not is_admin_user:
-            # View-only panel for non-admins
             await safe_edit(
                 text=(
                     "⚙️ **Settings Panel (View Only)**\n\n"
@@ -159,6 +162,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
             return
 
+        user_states[chat_id] = {"action": "ban"}  # set state
         await safe_edit(
             text="Send **User ID and reason**\n\nExample:\n`123456789 spam`",
             buttons=[
@@ -168,21 +172,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 ]
             ]
         )
-
-        try:
-            msg = await client.listen(query.message.chat.id, timeout=120)
-            parts = msg.text.split(maxsplit=1)
-            if not parts[0].isdigit():
-                return await client.send_message(chat_id=msg.chat.id, text="❌ Invalid user ID")
-
-            uid = int(parts[0])
-            reason = parts[1] if len(parts) > 1 else "No reason"
-            await ban_user(uid, reason)
-
-            # Send confirmation as new message
-            await client.send_message(chat_id=msg.chat.id, text=f"✅ User `{uid}` banned\nReason: {reason}")
-        except asyncio.TimeoutError:
-            await client.send_message(chat_id=query.message.chat.id, text="⏰ Time expired")
 
     # -------------------------------
     # UNBAN USER
@@ -195,6 +184,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
             return
 
+        user_states[chat_id] = {"action": "unban"}  # set state
         await safe_edit(
             text="Send **User ID** to unban",
             buttons=[
@@ -204,19 +194,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 ]
             ]
         )
-
-        try:
-            msg = await client.listen(query.message.chat.id, timeout=120)
-            if not msg.text.isdigit():
-                return await client.send_message(chat_id=msg.chat.id, text="❌ Invalid user ID")
-
-            uid = int(msg.text)
-            await unban_user(uid)
-
-            # Send confirmation as new message
-            await client.send_message(chat_id=msg.chat.id, text=f"✅ User `{uid}` unbanned")
-        except asyncio.TimeoutError:
-            await client.send_message(chat_id=query.message.chat.id, text="⏰ Time expired")
 
     # -------------------------------
     # BANNED LIST
@@ -289,3 +266,35 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             await query.message.delete()
         except:
             pass
+
+# -------------------------------
+# HANDLE USER MESSAGES FOR BAN/UNBAN
+# -------------------------------
+@Bot.on_message(filters.private)
+async def handle_state_messages(client, message: Message):
+    chat_id = message.chat.id
+    if chat_id not in user_states:
+        return
+
+    state = user_states[chat_id]["action"]
+
+    if state == "ban":
+        parts = message.text.split(maxsplit=1)
+        if not parts[0].isdigit():
+            await message.reply_text("❌ Invalid user ID")
+        else:
+            uid = int(parts[0])
+            reason = parts[1] if len(parts) > 1 else "No reason"
+            await ban_user(uid, reason)
+            await message.reply_text(f"✅ User `{uid}` banned\nReason: {reason}")
+
+    elif state == "unban":
+        if not message.text.isdigit():
+            await message.reply_text("❌ Invalid user ID")
+        else:
+            uid = int(message.text)
+            await unban_user(uid)
+            await message.reply_text(f"✅ User `{uid}` unbanned")
+
+    # Clear state after processing
+    user_states.pop(chat_id, None)
