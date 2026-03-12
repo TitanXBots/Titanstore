@@ -6,6 +6,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQ
 from database.database import ban_user, unban_user, banned_users_list
 from pyromod import listen
 from pyrogram.errors import PeerIdInvalid
+import asyncio
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
