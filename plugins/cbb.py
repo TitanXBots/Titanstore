@@ -4,24 +4,27 @@ from config import *
 from Script import COMMANDS_TXT, DISCLAIMER_TXT
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import ban_user, unban_user, banned_users_list
+from pyromod import listen
+from pyrogram.errors import PeerIdInvalid
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
-    data = query.data  
-    user_id = query.from_user.id  
 
-    try:  
-        await query.answer()  
-    except:  
-        pass  
+    data = query.data
+    user_id = query.from_user.id
 
-    # OWNER + ADMIN CHECK  
+    try:
+        await query.answer()
+    except:
+        pass
+
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS
 
-    # -------------------------------
-    # HELP
-    # -------------------------------
-    if data == "help":  
+# -------------------------------
+# HELP
+# -------------------------------
+
+    if data == "help":
         await query.message.edit_text(
             text=HELP_TXT.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
@@ -33,25 +36,28 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # -------------------------------
-    # ABOUT
-    # -------------------------------
-    elif data == "about":  
+# -------------------------------
+# ABOUT
+# -------------------------------
+
+    elif data == "about":
         await query.message.edit_text(
             text=ABOUT_TXT.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("📜 Disclaimer", callback_data="disclaimer"),
-                 InlineKeyboardButton("🔐 Source Code", url="https://github.com/TitanXBots/FileStore-Bot")],
+                 InlineKeyboardButton("🔐 Source Code",
+                 url="https://github.com/TitanXBots/FileStore-Bot")],
                 [InlineKeyboardButton("⚓ Home", callback_data="start"),
                  InlineKeyboardButton("⚡ Close", callback_data="close")]
             ])
         )
 
-    # -------------------------------
-    # START PANEL
-    # -------------------------------
-    elif data == "start":  
+# -------------------------------
+# START
+# -------------------------------
+
+    elif data == "start":
         await query.message.edit_text(
             text=START_MSG.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
@@ -64,92 +70,145 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # -------------------------------
-    # SETTINGS PANEL
-    # -------------------------------
-    elif data == "settings":  
-        if not is_admin_user:  
-            return await query.answer("Admins only.", show_alert=True)
+# -------------------------------
+# SETTINGS
+# -------------------------------
 
-        buttons = [
-            [InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
-            [InlineKeyboardButton("⚓ Home", callback_data="start")]
-        ]
-        await query.message.edit_text("⚙️ **Bot Settings Panel**", reply_markup=InlineKeyboardMarkup(buttons))
+    elif data == "settings":
 
-    # -------------------------------
-    # BAN MENU
-    # -------------------------------
-    elif data == "ban_menu":  
-        if not is_admin_user:  
-            return await query.answer("Admins only.", show_alert=True)
-
-        buttons = [
-            [InlineKeyboardButton("🚫 Ban User", callback_data="ban_user"),
-             InlineKeyboardButton("✅ Unban User", callback_data="unban_user")],
-            [InlineKeyboardButton("📋 Banned List", callback_data="banned_list")],
-            [InlineKeyboardButton("⬅ Back", callback_data="settings")]
-        ]
-        await query.message.edit_text("🚫 **Ban Control Panel**", reply_markup=InlineKeyboardMarkup(buttons))
-
-    # -------------------------------
-    # BAN USER (direct action removed listen)
-    # -------------------------------
-    elif data == "ban_user":  
-        if not is_admin_user:  
+        if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
         await query.message.edit_text(
-            "🚫 To ban a user, send:\n`/ban <user_id> <reason>`\nExample:\n`/ban 123456789 spam`",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                                                InlineKeyboardButton("⚡ Close", callback_data="close")]])
+            "⚙️ **Bot Settings Panel**",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
+                [InlineKeyboardButton("⚓ Home", callback_data="start")]
+            ])
         )
 
-    # -------------------------------
-    # UNBAN USER (direct action removed listen)
-    # -------------------------------
-    elif data == "unban_user":  
-        if not is_admin_user:  
+# -------------------------------
+# BAN MENU
+# -------------------------------
+
+    elif data == "ban_menu":
+
+        if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
         await query.message.edit_text(
-            "✅ To unban a user, send:\n`/unban <user_id>`",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                                                InlineKeyboardButton("⚡ Close", callback_data="close")]])
+            "🚫 **Ban Control Panel**",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🚫 Ban User", callback_data="ban_user"),
+                 InlineKeyboardButton("✅ Unban User", callback_data="unban_user")],
+                [InlineKeyboardButton("📋 Banned List", callback_data="banned_list")],
+                [InlineKeyboardButton("⬅ Back", callback_data="settings")]
+            ])
         )
 
-    # -------------------------------
-    # BANNED LIST
-    # -------------------------------
-    elif data == "banned_list":  
-        if not is_admin_user:  
+# -------------------------------
+# BAN USER
+# -------------------------------
+
+    elif data == "ban_user":
+
+        if not is_admin_user:
+            return await query.answer("Admins only.", show_alert=True)
+
+        await query.message.edit_text(
+            "Send **User ID and reason**\n\nExample:\n`123456789 spam`",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                 InlineKeyboardButton("⚡ Close", callback_data="close")]
+            ])
+        )
+
+        msg = await client.listen(query.message.chat.id)
+
+        parts = msg.text.split(maxsplit=1)
+
+        if not parts[0].isdigit():
+            return await msg.reply_text("❌ Invalid user ID")
+
+        uid = int(parts[0])
+        reason = parts[1] if len(parts) > 1 else "No reason"
+
+        await ban_user(uid, reason)
+
+        await msg.reply_text(f"✅ User `{uid}` banned\nReason: {reason}")
+
+# -------------------------------
+# UNBAN USER
+# -------------------------------
+
+    elif data == "unban_user":
+
+        if not is_admin_user:
+            return await query.answer("Admins only.", show_alert=True)
+
+        await query.message.edit_text(
+            "Send **User ID** to unban",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                 InlineKeyboardButton("⚡ Close", callback_data="close")]
+            ])
+        )
+
+        msg = await client.listen(query.message.chat.id)
+
+        if not msg.text.isdigit():
+            return await msg.reply_text("❌ Invalid user ID")
+
+        uid = int(msg.text)
+
+        await unban_user(uid)
+
+        await msg.reply_text(f"✅ User `{uid}` unbanned")
+
+# -------------------------------
+# BANNED LIST
+# -------------------------------
+
+    elif data == "banned_list":
+
+        if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
         users = await banned_users_list()
-        text = "🚫 **Banned Users**\n\n" or "No banned users."
-        if users:
-            text = "🚫 **Banned Users**\n\n"
+
+        text = "🚫 **Banned Users**\n\n"
+
+        if not users:
+            text += "No banned users."
+
+        else:
             for user in users:
+
                 uid = user["_id"]
                 reason = user.get("reason", "No reason")
+
                 try:
                     user_obj = await client.get_users(uid)
                     name = user_obj.mention
-                except:
+                except PeerIdInvalid:
                     name = f"`{uid}`"
+
                 text += f"• {name} — {reason}\n"
-        else:
-            text = "No banned users."
 
-        await query.message.edit_text(text, reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-             InlineKeyboardButton("⚡ Close", callback_data="close")]
-        ]))
+        await query.message.edit_text(
+            text,
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                 InlineKeyboardButton("⚡ Close", callback_data="close")]
+            ])
+        )
 
-    # -------------------------------
-    # COMMANDS
-    # -------------------------------
-    elif data == "commands":  
+# -------------------------------
+# COMMANDS
+# -------------------------------
+
+    elif data == "commands":
+
         await query.message.edit_text(
             text=COMMANDS_TXT,
             disable_web_page_preview=True,
@@ -160,10 +219,12 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # -------------------------------
-    # DISCLAIMER
-    # -------------------------------
-    elif data == "disclaimer":  
+# -------------------------------
+# DISCLAIMER
+# -------------------------------
+
+    elif data == "disclaimer":
+
         await query.message.edit_text(
             text=DISCLAIMER_TXT,
             disable_web_page_preview=True,
@@ -174,8 +235,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # -------------------------------
-    # CLOSE
-    # -------------------------------
-    elif data == "close":  
+# -------------------------------
+# CLOSE
+# -------------------------------
+
+    elif data == "close":
         await query.message.delete()
