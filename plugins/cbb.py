@@ -8,6 +8,9 @@ from database.database import ban_user, unban_user, banned_users_list
 from pyrogram.errors import PeerIdInvalid, MessageNotModified
 from pyromod import listen
 
+# store active listeners
+active_listeners = {}
+
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -22,6 +25,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS
 
+    # safe edit function
     async def safe_edit(text, buttons):
         try:
             await query.message.edit_text(
@@ -81,6 +85,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     elif data == "start":
 
+        active_listeners.pop(user_id, None)
+
         await safe_edit(
             START_MSG.format(first=query.from_user.first_name),
             [
@@ -104,6 +110,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     elif data == "settings":
 
+        active_listeners.pop(user_id, None)
+
         if not is_admin_user:
             return await query.answer("Admins only", show_alert=True)
 
@@ -120,6 +128,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 # -------------------------------
 
     elif data == "ban_menu":
+
+        active_listeners.pop(user_id, None)
 
         if not is_admin_user:
             return await query.answer("Admins only", show_alert=True)
@@ -161,7 +171,12 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         async def wait_ban():
 
+            active_listeners[user_id] = True
+
             msg = await client.listen(query.message.chat.id)
+
+            if user_id not in active_listeners:
+                return
 
             parts = msg.text.split(maxsplit=1)
 
@@ -174,6 +189,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             await ban_user(uid, reason)
 
             await msg.reply_text(f"✅ User `{uid}` banned\nReason: {reason}")
+
+            active_listeners.pop(user_id, None)
 
         asyncio.create_task(wait_ban())
 
@@ -198,7 +215,12 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         async def wait_unban():
 
+            active_listeners[user_id] = True
+
             msg = await client.listen(query.message.chat.id)
+
+            if user_id not in active_listeners:
+                return
 
             if not msg.text.isdigit():
                 return await msg.reply_text("❌ Invalid user ID")
@@ -209,13 +231,17 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
             await msg.reply_text(f"✅ User `{uid}` unbanned")
 
+            active_listeners.pop(user_id, None)
+
         asyncio.create_task(wait_unban())
 
 # -------------------------------
-# BANNED USERS
+# BANNED LIST
 # -------------------------------
 
     elif data == "banned_list":
+
+        active_listeners.pop(user_id, None)
 
         if not is_admin_user:
             return await query.answer("Admins only", show_alert=True)
@@ -290,6 +316,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 # -------------------------------
 
     elif data == "close":
+
+        active_listeners.pop(user_id, None)
 
         try:
             await query.message.delete()
