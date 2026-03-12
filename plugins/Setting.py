@@ -14,7 +14,7 @@ async def settings_command(client: Bot, message: Message):
 
     # OWNER + ADMIN CHECK
     if user_id != OWNER_ID and user_id not in ADMINS:
-        await message.reply_text("❌ Only admins can use this.")
+        await client.send_message(chat_id=user_id, text="❌ Only admins can use this.")
         return
 
     keyboard = InlineKeyboardMarkup(
