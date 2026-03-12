@@ -195,33 +195,38 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 # UNBAN USER
 # -------------------------------
 
-    elif data == "unban_user":
+# -------------------------------
+# UNBAN USER
+# -------------------------------
 
-        if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
+elif data == "unban_user":
 
-        await query.message.edit_text(
-            "Send **User ID** to unban",
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [InlineKeyboardButton("⬅ Back", callback_data="ban_menu")]
-                ]
-            )
+    if not is_admin_user:
+        return await query.answer("Admins only.", show_alert=True)
+
+    # First, edit the message with instructions and Back button
+    await query.message.edit_text(
+        "Send **User ID** to unban",
+        reply_markup=InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("⬅ Back", callback_data="ban_menu")]
+            ]
         )
+    )
 
-        try:
-            msg = await client.listen(query.message.chat.id, timeout=120)
+    # Wait for user input in chat
+    try:
+        msg = await client.listen(query.message.chat.id, timeout=120)
 
-            if not msg.text.isdigit():
-                return await msg.reply_text("❌ Invalid user ID")
+        if not msg.text.isdigit():
+            return await msg.reply_text("❌ Invalid user ID")
 
-            uid = int(msg.text)
-            await unban_user(uid)
-            await msg.reply_text(f"✅ User `{uid}` unbanned")
+        uid = int(msg.text)
+        await unban_user(uid)
+        await msg.reply_text(f"✅ User `{uid}` unbanned")
 
-        except asyncio.TimeoutError:
-            await query.message.reply_text("⏰ Time expired")
-
+    except asyncio.TimeoutError:
+        await query.message.reply_text("⏰ Time expired")
 
 # -------------------------------
 # BANNED LIST
