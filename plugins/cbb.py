@@ -110,19 +110,24 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 # BAN USER
 # -------------------------------
 
-    elif data == "ban_user":
+# -------------------------------
+# BAN USER
+# -------------------------------
 
-        if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
+elif data == "ban_user":
 
-        await query.message.edit_text(
-            "Send **User ID and reason**\n\nExample:\n`123456789 spam`",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
-            ])
-        )
+    if not is_admin_user:
+        return await query.answer("Admins only.", show_alert=True)
 
+    await query.message.edit_text(
+        "Send **User ID and reason**\n\nExample:\n`123456789 spam`",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+             InlineKeyboardButton("⚡ Close", callback_data="close")]
+        ])
+    )
+
+    async def wait_ban():
         msg = await client.listen(query.message.chat.id)
 
         parts = msg.text.split(maxsplit=1)
@@ -137,23 +142,27 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         await msg.reply_text(f"✅ User `{uid}` banned\nReason: {reason}")
 
+    asyncio.create_task(wait_ban())
+
+
 # -------------------------------
 # UNBAN USER
 # -------------------------------
 
-    elif data == "unban_user":
+elif data == "unban_user":
 
-        if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
+    if not is_admin_user:
+        return await query.answer("Admins only.", show_alert=True)
 
-        await query.message.edit_text(
-            "Send **User ID** to unban",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
-            ])
-        )
+    await query.message.edit_text(
+        "Send **User ID** to unban",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+             InlineKeyboardButton("⚡ Close", callback_data="close")]
+        ])
+    )
 
+    async def wait_unban():
         msg = await client.listen(query.message.chat.id)
 
         if not msg.text.isdigit():
@@ -165,6 +174,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         await msg.reply_text(f"✅ User `{uid}` unbanned")
 
+    asyncio.create_task(wait_unban())
+    
 # -------------------------------
 # BANNED LIST
 # -------------------------------
