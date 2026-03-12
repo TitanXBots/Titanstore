@@ -2,7 +2,7 @@ import asyncio
 from pyrogram import filters
 from bot import Bot
 from config import *
-from Script import COMMANDS_TXT, DISCLAIMER_TXT, START_MSG, HELP_TXT, ABOUT_TXT
+from Script import COMMANDS_TXT, DISCLAIMER_TXT
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import ban_user, unban_user, banned_users_list
 from pyrogram.errors import PeerIdInvalid, MessageNotModified
