@@ -1,5 +1,5 @@
 import asyncio
-from pyrogram import Client
+from pyrogram import Client, filters
 from bot import Bot
 from config import *
 from Script import COMMANDS_TXT, DISCLAIMER_TXT
