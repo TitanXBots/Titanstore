@@ -1,12 +1,13 @@
+import asyncio
 from pyrogram import Client
 from bot import Bot
 from config import *
 from Script import COMMANDS_TXT, DISCLAIMER_TXT
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import ban_user, unban_user, banned_users_list
+from pyrogram.errors import PeerIdInvalid, MessageNotModified
 from pyromod import listen
-from pyrogram.errors import PeerIdInvalid
-import asyncio
+
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -15,26 +16,40 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     user_id = query.from_user.id
 
     try:
-        await query.answer()
+        await query.answer(cache_time=1)
     except:
         pass
 
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS
+
+    async def safe_edit(text, buttons):
+        try:
+            await query.message.edit_text(
+                text,
+                disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup(buttons)
+            )
+        except MessageNotModified:
+            pass
 
 # -------------------------------
 # HELP
 # -------------------------------
 
     if data == "help":
-        await query.message.edit_text(
-            text=HELP_TXT.format(first=query.from_user.first_name),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🧑‍💻 Contact Owner", user_id=OWNER_ID),
-                 InlineKeyboardButton("💬 Commands", callback_data="commands")],
-                [InlineKeyboardButton("⚓ Home", callback_data="start"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
-            ])
+
+        await safe_edit(
+            HELP_TXT.format(first=query.from_user.first_name),
+            [
+                [
+                    InlineKeyboardButton("🧑‍💻 Contact Owner", user_id=OWNER_ID),
+                    InlineKeyboardButton("💬 Commands", callback_data="commands")
+                ],
+                [
+                    InlineKeyboardButton("⚓ Home", callback_data="start"),
+                    InlineKeyboardButton("⚡ Close", callback_data="close")
+                ]
+            ]
         )
 
 # -------------------------------
@@ -42,16 +57,22 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 # -------------------------------
 
     elif data == "about":
-        await query.message.edit_text(
-            text=ABOUT_TXT.format(first=query.from_user.first_name),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📜 Disclaimer", callback_data="disclaimer"),
-                 InlineKeyboardButton("🔐 Source Code",
-                 url="https://github.com/TitanXBots/FileStore-Bot")],
-                [InlineKeyboardButton("⚓ Home", callback_data="start"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
-            ])
+
+        await safe_edit(
+            ABOUT_TXT.format(first=query.from_user.first_name),
+            [
+                [
+                    InlineKeyboardButton("📜 Disclaimer", callback_data="disclaimer"),
+                    InlineKeyboardButton(
+                        "🔐 Source Code",
+                        url="https://github.com/TitanXBots/FileStore-Bot"
+                    )
+                ],
+                [
+                    InlineKeyboardButton("⚓ Home", callback_data="start"),
+                    InlineKeyboardButton("⚡ Close", callback_data="close")
+                ]
+            ]
         )
 
 # -------------------------------
@@ -59,16 +80,22 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 # -------------------------------
 
     elif data == "start":
-        await query.message.edit_text(
-            text=START_MSG.format(first=query.from_user.first_name),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🧠 Help", callback_data="help"),
-                 InlineKeyboardButton("🔰 About", callback_data="about")],
-                [InlineKeyboardButton("⚙️ Settings", callback_data="settings")],
-                [InlineKeyboardButton("🤖 Update Channel", url="https://t.me/TitanXBots"),
-                 InlineKeyboardButton("🔍 Support Group", url="https://t.me/TitanMattersSupport")]
-            ])
+
+        await safe_edit(
+            START_MSG.format(first=query.from_user.first_name),
+            [
+                [
+                    InlineKeyboardButton("🧠 Help", callback_data="help"),
+                    InlineKeyboardButton("🔰 About", callback_data="about")
+                ],
+                [
+                    InlineKeyboardButton("⚙️ Settings", callback_data="settings")
+                ],
+                [
+                    InlineKeyboardButton("🤖 Update Channel", url="https://t.me/TitanXBots"),
+                    InlineKeyboardButton("🔍 Support Group", url="https://t.me/TitanMattersSupport")
+                ]
+            ]
         )
 
 # -------------------------------
@@ -78,14 +105,14 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     elif data == "settings":
 
         if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
+            return await query.answer("Admins only", show_alert=True)
 
-        await query.message.edit_text(
+        await safe_edit(
             "⚙️ **Bot Settings Panel**",
-            reply_markup=InlineKeyboardMarkup([
+            [
                 [InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
                 [InlineKeyboardButton("⚓ Home", callback_data="start")]
-            ])
+            ]
         )
 
 # -------------------------------
@@ -95,39 +122,45 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     elif data == "ban_menu":
 
         if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
+            return await query.answer("Admins only", show_alert=True)
 
-        await query.message.edit_text(
+        await safe_edit(
             "🚫 **Ban Control Panel**",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🚫 Ban User", callback_data="ban_user"),
-                 InlineKeyboardButton("✅ Unban User", callback_data="unban_user")],
-                [InlineKeyboardButton("📋 Banned List", callback_data="banned_list")],
-                [InlineKeyboardButton("⬅ Back", callback_data="settings")]
-            ])
+            [
+                [
+                    InlineKeyboardButton("🚫 Ban User", callback_data="ban_user"),
+                    InlineKeyboardButton("✅ Unban User", callback_data="unban_user")
+                ],
+                [
+                    InlineKeyboardButton("📋 Banned List", callback_data="banned_list")
+                ],
+                [
+                    InlineKeyboardButton("⬅ Back", callback_data="settings")
+                ]
+            ]
         )
 
 # -------------------------------
 # BAN USER
 # -------------------------------
-# -------------------------------
-    # BAN USER
-    # -------------------------------
 
     elif data == "ban_user":
 
         if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
+            return await query.answer("Admins only", show_alert=True)
 
-        await query.message.edit_text(
+        await safe_edit(
             "Send **User ID and reason**\n\nExample:\n`123456789 spam`",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
-            ])
+            [
+                [
+                    InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                    InlineKeyboardButton("⚡ Close", callback_data="close")
+                ]
+            ]
         )
 
         async def wait_ban():
+
             msg = await client.listen(query.message.chat.id)
 
             parts = msg.text.split(maxsplit=1)
@@ -144,25 +177,27 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         asyncio.create_task(wait_ban())
 
-
-    # -------------------------------
-    # UNBAN USER
-    # -------------------------------
+# -------------------------------
+# UNBAN USER
+# -------------------------------
 
     elif data == "unban_user":
 
         if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
+            return await query.answer("Admins only", show_alert=True)
 
-        await query.message.edit_text(
+        await safe_edit(
             "Send **User ID** to unban",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
-            ])
+            [
+                [
+                    InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                    InlineKeyboardButton("⚡ Close", callback_data="close")
+                ]
+            ]
         )
 
         async def wait_unban():
+
             msg = await client.listen(query.message.chat.id)
 
             if not msg.text.isdigit():
@@ -175,15 +210,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             await msg.reply_text(f"✅ User `{uid}` unbanned")
 
         asyncio.create_task(wait_unban())
-    
+
 # -------------------------------
-# BANNED LIST
+# BANNED USERS
 # -------------------------------
 
     elif data == "banned_list":
 
         if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
+            return await query.answer("Admins only", show_alert=True)
 
         users = await banned_users_list()
 
@@ -206,12 +241,14 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
                 text += f"• {name} — {reason}\n"
 
-        await query.message.edit_text(
+        await safe_edit(
             text,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
-            ])
+            [
+                [
+                    InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                    InlineKeyboardButton("⚡ Close", callback_data="close")
+                ]
+            ]
         )
 
 # -------------------------------
@@ -220,14 +257,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     elif data == "commands":
 
-        await query.message.edit_text(
-            text=COMMANDS_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
+        await safe_edit(
+            COMMANDS_TXT,
+            [
                 [InlineKeyboardButton("🔙 Back to Help", callback_data="help")],
-                [InlineKeyboardButton("⚓ Home", callback_data="start"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
-            ])
+                [
+                    InlineKeyboardButton("⚓ Home", callback_data="start"),
+                    InlineKeyboardButton("⚡ Close", callback_data="close")
+                ]
+            ]
         )
 
 # -------------------------------
@@ -236,14 +274,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     elif data == "disclaimer":
 
-        await query.message.edit_text(
-            text=DISCLAIMER_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
+        await safe_edit(
+            DISCLAIMER_TXT,
+            [
                 [InlineKeyboardButton("🔰 About", callback_data="about")],
-                [InlineKeyboardButton("⚓ Home", callback_data="start"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
-            ])
+                [
+                    InlineKeyboardButton("⚓ Home", callback_data="start"),
+                    InlineKeyboardButton("⚡ Close", callback_data="close")
+                ]
+            ]
         )
 
 # -------------------------------
@@ -251,4 +290,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 # -------------------------------
 
     elif data == "close":
-        await query.message.delete()
+
+        try:
+            await query.message.delete()
+        except:
+            pass
