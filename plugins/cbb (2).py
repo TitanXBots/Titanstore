@@ -43,6 +43,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                     ],
                     [
                         InlineKeyboardButton("⚓ Home", callback_data="start"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
                     ]
                 ]
             )
@@ -69,6 +70,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                     ],
                     [
                         InlineKeyboardButton("⚓ Home", callback_data="start"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
                     ]
                 ]
             )
@@ -169,13 +171,18 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             "Send **User ID and reason**\n\nExample:\n`123456789 spam`",
             reply_markup=InlineKeyboardMarkup(
                 [
-                    [InlineKeyboardButton("⬅ Back", callback_data="ban_menu")]
+                    [
+                        InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
+                    ]
                 ]
             )
         )
 
         try:
+
             msg = await client.listen(query.message.chat.id, timeout=120)
+
             parts = msg.text.split(maxsplit=1)
 
             if not parts[0].isdigit():
@@ -185,7 +192,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reason = parts[1] if len(parts) > 1 else "No reason"
 
             await ban_user(uid, reason)
-            await msg.reply_text(f"✅ User `{uid}` banned\nReason: {reason}")
+
+            await msg.reply_text(
+                f"✅ User `{uid}` banned\nReason: {reason}"
+            )
 
         except asyncio.TimeoutError:
             await query.message.reply_text("⏰ Time expired")
@@ -195,38 +205,41 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 # UNBAN USER
 # -------------------------------
 
-# -------------------------------
-# UNBAN USER
-# -------------------------------
+    elif data == "unban_user":
 
-elif data == "unban_user":
+        if not is_admin_user:
+            return await query.answer("Admins only.", show_alert=True)
 
-    if not is_admin_user:
-        return await query.answer("Admins only.", show_alert=True)
-
-    # First, edit the message with instructions and Back button
-    await query.message.edit_text(
-        "Send **User ID** to unban",
-        reply_markup=InlineKeyboardMarkup(
-            [
-                [InlineKeyboardButton("⬅ Back", callback_data="ban_menu")]
-            ]
+        await query.message.edit_text(
+            "Send **User ID** to unban",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
+                    ]
+                ]
+            )
         )
-    )
 
-    # Wait for user input in chat
-    try:
-        msg = await client.listen(query.message.chat.id, timeout=120)
+        try:
 
-        if not msg.text.isdigit():
-            return await msg.reply_text("❌ Invalid user ID")
+            msg = await client.listen(query.message.chat.id, timeout=120)
 
-        uid = int(msg.text)
-        await unban_user(uid)
-        await msg.reply_text(f"✅ User `{uid}` unbanned")
+            if not msg.text.isdigit():
+                return await msg.reply_text("❌ Invalid user ID")
 
-    except asyncio.TimeoutError:
-        await query.message.reply_text("⏰ Time expired")
+            uid = int(msg.text)
+
+            await unban_user(uid)
+
+            await msg.reply_text(
+                f"✅ User `{uid}` unbanned"
+            )
+
+        except asyncio.TimeoutError:
+            await query.message.reply_text("⏰ Time expired")
+
 
 # -------------------------------
 # BANNED LIST
@@ -238,26 +251,35 @@ elif data == "unban_user":
             return await query.answer("Admins only.", show_alert=True)
 
         users = await banned_users_list()
+
         text = "🚫 **Banned Users**\n\n"
 
         if not users:
             text += "No banned users."
+
         else:
+
             for user in users:
+
                 uid = user["_id"]
                 reason = user.get("reason", "No reason")
+
                 try:
                     user_obj = await client.get_users(uid)
                     name = user_obj.mention
                 except PeerIdInvalid:
                     name = f"`{uid}`"
+
                 text += f"• {name} — {reason}\n"
 
         await query.message.edit_text(
             text,
             reply_markup=InlineKeyboardMarkup(
                 [
-                    [InlineKeyboardButton("⬅ Back", callback_data="ban_menu")]
+                    [
+                        InlineKeyboardButton("⬅ Back", callback_data="ban_menu"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
+                    ]
                 ]
             )
         )
@@ -277,6 +299,7 @@ elif data == "unban_user":
                     [InlineKeyboardButton("🔙 Back to Help", callback_data="help")],
                     [
                         InlineKeyboardButton("⚓ Home", callback_data="start"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
                     ]
                 ]
             )
@@ -297,6 +320,7 @@ elif data == "unban_user":
                     [InlineKeyboardButton("🔰 About", callback_data="about")],
                     [
                         InlineKeyboardButton("⚓ Home", callback_data="start"),
+                        InlineKeyboardButton("⚡ Close", callback_data="close")
                     ]
                 ]
             )
