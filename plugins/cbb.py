@@ -47,7 +47,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
              InlineKeyboardButton("🔰 About", callback_data="about")]
         ]
 
-        # Only show Settings to admins/owner
         if is_admin_user:
             buttons.append([InlineKeyboardButton("⚙️ Settings", callback_data="settings")])
 
