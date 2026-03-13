@@ -201,7 +201,7 @@ async def start_command(client: Client, message: Message):
 
 
 # -------------------------------
-# FORCE JOIN HANDLER (not joined)
+# FORCE JOIN HANDLER
 # -------------------------------
 @Bot.on_message(filters.command("start") & filters.private)
 async def not_joined(client: Client, message: Message):
@@ -229,8 +229,7 @@ async def not_joined(client: Client, message: Message):
             id=message.from_user.id
         ),
         reply_markup=InlineKeyboardMarkup(buttons)
-    )
-
+)
 
 # -------------------------------
 # USERS & BROADCAST COMMANDS
