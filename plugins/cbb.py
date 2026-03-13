@@ -13,7 +13,6 @@ from pyromod import listen
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
-
     data = query.data
     user_id = query.from_user.id
 
@@ -25,13 +24,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # OWNER + ADMIN CHECK
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS
 
-    
 # -------------------------------
 # HELP
 # -------------------------------
-
     if data == "help":
-
         await query.message.edit_text(
             text=HELP_TXT.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
@@ -49,13 +45,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
-
 # -------------------------------
 # ABOUT
 # -------------------------------
-
     elif data == "about":
-
         await query.message.edit_text(
             text=ABOUT_TXT.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
@@ -76,13 +69,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
-
 # -------------------------------
 # START PANEL
 # -------------------------------
-
     elif data == "start":
-
         await query.message.edit_text(
             text=START_MSG.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
@@ -94,28 +84,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                     ],
                     [
                         InlineKeyboardButton("⚙️ Settings", callback_data="settings")
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            "🤖 Update Channel",
-                            url="https://t.me/TitanXBots"
-                        ),
-                        InlineKeyboardButton(
-                            "🔍 Support Group",
-                            url="https://t.me/TitanMattersSupport"
-                        )
                     ]
                 ]
             )
         )
 
-
 # -------------------------------
 # SETTINGS PANEL
 # -------------------------------
-
     elif data == "settings":
-
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
@@ -129,13 +106,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(buttons)
         )
 
-
 # -------------------------------
 # BAN MENU
 # -------------------------------
-
     elif data == "ban_menu":
-
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
@@ -157,13 +131,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(buttons)
         )
 
-
 # -------------------------------
 # BAN USER
 # -------------------------------
-
     elif data == "ban_user":
-
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
@@ -180,9 +151,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
         try:
-
             msg = await client.listen(query.message.chat.id, timeout=120)
-
             parts = msg.text.split(maxsplit=1)
 
             if not parts[0].isdigit():
@@ -192,21 +161,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reason = parts[1] if len(parts) > 1 else "No reason"
 
             await ban_user(uid, reason)
-
-            await msg.reply_text(
-                f"✅ User `{uid}` banned\nReason: {reason}"
-            )
+            await msg.reply_text(f"✅ User `{uid}` banned\nReason: {reason}")
 
         except asyncio.TimeoutError:
             await query.message.reply_text("⏰ Time expired")
 
-
 # -------------------------------
 # UNBAN USER
 # -------------------------------
-
     elif data == "unban_user":
-
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
@@ -223,53 +186,38 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
         try:
-
             msg = await client.listen(query.message.chat.id, timeout=120)
-
             if not msg.text.isdigit():
                 return await msg.reply_text("❌ Invalid user ID")
 
             uid = int(msg.text)
-
             await unban_user(uid)
-
-            await msg.reply_text(
-                f"✅ User `{uid}` unbanned"
-            )
+            await msg.reply_text(f"✅ User `{uid}` unbanned")
 
         except asyncio.TimeoutError:
             await query.message.reply_text("⏰ Time expired")
 
-
 # -------------------------------
 # BANNED LIST
 # -------------------------------
-
     elif data == "banned_list":
-
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
         users = await banned_users_list()
-
         text = "🚫 **Banned Users**\n\n"
 
         if not users:
             text += "No banned users."
-
         else:
-
             for user in users:
-
                 uid = user["_id"]
                 reason = user.get("reason", "No reason")
-
                 try:
                     user_obj = await client.get_users(uid)
                     name = user_obj.mention
                 except PeerIdInvalid:
                     name = f"`{uid}`"
-
                 text += f"• {name} — {reason}\n"
 
         await query.message.edit_text(
@@ -284,13 +232,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
-
 # -------------------------------
 # COMMANDS
 # -------------------------------
-
     elif data == "commands":
-
         await query.message.edit_text(
             text=COMMANDS_TXT,
             disable_web_page_preview=True,
@@ -305,13 +250,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
-
 # -------------------------------
 # DISCLAIMER
 # -------------------------------
-
     elif data == "disclaimer":
-
         await query.message.edit_text(
             text=DISCLAIMER_TXT,
             disable_web_page_preview=True,
@@ -326,10 +268,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
-
 # -------------------------------
 # CLOSE
 # -------------------------------
-
     elif data == "close":
         await query.message.delete()
