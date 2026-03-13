@@ -11,11 +11,11 @@ from database.database import is_admin
 async def settings_command(client: Bot, message: Message):
     user_id = message.from_user.id
 
-    # check if owner or admin
+    # Check if owner or admin
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS or await is_admin(user_id)
 
     # -------------------------------
-    # NON-ADMIN PANEL
+    # NON-ADMIN VIEW-ONLY PANEL
     # -------------------------------
     if not is_admin_user:
         buttons = InlineKeyboardMarkup(
@@ -36,7 +36,7 @@ async def settings_command(client: Bot, message: Message):
         return
 
     # -------------------------------
-    # ADMIN PANEL
+    # ADMIN SETTINGS PANEL
     # -------------------------------
     buttons = InlineKeyboardMarkup(
         [
@@ -46,6 +46,6 @@ async def settings_command(client: Bot, message: Message):
         ]
     )
     await message.reply_text(
-        "⚙️ **Bot Settings Panel**",
+        text="⚙️ **Bot Settings Panel**",
         reply_markup=buttons
     )
