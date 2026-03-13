@@ -13,7 +13,6 @@ database = dbclient[DB_NAME]
 # Collections
 user_data = database['users']
 banned_users = database['banned_users']
-admin_data = database['admins']
 
 
 # -------------------------------
@@ -69,25 +68,10 @@ class SeishiroDB:
 
 
     # -------------------------------
-    # ADMIN MANAGEMENT
+    # ADMIN CHECK (OWNER ONLY)
     # -------------------------------
-    async def add_admin(self, user_id: int):
-        admin_data.update_one(
-            {'_id': user_id},
-            {'$set': {'_id': user_id}},
-            upsert=True
-        )
-
-    async def remove_admin(self, user_id: int):
-        admin_data.delete_one({'_id': user_id})
-
-    async def list_admins(self):
-        return [doc['_id'] for doc in admin_data.find()]
-
     async def is_admin(self, user_id: int) -> bool:
-        if user_id == OWNER_ID:
-            return True
-        return admin_data.find_one({'_id': user_id}) is not None
+        return user_id == OWNER_ID
 
 
 # Global database manager instance
