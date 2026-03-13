@@ -1,12 +1,12 @@
-from pyrogram import Client, filters
+from pyrogram import filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from bot import Bot
 from config import *
 from Script import COMMANDS_TXT, DISCLAIMER_TXT
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import ban_user, unban_user, banned_users_list, is_admin
 import asyncio
-from pyrogram.errors import PeerIdInvalid
 from pyromod import listen
+from pyrogram.errors import PeerIdInvalid
 
 # -------------------------------
 # CANCEL LISTENER SYSTEM
@@ -14,7 +14,7 @@ from pyromod import listen
 cancel_listener = {}
 
 @Bot.on_message(filters.command("cancel") & filters.private)
-async def cancel_process(client: Bot, message: Message):
+async def cancel_process(client: Bot, message):
     user_id = message.from_user.id
     cancel_listener[user_id] = True
     await message.reply_text("❌ Process cancelled.")
@@ -33,7 +33,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     except:
         pass
 
-    # Admin/owner check
+    # Check if the user is admin/owner
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS or await is_admin(user_id)
 
     # -------------------------
@@ -41,16 +41,25 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------
     if data == "start":
         cancel_listener[user_id] = True
+
+        buttons = [
+            [InlineKeyboardButton("🧠 Help", callback_data="help"),
+             InlineKeyboardButton("🔰 About", callback_data="about")]
+        ]
+
+        # Only show Settings to admins/owner
+        if is_admin_user:
+            buttons.append([InlineKeyboardButton("⚙️ Settings", callback_data="settings")])
+
+        buttons.append([
+            InlineKeyboardButton("🤖 Update Channel", url="https://t.me/TitanXBots"),
+            InlineKeyboardButton("🔍 Support Group", url="https://t.me/TitanMattersSupport")
+        ])
+
         await query.message.edit_text(
             text=START_MSG.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🧠 Help", callback_data="help"),
-                 InlineKeyboardButton("🔰 About", callback_data="about")],
-                [InlineKeyboardButton("⚙️ Settings", callback_data="settings")],
-                [InlineKeyboardButton("🤖 Update Channel", url="https://t.me/TitanXBots"),
-                 InlineKeyboardButton("🔍 Support Group", url="https://t.me/TitanMattersSupport")]
-            ])
+            reply_markup=InlineKeyboardMarkup(buttons)
         )
 
     # -------------------------
@@ -198,7 +207,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             try:
                 user_obj = await client.get_users(uid)
                 name = user_obj.mention
-            except:
+            except PeerIdInvalid:
                 name = f"`{uid}`"
             text += f"• {name} — {reason}\n"
 
