@@ -1,8 +1,8 @@
-# cb_handler.py
+# cb_handler.py (Admin settings without auto-delete)
 from pyrogram import Client
 from bot import Bot
 from config import *
-from Script import COMMANDS_TXT, DISCLAIMER_TXT
+from Script import COMMANDS_TXT, DISCLAIMER_TXT, START_MSG, HELP_TXT, ABOUT_TXT
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import is_admin
 
@@ -12,7 +12,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     user_id = query.from_user.id
 
     # Check if user is admin
-    admin_status = await is_admin(user_id)  # <-- await added
+    admin_status = is_admin(user_id)
 
     if data == "help":
         await query.message.edit_text(
@@ -95,11 +95,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     elif data == "settings":
         if not admin_status:
-            # Non-admins cannot access Settings
             await query.answer("⚠️ You are not allowed to access this.", show_alert=True)
             return
 
-        # Placeholder Settings menu for admins
+        # Simple placeholder menu for admins
         buttons = InlineKeyboardMarkup(
             [
                 [InlineKeyboardButton("🔙 Back", callback_data="start")]
