@@ -32,11 +32,11 @@ file_auto_delete = humanize.naturaldelta(FILE_AUTO_DELETE)
 # -------------------------------
 # Maintenance check
 # -------------------------------
-async def is_maintenance(client, user_id: int) -> bool:
+async def is_maintenance(user_id: int):
 
     check_msg = collection.find_one({"maintenance": "on"})
 
-    if check_msg and user_id not in ADMINS:
+    if check_msg and user_id != OWNER_ID:
         return True
 
     return False
@@ -49,6 +49,7 @@ async def is_maintenance(client, user_id: int) -> bool:
 async def start_command(client: Client, message: Message):
 
     user_id = message.from_user.id
+    text = message.text
 
     # -------------------------------
     # BAN CHECK
@@ -69,7 +70,6 @@ async def start_command(client: Client, message: Message):
     if not await Seishiro.present_user(user_id):
 
         try:
-
             await Seishiro.add_user(user_id)
 
             user_name = message.from_user.first_name or "Unknown"
@@ -89,7 +89,7 @@ async def start_command(client: Client, message: Message):
     # -------------------------------
     # MAINTENANCE MODE
     # -------------------------------
-    if await is_maintenance(client, user_id):
+    if await is_maintenance(user_id):
 
         await message.reply_text(
             "⚙️ Bot is under maintenance.\nPlease try again later."
@@ -98,11 +98,9 @@ async def start_command(client: Client, message: Message):
 
 
     # -------------------------------
-    # ADMIN CHECK
+    # ADMIN CHECK (OWNER ONLY)
     # -------------------------------
     admin_status = await Seishiro.is_admin(user_id)
-
-    text = message.text
 
 
     # -------------------------------
@@ -114,7 +112,6 @@ async def start_command(client: Client, message: Message):
             base64_string = text.split(" ", 1)[1]
             string = await decode(base64_string)
             argument = string.split("-")
-
         except:
             return
 
@@ -122,10 +119,8 @@ async def start_command(client: Client, message: Message):
         if len(argument) == 3:
 
             try:
-
                 start = int(int(argument[1]) / abs(client.db_channel.id))
                 end = int(int(argument[2]) / abs(client.db_channel.id))
-
             except:
                 return
 
@@ -206,12 +201,7 @@ async def start_command(client: Client, message: Message):
 
 
         asyncio.create_task(
-            delete_files(
-                copied_msgs,
-                client,
-                warn_msg,
-                base64_string
-            )
+            delete_files(copied_msgs, client, warn_msg, base64_string)
         )
 
         return
@@ -341,7 +331,7 @@ async def delete_files(messages, client, k, command_payload=None):
 
 
 # -------------------------------
-# AUTO DELETE TOGGLE
+# AUTO DELETE TOGGLE (OWNER ONLY)
 # -------------------------------
 def set_auto_delete(state: bool):
 
@@ -350,14 +340,14 @@ def set_auto_delete(state: bool):
     return AUTO_DELETE_ENABLED
 
 
-@Client.on_message(filters.command("autodeleteon") & filters.user(ADMINS))
+@Client.on_message(filters.command("autodeleteon") & filters.user(OWNER_ID))
 async def enable_autodelete(client, message):
 
     set_auto_delete(True)
     await message.reply_text("✅ Auto Delete Enabled")
 
 
-@Client.on_message(filters.command("autodeleteoff") & filters.user(ADMINS))
+@Client.on_message(filters.command("autodeleteoff") & filters.user(OWNER_ID))
 async def disable_autodelete(client, message):
 
     set_auto_delete(False)
