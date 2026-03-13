@@ -4,33 +4,26 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from config import *
 from database.database import is_admin
 
-
 # -------------------------------
 # SETTINGS COMMAND
 # -------------------------------
-
 @Bot.on_message(filters.command("settings") & filters.private)
 async def settings_command(client: Bot, message: Message):
-
     user_id = message.from_user.id
 
-    # check owner or admin
+    # check if owner or admin
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS or await is_admin(user_id)
 
-
-# -------------------------------
-# NON ADMIN PANEL
-# -------------------------------
-
+    # -------------------------------
+    # NON-ADMIN PANEL
+    # -------------------------------
     if not is_admin_user:
-
         buttons = InlineKeyboardMarkup(
             [
                 [InlineKeyboardButton("⚓ Home", callback_data="start")],
                 [InlineKeyboardButton("❌ Close", callback_data="close")]
             ]
         )
-
         await message.reply_text(
             text=(
                 "⚙️ **Settings Panel (View Only)**\n\n"
@@ -42,20 +35,16 @@ async def settings_command(client: Bot, message: Message):
         )
         return
 
-
-# -------------------------------
-# ADMIN PANEL
-# -------------------------------
-
+    # -------------------------------
+    # ADMIN PANEL
+    # -------------------------------
     buttons = InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("👑 Admin Menu", callback_data="admin_menu")],
             [InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
             [InlineKeyboardButton("⚓ Home", callback_data="start")],
             [InlineKeyboardButton("❌ Close", callback_data="close")]
         ]
     )
-
     await message.reply_text(
         "⚙️ **Bot Settings Panel**",
         reply_markup=buttons
