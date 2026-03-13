@@ -1,11 +1,20 @@
-# cb_handler.py (Admin settings without auto-delete)
-
-from pyrogram import Client
 from bot import Bot
 from config import *
 from Script import COMMANDS_TXT, DISCLAIMER_TXT
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.errors import MessageNotModified
 from database.database import Seishiro
+
+
+async def safe_edit(message, text, buttons):
+    try:
+        await message.edit_text(
+            text=text,
+            disable_web_page_preview=True,
+            reply_markup=buttons
+        )
+    except MessageNotModified:
+        pass
 
 
 @Bot.on_callback_query()
@@ -14,52 +23,58 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
     user_id = query.from_user.id
 
-    # Check if user is admin
     admin_status = await Seishiro.is_admin(user_id)
 
+
     # -------------------------------
-    # HELP MENU
+    # HELP
     # -------------------------------
     if data == "help":
 
-        await query.message.edit_text(
-            text=HELP_TXT.format(first=query.from_user.first_name),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(
+        buttons = InlineKeyboardMarkup(
+            [
                 [
-                    [
-                        InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", user_id=5356695781),
-                        InlineKeyboardButton("💬 ᴄᴏᴍᴍᴀɴᴅꜱ", callback_data="commands")
-                    ],
-                    [
-                        InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
-                        InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
-                    ]
+                    InlineKeyboardButton("🧑‍💻 Contact Owner", user_id=OWNER_ID),
+                    InlineKeyboardButton("💬 Commands", callback_data="commands")
+                ],
+                [
+                    InlineKeyboardButton("🏠 Home", callback_data="start"),
+                    InlineKeyboardButton("❌ Close", callback_data="close")
                 ]
-            )
+            ]
         )
+
+        await safe_edit(
+            query.message,
+            HELP_TXT.format(first=query.from_user.first_name),
+            buttons
+        )
+
 
     # -------------------------------
     # ABOUT
     # -------------------------------
     elif data == "about":
 
-        await query.message.edit_text(
-            text=ABOUT_TXT.format(first=query.from_user.first_name),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(
+        buttons = InlineKeyboardMarkup(
+            [
                 [
-                    [
-                        InlineKeyboardButton("📜 ᴅɪꜱᴄʟᴀɪᴍᴇʀ", callback_data="disclaimer"),
-                        InlineKeyboardButton("🔐 ꜱᴏᴜʀᴄᴇ ᴄᴏᴅᴇ", url="https://github.com/TitanXBots/FileStore-Bot")
-                    ],
-                    [
-                        InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
-                        InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
-                    ]
+                    InlineKeyboardButton("📜 Disclaimer", callback_data="disclaimer"),
+                    InlineKeyboardButton("🔐 Source", url="https://github.com/TitanXBots/FileStore-Bot")
+                ],
+                [
+                    InlineKeyboardButton("🏠 Home", callback_data="start"),
+                    InlineKeyboardButton("❌ Close", callback_data="close")
                 ]
-            )
+            ]
         )
+
+        await safe_edit(
+            query.message,
+            ABOUT_TXT.format(first=query.from_user.first_name),
+            buttons
+        )
+
 
     # -------------------------------
     # START MENU
@@ -68,60 +83,58 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         buttons = [
             [
-                InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
-                InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
+                InlineKeyboardButton("🧠 Help", callback_data="help"),
+                InlineKeyboardButton("📗 About", callback_data="about")
             ]
         ]
 
-        # Show settings only for admins
         if admin_status:
             buttons.append(
-                [InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")]
+                [InlineKeyboardButton("⚙️ Settings", callback_data="settings")]
             )
 
-        await query.message.edit_text(
-            text=START_MSG.format(first=query.from_user.first_name),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(buttons)
+        await safe_edit(
+            query.message,
+            START_MSG.format(first=query.from_user.first_name),
+            InlineKeyboardMarkup(buttons)
         )
+
 
     # -------------------------------
     # COMMANDS
     # -------------------------------
     elif data == "commands":
 
-        await query.message.edit_text(
-            text=COMMANDS_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(
+        buttons = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("🔙 Back", callback_data="help")],
                 [
-                    [InlineKeyboardButton("🔙 ʙᴀᴄᴋ ᴛᴏ ʜᴇʟᴘ", callback_data="help")],
-                    [
-                        InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
-                        InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
-                    ]
+                    InlineKeyboardButton("🏠 Home", callback_data="start"),
+                    InlineKeyboardButton("❌ Close", callback_data="close")
                 ]
-            )
+            ]
         )
+
+        await safe_edit(query.message, COMMANDS_TXT, buttons)
+
 
     # -------------------------------
     # DISCLAIMER
     # -------------------------------
     elif data == "disclaimer":
 
-        await query.message.edit_text(
-            text=DISCLAIMER_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(
+        buttons = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("🔙 Back", callback_data="about")],
                 [
-                    [InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")],
-                    [
-                        InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
-                        InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
-                    ]
+                    InlineKeyboardButton("🏠 Home", callback_data="start"),
+                    InlineKeyboardButton("❌ Close", callback_data="close")
                 ]
-            )
+            ]
         )
+
+        await safe_edit(query.message, DISCLAIMER_TXT, buttons)
+
 
     # -------------------------------
     # SETTINGS (ADMIN ONLY)
@@ -129,22 +142,21 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     elif data == "settings":
 
         if not admin_status:
-            await query.answer(
-                "⚠️ You are not allowed to access this.",
-                show_alert=True
-            )
+            await query.answer("⚠️ You are not allowed.", show_alert=True)
             return
 
         buttons = InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton("🔙 Back", callback_data="disclaimer")]
+                [InlineKeyboardButton("🔙 Back", callback_data="start")]
             ]
         )
 
-        await query.message.edit_text(
-            "⚙️ ᴛʜɪꜱ ɪꜱ ᴛʜᴇ ꜱᴇᴛᴛɪɴɢꜱ ᴍᴇɴᴜ. Admin options will appear here.",
-            reply_markup=buttons
+        await safe_edit(
+            query.message,
+            "⚙️ Admin Settings Panel",
+            buttons
         )
+
 
     # -------------------------------
     # CLOSE
