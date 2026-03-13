@@ -1,14 +1,18 @@
+# cb_handler.py (Admin settings without auto-delete)
 from pyrogram import Client
 from bot import Bot
 from config import *
-from Script import COMMANDS_TXT, DISCLAIMER_TXT
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from database.database import add_user, del_user, full_userbase, present_user
-
+from Script import COMMANDS_TXT, DISCLAIMER_TXT, START_MSG, HELP_TXT, ABOUT_TXT
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from database.database import is_admin
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
+    user_id = query.from_user.id
+
+    # Check if user is admin
+    admin_status = is_admin(user_id)
 
     if data == "help":
         await query.message.edit_text(
@@ -46,25 +50,21 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
-    elif data == "start":  
-        await query.message.edit_text(  
-            text=START_MSG.format(first=query.from_user.first_name),  
-            disable_web_page_preview=True,  
-            reply_markup=InlineKeyboardMarkup(  
-                [  
-                    [  
-                        InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),  
-                        InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")  
-                    ],  
-                    [  
-                        InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")  # <- New button added
-                    ],  
-                    [  
-                        InlineKeyboardButton("🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/TitanXBots"),  
-                        InlineKeyboardButton("🔍 ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ", url="https://t.me/TitanMattersSupport")  
-                    ]  
-                ]  
-            )  
+    elif data == "start":
+        buttons = [
+            [
+                InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
+                InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
+            ]
+        ]
+        # Show Settings button only for admins
+        if admin_status:
+            buttons.append([InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")])
+
+        await query.message.edit_text(
+            text=START_MSG.format(first=query.from_user.first_name),
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(buttons)
         )
 
     elif data == "commands":
@@ -73,13 +73,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
-                    [
-                        InlineKeyboardButton("🔙 ʙᴀᴄᴋ ᴛᴏ ʜᴇʟᴘ", callback_data="help")
-                    ],
-                    [
-                        InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
-                        InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
-                    ]
+                    [InlineKeyboardButton("🔙 ʙᴀᴄᴋ ᴛᴏ ʜᴇʟᴘ", callback_data="help")],
+                    [InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
+                     InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")]
                 ]
             )
         )
@@ -90,30 +86,29 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(
                 [
-                    [
-                        InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
-                    ],
-                    [
-                        InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
-                        InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
-                    ]
+                    [InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")],
+                    [InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"),
+                     InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")]
                 ]
             )
         )
 
     elif data == "settings":
+        if not admin_status:
+            await query.answer("⚠️ You are not allowed to access this.", show_alert=True)
+            return
+
+        # Simple placeholder menu for admins
         buttons = InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton("Enable Auto-Delete", callback_data="disclaimer")],
-                [InlineKeyboardButton("Disable Auto-Delete", callback_data="commands")],
                 [InlineKeyboardButton("🔙 Back", callback_data="start")]
             ]
         )
         await query.message.edit_text(
-            "⚙️ ᴛʜɪꜱ ɪꜱ ᴛʜᴇ ꜱᴇᴛᴛɪɴɢꜱ ᴍᴇɴᴜ. ᴄʜᴏᴏꜱᴇ ᴀɴ ᴏᴘᴛɪᴏɴ:",
+            "⚙️ ᴛʜɪꜱ ɪꜱ ᴛʜᴇ ꜱᴇᴛᴛɪɴɢꜱ ᴍᴇɴᴜ. Admin options will appear here.",
             reply_markup=buttons
         )
-    
+
     elif data == "close":
         await query.message.delete()
         try:
