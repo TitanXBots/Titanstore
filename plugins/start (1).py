@@ -7,7 +7,7 @@ from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait
-from Script import *
+from Script import NEW_USER_TXT
 from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
@@ -25,7 +25,7 @@ client_db = MongoClient(DB_URI)
 db = client_db[DB_NAME]
 collection = db["TelegramFiles"]
 
-AUTO_DELETE_ENABLED = True
+AUTO_DELETE_ENABLED = True  # default state
 file_auto_delete = humanize.naturaldelta(FILE_AUTO_DELETE)
 
 # -------------------------------
@@ -45,17 +45,17 @@ async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
 
     # 🚫 Ban check
-    if await is_banned(user_id):               # <-- await added
-        reason = await get_ban_reason(user_id) # <-- await added
+    if is_banned(user_id):
+        reason = get_ban_reason(user_id)
         await message.reply_text(
             f"🚫 You are banned from using this bot.\n\n**Reason:** {reason}"
         )
         return
 
     # ✅ Add new user
-    if not await present_user(user_id):   # <-- await added
+    if not present_user(user_id):
         try:
-            await add_user(user_id)       # <-- await added
+            add_user(user_id)
             user_name = message.from_user.first_name or "Unknown"
             message_text = NEW_USER_TXT.format(message.from_user.mention, user_id, user_name)
             await client.send_message(LOG_CHANNEL_ID, message_text)
@@ -69,7 +69,7 @@ async def start_command(client: Client, message: Message):
         return
 
     # Admin check
-    admin_status = await is_admin(user_id)  # <-- await added
+    admin_status = is_admin(user_id)
 
     # Check if start command has payload (file forwarding)
     text = message.text
@@ -141,15 +141,21 @@ async def start_command(client: Client, message: Message):
     # -------------------------------
     # Default start menu
     # -------------------------------
-    buttons = [
-        [
-            InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
-            InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
-        ]
-    ]
-    # Show Settings button only for admins
     if admin_status:
-        buttons.append([InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")])
+        reply_markup = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
+                 InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")],
+                [InlineKeyboardButton("⚙️  Sᴇᴛᴛɪɴɢs", callback_data="settings")]  # Admin-only
+            ]
+        )
+    else:
+        reply_markup = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
+                 InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")]
+            ]
+        )
 
     await message.reply_photo(
         photo=START_PIC,
@@ -160,7 +166,7 @@ async def start_command(client: Client, message: Message):
             mention=message.from_user.mention,
             id=message.from_user.id
         ),
-        reply_markup=InlineKeyboardMarkup(buttons),
+        reply_markup=reply_markup,
     )
 
 # -------------------------------
@@ -235,9 +241,19 @@ async def delete_files(messages, client, k, command_payload=None):
         logging.error(f"Error editing message after deletion: {e}")
 
 # -------------------------------
-# TOGGLE AUTO DELETE (optional)
+# TOGGLE AUTO DELETE
 # -------------------------------
 def set_auto_delete(state: bool):
     global AUTO_DELETE_ENABLED
     AUTO_DELETE_ENABLED = state
     return AUTO_DELETE_ENABLED
+
+@Client.on_message(filters.command("autodeleteon") & filters.user(ADMINS))
+async def handle_autodelete_on(client, message):
+    set_auto_delete(True)
+    await message.reply_text("✅ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ɪꜱ ɴᴏᴡ ᴇɴᴀʙʟᴇᴅ.")
+
+@Client.on_message(filters.command("autodeleteoff") & filters.user(ADMINS))
+async def handle_autodelete_off(client, message):
+    set_auto_delete(False)
+    await message.reply_text("❌ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ɪꜱ ɴᴏᴡ ᴅɪꜱᴀʙʟᴇᴅ.")
