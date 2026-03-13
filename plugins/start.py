@@ -81,9 +81,9 @@ async def delete_files(messages, client, k, command_payload=None):
 
 
 # -------------------------------
-# START COMMAND
+# START COMMAND (Combined)
 # -------------------------------
-@Bot.on_message(filters.command("start") & filters.private & subscribed)
+@Bot.on_message(filters.command("start") & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
 
@@ -112,8 +112,9 @@ async def start_command(client: Client, message: Message):
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS
 
     text = message.text
+
+    # ---------- HANDLE FILE COPY WITH BASE64 PAYLOAD ----------
     if len(text) > 7:
-        # ---------- HANDLE FILE COPY WITH BASE64 PAYLOAD ----------
         try:
             base64_string = text.split(" ", 1)[1]
         except:
@@ -144,8 +145,9 @@ async def start_command(client: Client, message: Message):
 
         titanx_msgs = []
         for msg in messages:
-            caption = (CUSTOM_CAPTION.format(previouscaption="" if not msg.caption else msg.caption.html,
-                                            filename=msg.document.file_name)
+            caption = (CUSTOM_CAPTION.format(
+                        previouscaption="" if not msg.caption else msg.caption.html,
+                        filename=msg.document.file_name)
                        if bool(CUSTOM_CAPTION) and bool(msg.document)
                        else "" if not msg.caption else msg.caption.html)
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
@@ -172,6 +174,38 @@ async def start_command(client: Client, message: Message):
         asyncio.create_task(delete_files(titanx_msgs, client, k, base64_string))
         return
 
+    # ---------- CHECK SUBSCRIPTION ----------
+    is_subscribed = await subscribed(user_id)
+
+    if not is_subscribed:
+        # ---------- FORCE JOIN PANEL ----------
+        buttons = [
+            [InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink),
+             InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink2)],
+            [InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink3),
+             InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink4)]
+        ]
+        try:
+            buttons.append(
+                [InlineKeyboardButton("☢ ɴᴏᴡ ᴄʟɪᴄᴋ ʜᴇʀᴇ •",
+                                      url=f"https://t.me/{client.username}?start={message.command[1]}")]
+            )
+        except IndexError:
+            pass
+
+        await message.reply_photo(
+            photo=FORCE_PIC,
+            caption=FORCE_MSG.format(
+                first=message.from_user.first_name,
+                last=message.from_user.last_name,
+                username=None if not message.from_user.username else '@' + message.from_user.username,
+                mention=message.from_user.mention,
+                id=message.from_user.id
+            ),
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
+        return
+
     # ---------- SHOW START PANEL ----------
     buttons = [
         [InlineKeyboardButton("🧠 Help", callback_data="help"),
@@ -192,39 +226,6 @@ async def start_command(client: Client, message: Message):
         ),
         reply_markup=InlineKeyboardMarkup(buttons),
     )
-
-
-# -------------------------------
-# FORCE JOIN HANDLER (not joined)
-# -------------------------------
-@Bot.on_message(filters.command("start") & filters.private)
-async def not_joined(client: Client, message: Message):
-    buttons = [
-        [InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink),
-         InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink2)],
-        [InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink3),
-         InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink4)]
-    ]
-    try:
-        buttons.append(
-            [InlineKeyboardButton("☢ ɴᴏᴡ ᴄʟɪᴄᴋ ʜᴇʀᴇ •",
-                                  url=f"https://t.me/{client.username}?start={message.command[1]}")]
-        )
-    except IndexError:
-        pass
-
-    await message.reply_photo(
-        photo=FORCE_PIC,
-        caption=FORCE_MSG.format(
-            first=message.from_user.first_name,
-            last=message.from_user.last_name,
-            username=None if not message.from_user.username else '@' + message.from_user.username,
-            mention=message.from_user.mention,
-            id=message.from_user.id
-        ),
-        reply_markup=InlineKeyboardMarkup(buttons)
-    )
-
 
 # -------------------------------
 # USERS & BROADCAST COMMANDS
