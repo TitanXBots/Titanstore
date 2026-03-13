@@ -7,7 +7,7 @@ from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait
-from Script import NEW_USER_TXT
+from Script import *
 from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
