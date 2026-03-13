@@ -101,7 +101,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         # Simple placeholder menu for admins
         buttons = InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton("🔙 Back", callback_data="start")]
+                [InlineKeyboardButton("🔙 Back", callback_data="disclaimer")]
             ]
         )
         await query.message.edit_text(
