@@ -137,7 +137,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         buttons = InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton("🔙 Back", callback_data="start")]
+                [InlineKeyboardButton("🔙 Back", callback_data="disclaimer")]
             ]
         )
 
