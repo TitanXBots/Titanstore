@@ -43,7 +43,7 @@ async def start_command(client: Client, message: Message):
         )
         return
 
-    # ✅ Proceed normally if not banned
+    # ✅ Add user if new
     if not await present_user(user_id):
         try:
             await add_user(user_id)
@@ -56,8 +56,12 @@ async def start_command(client: Client, message: Message):
     if await is_maintenance(client, user_id):
         await message.reply_text("⚙️ Maintenance mode is currently active. Please try again later.")
         return
+
+    # Check if the user is admin/owner
+    is_admin_user = user_id == OWNER_ID or user_id in ADMINS
+
     text = message.text
-    if len(text)>7:
+    if len(text) > 7:
         try:
             base64_string = text.split(" ", 1)[1]
         except:
@@ -71,7 +75,7 @@ async def start_command(client: Client, message: Message):
             except:
                 return
             if start <= end:
-                ids = range(start,end+1)
+                ids = range(start, end + 1)
             else:
                 ids = []
                 i = start
@@ -85,6 +89,7 @@ async def start_command(client: Client, message: Message):
                 ids = [int(int(argument[1]) / abs(client.db_channel.id))]
             except:
                 return
+
         temp_msg = await message.reply("Wait Bro...")
         try:
             messages = await get_messages(client, ids)
@@ -93,55 +98,56 @@ async def start_command(client: Client, message: Message):
             return
         await temp_msg.delete()
 
-        titanx_msgs = [] # List to keep track of sent message 
-
+        titanx_msgs = []  # List to keep track of sent messages
         for msg in messages:
-
             if bool(CUSTOM_CAPTION) & bool(msg.document):
-                caption = CUSTOM_CAPTION.format(previouscaption = "" if not msg.caption else msg.caption.html, filename = msg.document.file_name)
+                caption = CUSTOM_CAPTION.format(previouscaption="" if not msg.caption else msg.caption.html,
+                                                filename=msg.document.file_name)
             else:
                 caption = "" if not msg.caption else msg.caption.html
 
-            if DISABLE_CHANNEL_BUTTON:
-                reply_markup = msg.reply_markup
-            else:
-                reply_markup = None
+            reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
 
             try:
-                titanx_msg = await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = ParseMode.HTML, reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
+                titanx_msg = await msg.copy(chat_id=message.from_user.id, caption=caption,
+                                            parse_mode=ParseMode.HTML, reply_markup=reply_markup,
+                                            protect_content=PROTECT_CONTENT)
                 titanx_msgs.append(titanx_msg)
-                
+
             except FloodWait as e:
                 await asyncio.sleep(e.value)
-                titanx_msg = await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = ParseMode.HTML, reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
+                titanx_msg = await msg.copy(chat_id=message.from_user.id, caption=caption,
+                                            parse_mode=ParseMode.HTML, reply_markup=reply_markup,
+                                            protect_content=PROTECT_CONTENT)
                 titanx_msgs.append(titanx_msg)
             except Exception as e:
-                print(f"Error coping message: {e}")
+                print(f"Error copying message: {e}")
                 pass
 
-        k = await client.send_message(chat_id=message.from_user.id, text=f"<b>❗️ <u>IMPORTANT</u> ❗️</b>\n\nThis Video / File Will Be Deleted In {file_auto_delete} (Due To Copyright Issues).\n\n📌 Please Forward This Video / File To Somewhere Else And Start Downloading There.")
+        k = await client.send_message(chat_id=message.from_user.id,
+                                     text=f"<b>❗️ <u>IMPORTANT</u> ❗️</b>\n\nThis Video / File Will Be Deleted In {file_auto_delete} (Due To Copyright Issues).\n\n📌 Please Forward This Video / File To Somewhere Else And Start Downloading There.")
 
-        # Schedule the file deletion
+        # Schedule deletion
         asyncio.create_task(delete_files(titanx_msgs, client, k, base64_string if 'base64_string' in locals() else None))
-        
-        
         return
+
     else:
-        reply_markup = InlineKeyboardMarkup(
-    [
-        [
-            InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
-            InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
-        ],
-        [
-            InlineKeyboardButton("⚙️  Sᴇᴛᴛɪɴɢs", callback_data="settings")
-        ],
-        [
+        # Build keyboard with admin check for Settings
+        buttons = [
+            [InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
+             InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")]
+        ]
+
+        if is_admin_user:
+            buttons.append([InlineKeyboardButton("⚙️  Sᴇᴛᴛɪɴɢs", callback_data="settings")])
+
+        buttons.append([
             InlineKeyboardButton("🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/TitanXBots"),
             InlineKeyboardButton("🔍 ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ", url="https://t.me/TitanMattersSupport")
-        ]
-    ]
-        )  
+        ])
+
+        reply_markup = InlineKeyboardMarkup(buttons)
+
         await message.reply_photo(
             photo=START_PIC,
             caption=START_MSG.format(
@@ -154,7 +160,6 @@ async def start_command(client: Client, message: Message):
             reply_markup=reply_markup,
         )
         return
-    
 
 #=====================================================================================##
 
