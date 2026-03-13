@@ -8,7 +8,7 @@ from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 from Script import NEW_USER_TXT
 from bot import Bot
 from config import *
-from helper_func import subscribed, encode, decode, get_messages, check_joined_channels
+from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user, is_banned, get_ban_reason
 import logging
 from pymongo import MongoClient
