@@ -10,6 +10,12 @@ import asyncio
 from pyrogram.errors import PeerIdInvalid
 from pyromod import listen
 
+# -------------------------------
+# CANCEL LISTENER FLAG
+# -------------------------------
+
+cancel_listener = {}
+
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -22,10 +28,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     except:
         pass
 
-    # OWNER + ADMIN CHECK
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS
 
-    
+
 # -------------------------------
 # HELP
 # -------------------------------
@@ -83,6 +88,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     elif data == "start":
 
+        cancel_listener[user_id] = True
+
         await query.message.edit_text(
             text=START_MSG.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
@@ -116,6 +123,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     elif data == "settings":
 
+        cancel_listener[user_id] = True
+
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
@@ -135,6 +144,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 # -------------------------------
 
     elif data == "ban_menu":
+
+        cancel_listener[user_id] = True
 
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
@@ -167,6 +178,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
+        cancel_listener[user_id] = False
+
         await query.message.edit_text(
             "Send **User ID and reason**\n\nExample:\n`123456789 spam`",
             reply_markup=InlineKeyboardMarkup(
@@ -183,6 +196,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
             msg = await client.listen(query.message.chat.id, timeout=120)
 
+            if cancel_listener.get(user_id):
+                return
+
             parts = msg.text.split(maxsplit=1)
 
             if not parts[0].isdigit():
@@ -194,7 +210,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             await ban_user(uid, reason)
 
             await msg.reply_text(
-                f"✅ User `{uid}` banned\nReason: {reason}"
+                f"🚫 User `{uid}` banned\nReason: {reason}"
             )
 
         except asyncio.TimeoutError:
@@ -209,6 +225,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
+
+        cancel_listener[user_id] = False
 
         await query.message.edit_text(
             "Send **User ID** to unban",
@@ -225,6 +243,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         try:
 
             msg = await client.listen(query.message.chat.id, timeout=120)
+
+            if cancel_listener.get(user_id):
+                return
 
             if not msg.text.isdigit():
                 return await msg.reply_text("❌ Invalid user ID")
@@ -332,4 +353,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 # -------------------------------
 
     elif data == "close":
-        await query.message.delete()
+
+        cancel_listener[user_id] = True
+
+        try:
+            await query.message.delete()
+        except:
+            pass
