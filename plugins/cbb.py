@@ -178,7 +178,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
-        cancel_listener[user_id] = False
+        cancel_listener[user_id] = True
 
         await query.message.edit_text(
             "Send **User ID and reason**\n\nExample:\n`123456789 spam`",
@@ -226,7 +226,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
-        cancel_listener[user_id] = False
+        cancel_listener[user_id] = True
 
         await query.message.edit_text(
             "Send **User ID** to unban",
