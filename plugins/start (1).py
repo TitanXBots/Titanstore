@@ -3,6 +3,7 @@ import os
 import asyncio
 import humanize
 import logging
+
 from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
@@ -32,80 +33,104 @@ file_auto_delete = humanize.naturaldelta(FILE_AUTO_DELETE)
 # Maintenance check
 # -------------------------------
 async def is_maintenance(client, user_id: int) -> bool:
+
     check_msg = collection.find_one({"maintenance": "on"})
+
     if check_msg and user_id not in ADMINS:
         return True
+
     return False
 
 
 # -------------------------------
 # START COMMAND
 # -------------------------------
-@Bot.on_message(filters.command('start') & filters.private & subscribed)
+@Bot.on_message(filters.command("start") & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
 
     user_id = message.from_user.id
 
-    # 🚫 Ban check
+    # -------------------------------
+    # BAN CHECK
+    # -------------------------------
     if await Seishiro.is_user_banned(user_id):
+
         reason = await Seishiro.get_ban_reason(user_id)
+
         await message.reply_text(
-            f"🚫 You are banned from using this bot.\n\n**Reason:** {reason}"
+            f"🚫 You are banned from using this bot.\n\nReason: {reason}"
         )
         return
 
-    # ✅ Add new user
+
+    # -------------------------------
+    # ADD USER
+    # -------------------------------
     if not await Seishiro.present_user(user_id):
+
         try:
+
             await Seishiro.add_user(user_id)
 
             user_name = message.from_user.first_name or "Unknown"
 
-            message_text = NEW_USER_TXT.format(
+            log_text = NEW_USER_TXT.format(
                 message.from_user.mention,
                 user_id,
                 user_name
             )
 
-            await client.send_message(LOG_CHANNEL_ID, message_text)
+            await client.send_message(LOG_CHANNEL_ID, log_text)
 
         except Exception as e:
-            print(f"Error adding user: {e}")
+            print(f"User add error: {e}")
 
-    # ⚙️ Maintenance mode
+
+    # -------------------------------
+    # MAINTENANCE MODE
+    # -------------------------------
     if await is_maintenance(client, user_id):
+
         await message.reply_text(
-            "⚙️ Maintenance mode is currently active. Please try again later."
+            "⚙️ Bot is under maintenance.\nPlease try again later."
         )
         return
 
-    # Admin check
+
+    # -------------------------------
+    # ADMIN CHECK
+    # -------------------------------
     admin_status = await Seishiro.is_admin(user_id)
 
     text = message.text
 
 
-    # --------------------------------
+    # -------------------------------
     # FILE LINK PAYLOAD
-    # --------------------------------
-    if len(text) > 7:
+    # -------------------------------
+    if len(text.split()) > 1:
 
         try:
             base64_string = text.split(" ", 1)[1]
             string = await decode(base64_string)
             argument = string.split("-")
+
         except:
             return
+
 
         if len(argument) == 3:
 
             try:
+
                 start = int(int(argument[1]) / abs(client.db_channel.id))
                 end = int(int(argument[2]) / abs(client.db_channel.id))
+
             except:
                 return
 
-            ids = range(start, end + 1) if start <= end else list(range(start, end - 1, -1))
+            ids = range(start, end + 1) if start <= end else range(start, end - 1, -1)
+
 
         elif len(argument) == 2:
 
@@ -115,23 +140,23 @@ async def start_command(client: Client, message: Message):
                 return
 
 
-        temp_msg = await message.reply("Wait Bro...")
+        temp = await message.reply("Please wait...")
 
         try:
             messages = await get_messages(client, ids)
         except:
-            await message.reply_text("Something went wrong..!")
+            await message.reply_text("Error retrieving file.")
             return
 
-        await temp_msg.delete()
+        await temp.delete()
 
-        titanx_msgs = []
+        copied_msgs = []
 
         for msg in messages:
 
             caption = ""
 
-            if bool(CUSTOM_CAPTION) and bool(msg.document):
+            if CUSTOM_CAPTION and msg.document:
 
                 caption = CUSTOM_CAPTION.format(
                     previouscaption="" if not msg.caption else msg.caption.html,
@@ -141,82 +166,73 @@ async def start_command(client: Client, message: Message):
             elif msg.caption:
                 caption = msg.caption.html
 
+
             reply_markup = None if not DISABLE_CHANNEL_BUTTON else msg.reply_markup
+
 
             try:
 
-                titanx_msg = await msg.copy(
-                    chat_id=message.from_user.id,
+                copied = await msg.copy(
+                    chat_id=user_id,
                     caption=caption,
                     parse_mode=ParseMode.HTML,
                     reply_markup=reply_markup,
                     protect_content=PROTECT_CONTENT
                 )
 
-                titanx_msgs.append(titanx_msg)
+                copied_msgs.append(copied)
 
             except FloodWait as e:
 
                 await asyncio.sleep(e.value)
 
-                titanx_msg = await msg.copy(
-                    chat_id=message.from_user.id,
+                copied = await msg.copy(
+                    chat_id=user_id,
                     caption=caption,
                     parse_mode=ParseMode.HTML,
                     reply_markup=reply_markup,
                     protect_content=PROTECT_CONTENT
                 )
 
-                titanx_msgs.append(titanx_msg)
-
-            except Exception as e:
-                print(f"Error copying message: {e}")
+                copied_msgs.append(copied)
 
 
-        k = await client.send_message(
-            chat_id=message.from_user.id,
-            text=f"<b>❗️ <u>IMPORTANT</u> ❗️</b>\n\n"
-                 f"This Video / File Will Be Deleted In {file_auto_delete} "
-                 f"(Due To Copyright Issues).\n\n"
-                 f"📌 Please Forward This Video / File Somewhere Else."
+        warn_msg = await client.send_message(
+            chat_id=user_id,
+            text=f"<b>IMPORTANT</b>\n\n"
+                 f"This file will be deleted in {file_auto_delete}.\n\n"
+                 f"Forward it somewhere to save."
         )
 
 
         asyncio.create_task(
             delete_files(
-                titanx_msgs,
+                copied_msgs,
                 client,
-                k,
-                base64_string if 'base64_string' in locals() else None
+                warn_msg,
+                base64_string
             )
         )
 
         return
 
 
-    # --------------------------------
-    # DEFAULT START MENU
-    # --------------------------------
+    # -------------------------------
+    # START MENU
+    # -------------------------------
+    buttons = [
+        [
+            InlineKeyboardButton("🧠 HELP", callback_data="help"),
+            InlineKeyboardButton("📗 ABOUT", callback_data="about")
+        ]
+    ]
+
     if admin_status:
+        buttons.append(
+            [InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")]
+        )
 
-        reply_markup = InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
-                InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
-            ],
-            [
-                InlineKeyboardButton("⚙️ Sᴇᴛᴛɪɴɢs", callback_data="settings")
-            ]
-        ])
-
-    else:
-
-        reply_markup = InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"),
-                InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
-            ]
-        ])
+    reply_markup = InlineKeyboardMarkup(buttons)
 
 
     await message.reply_photo(
@@ -224,9 +240,9 @@ async def start_command(client: Client, message: Message):
         caption=START_MSG.format(
             first=message.from_user.first_name,
             last=message.from_user.last_name,
-            username=None if not message.from_user.username else '@' + message.from_user.username,
+            username=f"@{message.from_user.username}" if message.from_user.username else "None",
             mention=message.from_user.mention,
-            id=message.from_user.id
+            id=user_id
         ),
         reply_markup=reply_markup
     )
@@ -235,17 +251,17 @@ async def start_command(client: Client, message: Message):
 # -------------------------------
 # FORCE JOIN
 # -------------------------------
-@Bot.on_message(filters.command('start') & filters.private)
+@Bot.on_message(filters.command("start") & filters.private)
 async def not_joined(client: Client, message: Message):
 
     buttons = [
         [
-            InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink),
-            InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink2)
+            InlineKeyboardButton("Join Channel", url=client.invitelink),
+            InlineKeyboardButton("Join Channel", url=client.invitelink2)
         ],
         [
-            InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink3),
-            InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink4)
+            InlineKeyboardButton("Join Channel", url=client.invitelink3),
+            InlineKeyboardButton("Join Channel", url=client.invitelink4)
         ]
     ]
 
@@ -253,7 +269,7 @@ async def not_joined(client: Client, message: Message):
 
         buttons.append([
             InlineKeyboardButton(
-                '☢ ɴᴏᴡ ᴄʟɪᴄᴋ ʜᴇʀᴇ',
+                "Click Here",
                 url=f"https://t.me/{client.username}?start={message.command[1]}"
             )
         ])
@@ -267,7 +283,7 @@ async def not_joined(client: Client, message: Message):
         caption=FORCE_MSG.format(
             first=message.from_user.first_name,
             last=message.from_user.last_name,
-            username=None if not message.from_user.username else '@' + message.from_user.username,
+            username=f"@{message.from_user.username}" if message.from_user.username else "None",
             mention=message.from_user.mention,
             id=message.from_user.id
         ),
@@ -276,7 +292,7 @@ async def not_joined(client: Client, message: Message):
 
 
 # -------------------------------
-# AUTO DELETE
+# FILE AUTO DELETE
 # -------------------------------
 async def delete_files(messages, client, k, command_payload=None):
 
@@ -301,21 +317,22 @@ async def delete_files(messages, client, k, command_payload=None):
 
         me = await client.get_me()
 
-        keyboard = InlineKeyboardMarkup([
+        keyboard = InlineKeyboardMarkup(
             [
-                InlineKeyboardButton(
-                    "ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ",
-                    url=f"https://t.me/{me.username}?start={command_payload}"
-                )
+                [
+                    InlineKeyboardButton(
+                        "Get File Again",
+                        url=f"https://t.me/{me.username}?start={command_payload}"
+                    )
+                ]
             ]
-        ])
+        )
 
 
     try:
 
         await k.edit_text(
-            "ʏᴏᴜʀ ꜰɪʟᴇ ɪꜱ ᴅᴇʟᴇᴛᴇᴅ ✅\n\n"
-            "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ᴛᴏ ɢᴇᴛ ɪᴛ ᴀɢᴀɪɴ 👇",
+            "Your file has been deleted.\n\nClick below to get it again.",
             reply_markup=keyboard
         )
 
@@ -334,14 +351,14 @@ def set_auto_delete(state: bool):
 
 
 @Client.on_message(filters.command("autodeleteon") & filters.user(ADMINS))
-async def handle_autodelete_on(client, message):
+async def enable_autodelete(client, message):
 
     set_auto_delete(True)
     await message.reply_text("✅ Auto Delete Enabled")
 
 
 @Client.on_message(filters.command("autodeleteoff") & filters.user(ADMINS))
-async def handle_autodelete_off(client, message):
+async def disable_autodelete(client, message):
 
     set_auto_delete(False)
     await message.reply_text("❌ Auto Delete Disabled")
