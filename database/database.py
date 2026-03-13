@@ -13,70 +13,69 @@ database = dbclient[DB_NAME]
 # Collections
 user_data = database['users']
 banned_users = database['banned_users']
-admin_data = database['admins']  # Admins collection
+admin_data = database['admins']
+
 
 # -------------------------------
-# User management
+# Seishiro Database Manager
 # -------------------------------
-async def present_user(user_id: int) -> bool:
-    """Check if a user is already in the database."""
-    return user_data.find_one({'_id': user_id}) is not None
+class SeishiroDB:
 
-async def add_user(user_id: int):
-    """Add a new user to the database."""
-    user_data.update_one({'_id': user_id}, {'$set': {'_id': user_id}}, upsert=True)
+    # -------------------------------
+    # USER MANAGEMENT
+    # -------------------------------
+    async def present_user(self, user_id: int) -> bool:
+        return user_data.find_one({'_id': user_id}) is not None
 
-async def full_userbase() -> list:
-    """Return a list of all user IDs."""
-    return [doc['_id'] for doc in user_data.find()]
+    async def add_user(self, user_id: int):
+        user_data.update_one({'_id': user_id}, {'$set': {'_id': user_id}}, upsert=True)
 
-async def del_user(user_id: int):
-    """Delete a user from the database."""
-    user_data.delete_one({'_id': user_id})
+    async def full_userbase(self) -> list:
+        return [doc['_id'] for doc in user_data.find()]
 
-# -------------------------------
-# Ban management
-# -------------------------------
-async def is_banned(user_id: int) -> bool:
-    """Check if a user is banned."""
-    return banned_users.find_one({'_id': user_id}) is not None
+    async def del_user(self, user_id: int):
+        user_data.delete_one({'_id': user_id})
 
-async def get_ban_reason(user_id: int) -> str:
-    """Get the reason a user is banned."""
-    data = banned_users.find_one({'_id': user_id})
-    return data.get('reason', 'No reason provided') if data else 'No reason provided'
 
-async def ban_user(user_id: int, reason: str):
-    """Ban a user with a reason."""
-    banned_users.update_one(
-        {'_id': user_id},
-        {'$set': {'reason': reason}},
-        upsert=True
-    )
+    # -------------------------------
+    # BAN MANAGEMENT
+    # -------------------------------
+    async def is_user_banned(self, user_id: int) -> bool:
+        return banned_users.find_one({'_id': user_id}) is not None
 
-async def unban_user(user_id: int):
-    """Unban a user."""
-    banned_users.delete_one({'_id': user_id})
+    async def get_ban_reason(self, user_id: int):
+        data = banned_users.find_one({'_id': user_id})
+        return data.get('reason', 'No reason provided') if data else None
 
-async def banned_users_list() -> list:
-    """Return a list of all banned users."""
-    return list(banned_users.find())
+    async def ban_user(self, user_id: int, reason: str):
+        banned_users.update_one(
+            {'_id': user_id},
+            {'$set': {'reason': reason}},
+            upsert=True
+        )
 
-# -------------------------------
-# Admin management
-# -------------------------------
-async def add_admin(user_id: int):
-    """Add a user as admin."""
-    admin_data.update_one({'_id': user_id}, {'$set': {'_id': user_id}}, upsert=True)
+    async def unban_user(self, user_id: int):
+        banned_users.delete_one({'_id': user_id})
 
-async def remove_admin(user_id: int):
-    """Remove a user from admin list."""
-    admin_data.delete_one({'_id': user_id})
+    async def banned_users_list(self):
+        return list(banned_users.find())
 
-async def list_admins() -> list:
-    """Return a list of all admin user IDs."""
-    return [doc['_id'] for doc in admin_data.find()]
 
-async def is_admin(user_id: int) -> bool:
-    """Check if a user is an admin."""
-    return admin_data.find_one({'_id': user_id}) is not None
+    # -------------------------------
+    # ADMIN MANAGEMENT
+    # -------------------------------
+    async def add_admin(self, user_id: int):
+        admin_data.update_one({'_id': user_id}, {'$set': {'_id': user_id}}, upsert=True)
+
+    async def remove_admin(self, user_id: int):
+        admin_data.delete_one({'_id': user_id})
+
+    async def list_admins(self):
+        return [doc['_id'] for doc in admin_data.find()]
+
+    async def is_admin(self, user_id: int) -> bool:
+        return admin_data.find_one({'_id': user_id}) is not None
+
+
+# Global database manager instance
+Seishiro = SeishiroDB()
