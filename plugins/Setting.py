@@ -14,26 +14,12 @@ async def settings_command(client: Bot, message: Message):
     # Check if owner or admin
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS or await is_admin(user_id)
 
-    # -------------------------------
-    # NON-ADMIN VIEW-ONLY PANEL
-    # -------------------------------
+    # Only admins/owner can access settings
     if not is_admin_user:
-        buttons = InlineKeyboardMarkup(
-            [
-                [InlineKeyboardButton("⚓ Home", callback_data="start")],
-                [InlineKeyboardButton("❌ Close", callback_data="close")]
-            ]
+        # Optional: you can send a small notice or just ignore
+        return await message.reply_text(
+            "❌ You do not have permission to access the Settings panel."
         )
-        await message.reply_text(
-            text=(
-                "⚙️ **Settings Panel (View Only)**\n\n"
-                "❌ You do not have permission to modify bot settings.\n\n"
-                f"👑 **Owner:** [Click Here](tg://user?id={OWNER_ID})"
-            ),
-            reply_markup=buttons,
-            disable_web_page_preview=True
-        )
-        return
 
     # -------------------------------
     # ADMIN SETTINGS PANEL
