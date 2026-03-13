@@ -1,21 +1,18 @@
-# add_admins.py
-
-import asyncio
+from pyrogram import filters
+from bot import Bot
 from database.database import Seishiro
-
-# List of admin Telegram IDs
-admins_to_add = [
-    5356695781,  # your ID
-]
+from config import OWNER_ID
 
 
-async def add_admins():
+@Bot.on_message(filters.command("addadmin") & filters.user(OWNER_ID))
+async def add_admin_command(client, message):
 
-    for admin_id in admins_to_add:
-        await Seishiro.add_admin(admin_id)
-        print(f"✅ Added admin: {admin_id}")
+    try:
+        admin_id = int(message.command[1])
+    except:
+        await message.reply_text("Usage:\n/addadmin user_id")
+        return
 
-    print("🎉 All admins added successfully!")
+    await Seishiro.add_admin(admin_id)
 
-
-asyncio.run(add_admins())
+    await message.reply_text(f"✅ Admin added successfully:\n`{admin_id}`")
