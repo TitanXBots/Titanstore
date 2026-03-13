@@ -1,4 +1,4 @@
-from pyrogram import Client
+from pyrogram import Client, filters
 from bot import Bot
 from config import *
 from Script import COMMANDS_TXT, DISCLAIMER_TXT
@@ -10,12 +10,26 @@ import asyncio
 from pyrogram.errors import PeerIdInvalid
 from pyromod import listen
 
-# -------------------------------
-# CANCEL LISTENER FLAG
-# -------------------------------
+
+# --------------------------------
+# CANCEL LISTENER SYSTEM
+# --------------------------------
 
 cancel_listener = {}
 
+
+@Bot.on_message(filters.command("cancel") & filters.private)
+async def cancel_process(client: Bot, message: Message):
+
+    user_id = message.from_user.id
+    cancel_listener[user_id] = True
+
+    await message.reply_text("❌ Process cancelled.")
+
+
+# --------------------------------
+# CALLBACK HANDLER
+# --------------------------------
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -31,9 +45,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     is_admin_user = user_id == OWNER_ID or user_id in ADMINS
 
 
-# -------------------------------
+# --------------------------------
 # HELP
-# -------------------------------
+# --------------------------------
 
     if data == "help":
 
@@ -55,9 +69,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 
-# -------------------------------
+# --------------------------------
 # ABOUT
-# -------------------------------
+# --------------------------------
 
     elif data == "about":
 
@@ -82,9 +96,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 
-# -------------------------------
+# --------------------------------
 # START PANEL
-# -------------------------------
+# --------------------------------
 
     elif data == "start":
 
@@ -117,9 +131,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 
-# -------------------------------
+# --------------------------------
 # SETTINGS PANEL
-# -------------------------------
+# --------------------------------
 
     elif data == "settings":
 
@@ -139,9 +153,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 
-# -------------------------------
+# --------------------------------
 # BAN MENU
-# -------------------------------
+# --------------------------------
 
     elif data == "ban_menu":
 
@@ -169,19 +183,19 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 
-# -------------------------------
+# --------------------------------
 # BAN USER
-# -------------------------------
+# --------------------------------
 
     elif data == "ban_user":
 
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
-        cancel_listener[user_id] = True
+        cancel_listener[user_id] = False
 
         await query.message.edit_text(
-            "Send **User ID and reason**\n\nExample:\n`123456789 spam`",
+            "Send **User ID and reason**\n\nExample:\n`123456789 spam`\n\nType /cancel to cancel.",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
@@ -197,7 +211,11 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             msg = await client.listen(query.message.chat.id, timeout=120)
 
             if cancel_listener.get(user_id):
-                return
+                return await msg.reply_text("❌ Ban cancelled.")
+
+            if msg.text == "/cancel":
+                cancel_listener[user_id] = True
+                return await msg.reply_text("❌ Ban cancelled.")
 
             parts = msg.text.split(maxsplit=1)
 
@@ -217,19 +235,19 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             await query.message.reply_text("⏰ Time expired")
 
 
-# -------------------------------
+# --------------------------------
 # UNBAN USER
-# -------------------------------
+# --------------------------------
 
     elif data == "unban_user":
 
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
-        cancel_listener[user_id] = True
+        cancel_listener[user_id] = False
 
         await query.message.edit_text(
-            "Send **User ID** to unban",
+            "Send **User ID** to unban\n\nType /cancel to cancel.",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
@@ -245,7 +263,11 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             msg = await client.listen(query.message.chat.id, timeout=120)
 
             if cancel_listener.get(user_id):
-                return
+                return await msg.reply_text("❌ Unban cancelled.")
+
+            if msg.text == "/cancel":
+                cancel_listener[user_id] = True
+                return await msg.reply_text("❌ Unban cancelled.")
 
             if not msg.text.isdigit():
                 return await msg.reply_text("❌ Invalid user ID")
@@ -262,9 +284,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             await query.message.reply_text("⏰ Time expired")
 
 
-# -------------------------------
+# --------------------------------
 # BANNED LIST
-# -------------------------------
+# --------------------------------
 
     elif data == "banned_list":
 
@@ -306,9 +328,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 
-# -------------------------------
+# --------------------------------
 # COMMANDS
-# -------------------------------
+# --------------------------------
 
     elif data == "commands":
 
@@ -327,9 +349,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 
-# -------------------------------
+# --------------------------------
 # DISCLAIMER
-# -------------------------------
+# --------------------------------
 
     elif data == "disclaimer":
 
@@ -348,9 +370,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 
-# -------------------------------
+# --------------------------------
 # CLOSE
-# -------------------------------
+# --------------------------------
 
     elif data == "close":
 
