@@ -2,7 +2,7 @@
 # TitanXBots MongoDB management
 
 import pymongo
-from config import DB_URI, DB_NAME
+from config import DB_URI, DB_NAME, OWNER_ID
 
 # -------------------------------
 # Database connection
@@ -28,10 +28,17 @@ class SeishiroDB:
         return user_data.find_one({'_id': user_id}) is not None
 
     async def add_user(self, user_id: int):
-        user_data.update_one({'_id': user_id}, {'$set': {'_id': user_id}}, upsert=True)
+        user_data.update_one(
+            {'_id': user_id},
+            {'$set': {'_id': user_id}},
+            upsert=True
+        )
 
     async def full_userbase(self) -> list:
         return [doc['_id'] for doc in user_data.find()]
+
+    async def total_users(self) -> int:
+        return user_data.count_documents({})
 
     async def del_user(self, user_id: int):
         user_data.delete_one({'_id': user_id})
@@ -65,7 +72,11 @@ class SeishiroDB:
     # ADMIN MANAGEMENT
     # -------------------------------
     async def add_admin(self, user_id: int):
-        admin_data.update_one({'_id': user_id}, {'$set': {'_id': user_id}}, upsert=True)
+        admin_data.update_one(
+            {'_id': user_id},
+            {'$set': {'_id': user_id}},
+            upsert=True
+        )
 
     async def remove_admin(self, user_id: int):
         admin_data.delete_one({'_id': user_id})
@@ -74,6 +85,8 @@ class SeishiroDB:
         return [doc['_id'] for doc in admin_data.find()]
 
     async def is_admin(self, user_id: int) -> bool:
+        if user_id == OWNER_ID:
+            return True
         return admin_data.find_one({'_id': user_id}) is not None
 
 
