@@ -1,70 +1,82 @@
-# TitanXBots
+# database.py - TitanXBots Database Management
 
 import pymongo
-from config import DB_URI, DB_NAME, OWNER_ID, ADMINS
+from config import DB_URI, DB_NAME, OWNER_ID
 
+# -------------------------------
+# MongoDB Connection
+# -------------------------------
 dbclient = pymongo.MongoClient(DB_URI)
 database = dbclient[DB_NAME]
 
+# Collections
 user_data = database['users']
 banned_users = database['banned_users']
+admins_collection = database['admins']
+
+# Ensure OWNER_ID is always admin
+if not admins_collection.find_one({"user_id": OWNER_ID}):
+    admins_collection.insert_one({"user_id": OWNER_ID})
 
 # -------------------------------
-# User management
+# User Management
 # -------------------------------
-async def present_user(user_id: int) -> bool:
-    """Check if a user exists in the database."""
-    found = user_data.find_one({'_id': user_id})
-    return bool(found)
+def present_user(user_id: int) -> bool:
+    """Check if a user exists in the users collection."""
+    return user_data.find_one({"user_id": user_id}) is not None
 
-async def add_user(user_id: int):
-    """Add a user to the database."""
-    user_data.update_one({'_id': user_id}, {'$set': {'_id': user_id}}, upsert=True)
+def add_user(user_id: int, username: str = None) -> bool:
+    """Add a new user to the users collection."""
+    if present_user(user_id):
+        return False
+    user_data.insert_one({"user_id": user_id, "username": username})
+    return True
 
-async def full_userbase() -> list:
-    """Return a list of all user IDs."""
-    users = user_data.find()
-    return [doc['_id'] for doc in users]
-
-async def del_user(user_id: int):
-    """Delete a user from the database."""
-    user_data.delete_one({'_id': user_id})
+def remove_user(user_id: int) -> bool:
+    """Remove a user from the users collection."""
+    result = user_data.delete_one({"user_id": user_id})
+    return result.deleted_count > 0
 
 # -------------------------------
-# Ban and Unban management 
+# Banned Users Management
 # -------------------------------
-async def is_banned(user_id: int) -> bool:
+def is_banned(user_id: int) -> bool:
     """Check if a user is banned."""
-    return banned_users.find_one({"_id": user_id}) is not None
+    return banned_users.find_one({"user_id": user_id}) is not None
 
-async def get_ban_reason(user_id: int) -> str:
-    """Return the ban reason of a user."""
-    data = banned_users.find_one({"_id": user_id})
-    return data.get("reason", "No reason provided") if data else "No reason provided"
+def ban_user(user_id: int, reason: str = None) -> bool:
+    """Ban a user."""
+    if is_banned(user_id):
+        return False
+    banned_users.insert_one({"user_id": user_id, "reason": reason})
+    return True
 
-async def ban_user(user_id: int, reason: str):
-    """Ban a user with a reason."""
-    banned_users.update_one(
-        {"_id": user_id},
-        {"$set": {"reason": reason}},
-        upsert=True
-    )
-
-async def unban_user(user_id: int):
+def unban_user(user_id: int) -> bool:
     """Unban a user."""
-    banned_users.delete_one({"_id": user_id})
-
-async def banned_users_list() -> list:
-    """Return a list of all banned users."""
-    return list(banned_users.find())
+    result = banned_users.delete_one({"user_id": user_id})
+    return result.deleted_count > 0
 
 # -------------------------------
-# Owner and Admin check
+# Admin Management
 # -------------------------------
-async def is_owner(user_id: int) -> bool:
-    """Check if the user is the owner."""
-    return user_id == OWNER_ID
+def add_admin(user_id: int) -> bool:
+    """Add a new admin. Returns True if added, False if already exists."""
+    if admins_collection.find_one({"user_id": user_id}):
+        return False
+    admins_collection.insert_one({"user_id": user_id})
+    return True
 
-async def is_admin(user_id: int) -> bool:
-    """Check if the user is an admin (Owner is automatically admin)."""
-    return user_id == OWNER_ID or user_id in ADMINS
+def remove_admin(user_id: int) -> bool:
+    """Remove an admin. Returns True if removed, False if not found or OWNER_ID."""
+    if user_id == OWNER_ID:
+        return False  # Owner cannot be removed
+    result = admins_collection.delete_one({"user_id": user_id})
+    return result.deleted_count > 0
+
+def get_admins() -> list:
+    """Return a list of all admin user IDs."""
+    return [admin['user_id'] for admin in admins_collection.find()]
+
+def is_admin(user_id: int) -> bool:
+    """Check if a user is an admin."""
+    return admins_collection.find_one({"user_id": user_id}) is not None
