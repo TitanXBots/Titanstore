@@ -3,16 +3,12 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQ
 from bot import Bot
 from config import *
 from Script import *
-from database.database import add_admin, remove_admin, admin_list, ban_user, unban_user, banned_users_list
+from database.database import add_admin, remove_admin, admin_list, ban_user, unban_user, banned_users_list, is_admin
 
 # -------------------------------
 # Helper function: listen with /cancel
 # -------------------------------
 async def listen_with_cancel(client: Bot, chat_id: int, timeout: int = 300):
-    """
-    Listen for user input with /cancel command to abort.
-    Returns message object or None if cancelled or timed out.
-    """
     try:
         msg = await client.listen(chat_id=chat_id, timeout=timeout)
         if msg.text.lower() == "/cancel":
@@ -34,11 +30,11 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     except:
         pass
 
-    is_admin_user = user_id == OWNER_ID or user_id in ADMINS
+    is_admin_user = await is_admin(user_id)
 
-# -------------------------------
-# HELP PANEL
-# -------------------------------
+    # -------------------------------
+    # HELP PANEL
+    # -------------------------------
     if data == "help":
         buttons = InlineKeyboardMarkup([
             [
@@ -50,15 +46,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 InlineKeyboardButton("⚡ Close", callback_data="close")
             ]
         ])
-        await query.message.edit_text(
-            HELP_TXT.format(first=query.from_user.first_name),
-            disable_web_page_preview=True,
-            reply_markup=buttons
-        )
+        await query.message.edit_text(HELP_TXT.format(first=query.from_user.first_name),
+                                      disable_web_page_preview=True,
+                                      reply_markup=buttons)
 
-# -------------------------------
-# ABOUT PANEL
-# -------------------------------
+    # -------------------------------
+    # ABOUT PANEL
+    # -------------------------------
     elif data == "about":
         buttons = InlineKeyboardMarkup([
             [
@@ -70,15 +64,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 InlineKeyboardButton("⚡ Close", callback_data="close")
             ]
         ])
-        await query.message.edit_text(
-            ABOUT_TXT.format(first=query.from_user.first_name),
-            disable_web_page_preview=True,
-            reply_markup=buttons
-        )
+        await query.message.edit_text(ABOUT_TXT.format(first=query.from_user.first_name),
+                                      disable_web_page_preview=True,
+                                      reply_markup=buttons)
 
-# -------------------------------
-# START PANEL
-# -------------------------------
+    # -------------------------------
+    # START PANEL
+    # -------------------------------
     elif data == "start":
         buttons = [
             [InlineKeyboardButton("🧠 Help", callback_data="help"),
@@ -86,15 +78,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         ]
         if is_admin_user:
             buttons.append([InlineKeyboardButton("⚙️ Settings", callback_data="settings")])
-        await query.message.edit_text(
-            START_MSG.format(first=query.from_user.first_name),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(buttons)
-        )
+        await query.message.edit_text(START_MSG.format(first=query.from_user.first_name),
+                                      disable_web_page_preview=True,
+                                      reply_markup=InlineKeyboardMarkup(buttons))
 
-# -------------------------------
-# SETTINGS PANEL
-# -------------------------------
+    # -------------------------------
+    # SETTINGS PANEL
+    # -------------------------------
     elif data == "settings":
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
@@ -104,34 +94,28 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             [InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
             [InlineKeyboardButton("⬅ Back", callback_data="start")]
         ]
-        await query.message.edit_text(
-            "⚙️ **Bot Settings Panel**",
-            reply_markup=InlineKeyboardMarkup(buttons)
-        )
+        await query.message.edit_text("⚙️ **Bot Settings Panel**",
+                                      reply_markup=InlineKeyboardMarkup(buttons))
 
-# -------------------------------
-# ADMIN MENU
-# -------------------------------
+    # -------------------------------
+    # ADMIN MENU
+    # -------------------------------
     elif data == "admin_menu":
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
         buttons = [
-            [
-                InlineKeyboardButton("➕ Add Admin", callback_data="add_admin"),
-                InlineKeyboardButton("➖ Remove Admin", callback_data="remove_admin")
-            ],
+            [InlineKeyboardButton("➕ Add Admin", callback_data="add_admin"),
+             InlineKeyboardButton("➖ Remove Admin", callback_data="remove_admin")],
             [InlineKeyboardButton("📋 Admin List", callback_data="admin_list")],
             [InlineKeyboardButton("⬅ Back", callback_data="settings")]
         ]
-        await query.message.edit_text(
-            "🧑‍💼 **Admin Control Panel**",
-            reply_markup=InlineKeyboardMarkup(buttons)
-        )
+        await query.message.edit_text("🧑‍💼 **Admin Control Panel**",
+                                      reply_markup=InlineKeyboardMarkup(buttons))
 
-# -------------------------------
-# ADD / REMOVE ADMIN WITH /CANCEL
-# -------------------------------
+    # -------------------------------
+    # ADD / REMOVE ADMIN WITH /CANCEL
+    # -------------------------------
     elif data in ["add_admin", "remove_admin"]:
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
@@ -139,10 +123,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         action = "Add" if data == "add_admin" else "Remove"
         buttons = [[InlineKeyboardButton("⬅ Back", callback_data="admin_menu")]]
 
-        await query.message.edit_text(
-            f"Send the **User ID** to {action} as admin.\nType /cancel to abort.",
-            reply_markup=InlineKeyboardMarkup(buttons)
-        )
+        await query.message.edit_text(f"Send the **User ID** to {action} as admin.\nType /cancel to abort.",
+                                      reply_markup=InlineKeyboardMarkup(buttons))
 
         msg = await listen_with_cancel(client, query.message.chat.id, timeout=120)
         if not msg:
@@ -159,23 +141,21 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             await remove_admin(target_id)
             await msg.reply_text(f"✅ User `{target_id}` removed from admin.", reply_markup=InlineKeyboardMarkup(buttons))
 
-# -------------------------------
-# ADMIN LIST
-# -------------------------------
+    # -------------------------------
+    # ADMIN LIST
+    # -------------------------------
     elif data == "admin_list":
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
         admins_db = await admin_list()
         text = "🧑‍💼 **Admins**\n\n" + "\n".join([f"`{uid}`" for uid in admins_db])
-        await query.message.edit_text(
-            text,
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅ Back", callback_data="admin_menu")]])
-        )
+        await query.message.edit_text(text,
+                                      reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅ Back", callback_data="admin_menu")]]))
 
-# -------------------------------
-# BAN MENU
-# -------------------------------
+    # -------------------------------
+    # BAN MENU
+    # -------------------------------
     elif data == "ban_menu":
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
@@ -188,115 +168,30 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         ]
         await query.message.edit_text("🚫 **Ban Control Panel**", reply_markup=InlineKeyboardMarkup(buttons))
 
-# -------------------------------
-# BAN USER WITH /CANCEL
-# -------------------------------
-    elif data == "ban_user":
+    # -------------------------------
+    # BAN / UNBAN USER WITH /CANCEL
+    # -------------------------------
+    elif data in ["ban_user", "unban_user"]:
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
         buttons = [[InlineKeyboardButton("⬅ Back", callback_data="ban_menu")]]
+        prompt = "<b>Send User ID to ban with optional reason:\nExample: 123456789 spam\nOr type /cancel to abort.</b>" \
+            if data == "ban_user" else "<b>Send User ID to unban.\nOr type /cancel to abort.</b>"
 
-        await query.message.edit_text(
-            "<b>Send User ID to ban with optional reason:\nExample: 123456789 spam\nOr type /cancel to abort.</b>",
-            reply_markup=InlineKeyboardMarkup(buttons)
-        )
-
+        await query.message.edit_text(prompt, reply_markup=InlineKeyboardMarkup(buttons))
         msg = await listen_with_cancel(client, query.message.chat.id, timeout=300)
         if not msg:
             return await query.message.reply_text("❌ Action cancelled!", reply_markup=InlineKeyboardMarkup(buttons))
 
-        parts = msg.text.split(maxsplit=1)
-        if not parts[0].isdigit():
+        if not msg.text.split()[0].isdigit():
             return await msg.reply_text("❌ Invalid User ID", reply_markup=InlineKeyboardMarkup(buttons))
 
-        uid = int(parts[0])
-        reason = parts[1] if len(parts) > 1 else "No reason"
-        await ban_user(uid, reason)
-        await msg.reply_text(f"✅ User `{uid}` banned.\nReason: {reason}", reply_markup=InlineKeyboardMarkup(buttons))
-
-# -------------------------------
-# UNBAN USER WITH /CANCEL
-# -------------------------------
-    elif data == "unban_user":
-        if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
-
-        buttons = [[InlineKeyboardButton("⬅ Back", callback_data="ban_menu")]]
-
-        await query.message.edit_text(
-            "<b>Send User ID to unban.\nOr type /cancel to abort.</b>",
-            reply_markup=InlineKeyboardMarkup(buttons)
-        )
-
-        msg = await listen_with_cancel(client, query.message.chat.id, timeout=300)
-        if not msg:
-            return await query.message.reply_text("❌ Action cancelled!", reply_markup=InlineKeyboardMarkup(buttons))
-
-        if not msg.text.isdigit():
-            return await msg.reply_text("❌ Invalid User ID", reply_markup=InlineKeyboardMarkup(buttons))
-
-        uid = int(msg.text)
-        await unban_user(uid)
-        await msg.reply_text(f"✅ User `{uid}` unbanned.", reply_markup=InlineKeyboardMarkup(buttons))
-
-# -------------------------------
-# BANNED LIST
-# -------------------------------
-    elif data == "banned_list":
-        if not is_admin_user:
-            return await query.answer("Admins only.", show_alert=True)
-
-        users = await banned_users_list()
-        text = "🚫 **Banned Users**\n\n"
-        if users:
-            for user in users:
-                uid = user["_id"]
-                reason = user.get("reason", "No reason")
-                try:
-                    user_obj = await client.get_users(uid)
-                    name = user_obj.mention
-                except:
-                    name = f"`{uid}`"
-                text += f"• {name} — {reason}\n"
+        uid = int(msg.text.split()[0])
+        if data == "ban_user":
+            reason = " ".join(msg.text.split()[1:]) if len(msg.text.split()) > 1 else "No reason"
+            await ban_user(uid, reason)
+            await msg.reply_text(f"✅ User `{uid}` banned.\nReason: {reason}", reply_markup=InlineKeyboardMarkup(buttons))
         else:
-            text += "No banned users."
-
-        await query.message.edit_text(
-            text,
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅ Back", callback_data="ban_menu")]])
-        )
-
-# -------------------------------
-# COMMANDS PANEL
-# -------------------------------
-    elif data == "commands":
-        await query.message.edit_text(
-            COMMANDS_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 Back to Help", callback_data="help")],
-                [InlineKeyboardButton("⚓ Home", callback_data="start"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
-            ])
-        )
-
-# -------------------------------
-# DISCLAIMER
-# -------------------------------
-    elif data == "disclaimer":
-        await query.message.edit_text(
-            DISCLAIMER_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔰 About", callback_data="about")],
-                [InlineKeyboardButton("⚓ Home", callback_data="start"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
-            ])
-        )
-
-# -------------------------------
-# CLOSE
-# -------------------------------
-    elif data == "close":
-        await query.message.delete()
+            await unban_user(uid)
+            await msg.reply_text(f"✅ User `{uid}` unbanned.", reply_markup=InlineKeyboardMarkup(buttons))
