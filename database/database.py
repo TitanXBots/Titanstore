@@ -1,6 +1,6 @@
 import pymongo
 from datetime import datetime
-from config import DB_URI, DB_NAME, OWNER_ID, ADMINS
+from config import DB_URI, DB_NAME, OWNER_ID
 
 # -------------------------------
 # Database setup
@@ -10,7 +10,7 @@ database = dbclient[DB_NAME]
 
 user_data = database['users']
 banned_users = database['banned_users']
-admins = database['admins']  # dynamic admins collection
+admins = database['admins']  # dynamic admins collection only
 
 # -------------------------------
 # User management
@@ -68,9 +68,7 @@ async def is_owner(user_id: int) -> bool:
 async def is_admin(user_id: int) -> bool:
     if user_id == OWNER_ID:
         return True
-    if user_id in ADMINS:
-        return True
-    return admins.find_one({'_id': user_id}) is not None
+    return admins.find_one({'_id': user_id}) is not None  # only DB admins
 
 # -------------------------------
 # Dynamic Admin Management
@@ -87,4 +85,4 @@ async def remove_admin(user_id: int):
 
 async def admin_list() -> list:
     db_admins = [doc['_id'] for doc in admins.find()]
-    return list(set([OWNER_ID] + ADMINS + db_admins))
+    return list(set([OWNER_ID] + db_admins))  # only DB admins + owner
