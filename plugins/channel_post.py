@@ -6,7 +6,7 @@ from pyrogram.errors import FloodWait
 from bot import Bot
 from config import CHANNEL_ID, DISABLE_CHANNEL_BUTTON
 from helper_func import encode
-from database.database import is_admin  # <- dynamic admin check from DB
+from database.database import *  # <- dynamic admin check from DB
 
 # -------------------------------
 # Forward private messages to DB channel and generate link (admin only)
