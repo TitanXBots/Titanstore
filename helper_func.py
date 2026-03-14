@@ -9,7 +9,7 @@ from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait
 from config import FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4, OWNER_ID
-from database.database import admins_collection  # Your admin database collection
+from database.database import * # Your admin database collection
 
 # -------------------------------
 # OWNER / ADMIN CHECKS
