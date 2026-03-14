@@ -4,7 +4,7 @@ from Script import *
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import MessageNotModified
 import asyncio
-
+from database.database import is_admin
 # -------------------------------
 # SAFE MESSAGE EDIT
 # -------------------------------
