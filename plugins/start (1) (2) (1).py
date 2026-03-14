@@ -3,7 +3,6 @@
 import os
 import asyncio
 import humanize
-import logging
 from pymongo import MongoClient
 from datetime import datetime
 
@@ -12,11 +11,10 @@ from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait
 
-from Script import *
 from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
-from database.database import is_admin, is_owner  # use database admin checks
+from database.database import is_admin, is_owner  # dynamic admin/owner check
 
 # -------------------------------
 # Database setup
@@ -38,7 +36,6 @@ file_auto_delete = humanize.naturaldelta(FILE_AUTO_DELETE)
 async def is_user_present(user_id: int) -> bool:
     return user_data.find_one({'_id': user_id}) is not None
 
-
 async def add_user(user_id: int, first_name: str, username: str):
     user_data.update_one(
         {'_id': user_id},
@@ -57,7 +54,6 @@ async def add_user(user_id: int, first_name: str, username: str):
 async def is_user_banned(user_id: int) -> bool:
     return banned_users.find_one({'_id': user_id}) is not None
 
-
 async def get_ban_reason(user_id: int) -> str:
     data = banned_users.find_one({'_id': user_id})
     return data.get('reason', 'No reason provided') if data else 'No reason provided'
@@ -67,16 +63,13 @@ async def get_ban_reason(user_id: int) -> str:
 # -------------------------------
 async def is_maintenance(user_id: int) -> bool:
     data = telegram_files.find_one({"maintenance": "on"})
-    if data and user_id != OWNER_ID:
-        return True
-    return False
+    return bool(data and user_id != OWNER_ID)
 
 # -------------------------------
-# START COMMAND
+# START COMMAND (subscribed users)
 # -------------------------------
 @Bot.on_message(filters.command("start") & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
-
     user_id = message.from_user.id
     text = message.text
 
@@ -85,7 +78,7 @@ async def start_command(client: Client, message: Message):
     # -------------------------------
     if await is_user_banned(user_id):
         reason = await get_ban_reason(user_id)
-        await message.reply_text(f"🚫 You are banned from using this bot.\n\nReason: {reason}")
+        await message.reply_text(f"🚫 You are banned.\nReason: {reason}")
         return
 
     # -------------------------------
@@ -94,15 +87,12 @@ async def start_command(client: Client, message: Message):
     if not await is_user_present(user_id):
         try:
             await add_user(user_id, message.from_user.first_name, message.from_user.username)
-
             log_text = NEW_USER_TXT.format(
                 message.from_user.mention,
                 user_id,
                 message.from_user.first_name or "Unknown"
             )
-
             await client.send_message(LOG_CHANNEL_ID, log_text)
-
         except Exception as e:
             print(f"User add error: {e}")
 
@@ -114,7 +104,7 @@ async def start_command(client: Client, message: Message):
         return
 
     # -------------------------------
-    # File link payload handling
+    # File link payload
     # -------------------------------
     if len(text.split()) > 1:
         try:
@@ -125,46 +115,34 @@ async def start_command(client: Client, message: Message):
             return
 
         ids = []
-
-        if len(argument) == 3:
-            try:
+        try:
+            if len(argument) == 3:
                 start = int(int(argument[1]) / abs(client.db_channel.id))
                 end = int(int(argument[2]) / abs(client.db_channel.id))
                 ids = range(start, end + 1)
-            except:
-                return
-
-        elif len(argument) == 2:
-            try:
+            elif len(argument) == 2:
                 ids = [int(int(argument[1]) / abs(client.db_channel.id))]
-            except:
-                return
+        except:
+            return
 
         temp = await message.reply("Please wait...")
-
         try:
             messages = await get_messages(client, ids)
         except:
             await message.reply_text("Error retrieving file.")
             return
-
         await temp.delete()
 
         copied_msgs = []
-
         for msg in messages:
-
             caption = ""
-
             if CUSTOM_CAPTION and msg.document:
                 caption = CUSTOM_CAPTION.format(
                     previouscaption="" if not msg.caption else msg.caption.html,
                     filename=msg.document.file_name
                 )
-
             elif msg.caption:
                 caption = msg.caption.html
-
             try:
                 copied = await msg.copy(
                     chat_id=user_id,
@@ -173,7 +151,6 @@ async def start_command(client: Client, message: Message):
                     protect_content=PROTECT_CONTENT
                 )
                 copied_msgs.append(copied)
-
             except FloodWait as e:
                 await asyncio.sleep(e.value)
                 copied = await msg.copy(chat_id=user_id)
@@ -181,9 +158,8 @@ async def start_command(client: Client, message: Message):
 
         warn_msg = await client.send_message(
             chat_id=user_id,
-            text=f"<b>IMPORTANT</b>\n\nThis file will be deleted in {file_auto_delete}.\n\nForward it somewhere to save."
+            text=f"<b>IMPORTANT</b>\n\nThis file will be deleted in {file_auto_delete}.\nForward it somewhere to save."
         )
-
         asyncio.create_task(delete_files(copied_msgs, client, warn_msg, base64_string))
         return
 
@@ -191,18 +167,12 @@ async def start_command(client: Client, message: Message):
     # Start menu
     # -------------------------------
     admin_status = await is_admin(user_id)
-
     buttons = [
-        [
-            InlineKeyboardButton("🧠 HELP", callback_data="help"),
-            InlineKeyboardButton("📗 ABOUT", callback_data="about")
-        ]
+        [InlineKeyboardButton("🧠 HELP", callback_data="help"),
+         InlineKeyboardButton("📗 ABOUT", callback_data="about")]
     ]
-
-    if admin_status:  # Only admins/owner see SETTINGS
-        buttons.append(
-            [InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")]
-        )
+    if admin_status:
+        buttons.append([InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")])
 
     await message.reply_photo(
         photo=START_PIC,
@@ -216,33 +186,22 @@ async def start_command(client: Client, message: Message):
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
-
 # -------------------------------
-# Force join (if user not joined)
+# Force join for non-subscribed users
 # -------------------------------
 @Bot.on_message(filters.command('start') & filters.private)
 async def not_joined(client: Client, message: Message):
-
     buttons = [
-        [
-            InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink),
-            InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink2),
-        ],
-        [
-            InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink3),
-            InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink4),
-        ]
+        [InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink),
+         InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink2)],
+        [InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink3),
+         InlineKeyboardButton("ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink4)]
     ]
-
     try:
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text='☢ ɴᴏᴡ ᴄʟɪᴄᴋ ʜᴇʀᴇ •',
-                    url=f"https://t.me/{client.username}?start={message.command[1]}"
-                )
-            ]
-        )
+        buttons.append([InlineKeyboardButton(
+            text='☢ ɴᴏᴡ ᴄʟɪᴄᴋ ʜᴇʀᴇ •',
+            url=f"https://t.me/{client.username}?start={message.command[1]}"
+        )])
     except IndexError:
         pass
 
@@ -258,39 +217,31 @@ async def not_joined(client: Client, message: Message):
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
-
 # -------------------------------
 # Users command (admin only)
 # -------------------------------
 @Bot.on_message(filters.command("users") & filters.private)
 async def total_users(client, message):
-
     if not await is_admin(message.from_user.id):
         await message.reply_text("⚠️ Only admins allowed.")
         return
-
     total = user_data.count_documents({})
     await message.reply_text(f"👥 Total Users: {total}")
-
 
 # -------------------------------
 # Broadcast command (admin only)
 # -------------------------------
 @Bot.on_message(filters.command("broadcast") & filters.private)
 async def broadcast_handler(client, message):
-
     if not await is_admin(message.from_user.id):
         await message.reply_text("⚠️ Only admins allowed.")
         return
-
     if not message.reply_to_message:
         await message.reply_text("Reply to a message to broadcast.")
         return
 
     users = user_data.find()
-    success = 0
-    failed = 0
-
+    success, failed = 0, 0
     msg = await message.reply_text("📢 Broadcast started...")
 
     for user in users:
@@ -302,24 +253,18 @@ async def broadcast_handler(client, message):
             failed += 1
 
     await msg.edit_text(
-        f"📢 Broadcast Completed\n\n"
-        f"✅ Success: {success}\n"
-        f"❌ Failed: {failed}"
+        f"📢 Broadcast Completed\n✅ Success: {success}\n❌ Failed: {failed}"
     )
-
 
 # -------------------------------
 # File auto delete
 # -------------------------------
 async def delete_files(messages, client, warn_msg, command_payload=None):
-
     global AUTO_DELETE_ENABLED
-
     if not AUTO_DELETE_ENABLED:
         return
 
     await asyncio.sleep(FILE_AUTO_DELETE)
-
     for msg in messages:
         try:
             await client.delete_messages(msg.chat.id, msg.id)
@@ -331,7 +276,6 @@ async def delete_files(messages, client, warn_msg, command_payload=None):
     except:
         pass
 
-
 # -------------------------------
 # Auto delete toggle (owner only)
 # -------------------------------
@@ -340,12 +284,10 @@ def set_auto_delete(state: bool):
     AUTO_DELETE_ENABLED = state
     return AUTO_DELETE_ENABLED
 
-
 @Client.on_message(filters.command("autodeleteon") & filters.user(OWNER_ID))
 async def enable_autodelete(client, message):
     set_auto_delete(True)
     await message.reply_text("✅ Auto Delete Enabled")
-
 
 @Client.on_message(filters.command("autodeleteoff") & filters.user(OWNER_ID))
 async def disable_autodelete(client, message):
