@@ -1,13 +1,18 @@
-# TitanXBots
+# database.py
 
 import pymongo
-from config import DB_URI, DB_NAME, OWNER_ID, ADMINS
+from config import DB_URI, DB_NAME, OWNER_ID
 
+# -------------------------------
+# Database connection
+# -------------------------------
 dbclient = pymongo.MongoClient(DB_URI)
 database = dbclient[DB_NAME]
 
+# Collections
 user_data = database['users']
 banned_users = database['banned_users']
+admin_data = database['admins']  # Dynamic admin collection
 
 # -------------------------------
 # User management
@@ -31,7 +36,7 @@ async def del_user(user_id: int):
     user_data.delete_one({'_id': user_id})
 
 # -------------------------------
-# Ban and Unban management 
+# Ban and Unban management
 # -------------------------------
 async def is_banned(user_id: int) -> bool:
     """Check if a user is banned."""
@@ -59,12 +64,33 @@ async def banned_users_list() -> list:
     return list(banned_users.find())
 
 # -------------------------------
-# Owner and Admin check
+# Admin management
+# -------------------------------
+async def add_admin(user_id: int):
+    """Add a user as an admin."""
+    admin_data.update_one({'_id': user_id}, {'$set': {'_id': user_id}}, upsert=True)
+
+async def remove_admin(user_id: int):
+    """Remove a user from admin."""
+    admin_data.delete_one({'_id': user_id})
+
+async def get_all_admins() -> list:
+    """Return a list of all admin IDs (Owner is included automatically)."""
+    admins = [OWNER_ID]  # Owner is always admin
+    db_admins = admin_data.find()
+    admins.extend(doc['_id'] for doc in db_admins)
+    return admins
+
+async def is_admin(user_id: int) -> bool:
+    """Check if a user is an admin (Owner is always admin)."""
+    if user_id == OWNER_ID:
+        return True
+    found = admin_data.find_one({'_id': user_id})
+    return bool(found)
+
+# -------------------------------
+# Owner check
 # -------------------------------
 async def is_owner(user_id: int) -> bool:
     """Check if the user is the owner."""
     return user_id == OWNER_ID
-
-async def is_admin(user_id: int) -> bool:
-    """Check if the user is an admin (Owner is automatically admin)."""
-    return user_id == OWNER_ID or user_id in ADMINS
