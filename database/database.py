@@ -1,21 +1,26 @@
-# TitanXBots
-
+# database.py
 import pymongo
 from config import DB_URI, DB_NAME, OWNER_ID, ADMINS
 
+# -------------------------------
+# Database setup
+# -------------------------------
 dbclient = pymongo.MongoClient(DB_URI)
 database = dbclient[DB_NAME]
 
 user_data = database['users']
 banned_users = database['banned_users']
+admins_collection = database['admins']
+
+# Ensure owner is always an admin
+admins_collection.update_one({'_id': OWNER_ID}, {'$set': {'role': 'owner'}}, upsert=True)
 
 # -------------------------------
 # User management
 # -------------------------------
 async def present_user(user_id: int) -> bool:
     """Check if a user exists in the database."""
-    found = user_data.find_one({'_id': user_id})
-    return bool(found)
+    return bool(user_data.find_one({'_id': user_id}))
 
 async def add_user(user_id: int):
     """Add a user to the database."""
@@ -23,8 +28,7 @@ async def add_user(user_id: int):
 
 async def full_userbase() -> list:
     """Return a list of all user IDs."""
-    users = user_data.find()
-    return [doc['_id'] for doc in users]
+    return [doc['_id'] for doc in user_data.find()]
 
 async def del_user(user_id: int):
     """Delete a user from the database."""
@@ -67,4 +71,27 @@ async def is_owner(user_id: int) -> bool:
 
 async def is_admin(user_id: int) -> bool:
     """Check if the user is an admin (Owner is automatically admin)."""
-    return user_id == OWNER_ID or user_id in ADMINS
+    if user_id == OWNER_ID:
+        return True
+    return admins_collection.find_one({'_id': user_id}) is not None
+
+# -------------------------------
+# Admin management
+# -------------------------------
+async def add_admin(user_id: int) -> bool:
+    """Add a user as admin. Returns False if already admin."""
+    if await is_admin(user_id):
+        return False
+    admins_collection.update_one({'_id': user_id}, {'$set': {'role': 'admin'}}, upsert=True)
+    return True
+
+async def remove_admin(user_id: int) -> bool:
+    """Remove a user from admins. Returns False if trying to remove owner."""
+    if user_id == OWNER_ID:
+        return False
+    admins_collection.delete_one({'_id': user_id})
+    return True
+
+async def list_admins() -> list:
+    """Return a list of admin IDs."""
+    return [doc['_id'] for doc in admins_collection.find()]
