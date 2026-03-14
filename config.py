@@ -1,47 +1,45 @@
-#TitanXBots
-
-
-
+# TitanXBots
 
 import os
 import logging
 from logging.handlers import RotatingFileHandler
 
-
-#Bot token @Botfather
+# Bot token @Botfather
 TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "7701286571:AAE-OAJX_t9MtUS7UG5EQ2SmOHlsbfeqdrM")
 
-#Your API ID from my.telegram.org
+# Your API ID from my.telegram.org
 APP_ID = int(os.environ.get("APP_ID", "12293838"))
 
-#Your API Hash from my.telegram.org
+# Your API Hash from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "cf8c7db0d609148786e7ca5c706909bd")
 
-#Your db channel Id
+# Your db channel Id
 CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1002096962621"))
 
-#log channel id 
+# log channel id
 LOG_CHANNEL_ID = int(os.environ.get("LOG_CHANNEL_ID", "-1002313688533"))
 
-#OWNER ID
+# OWNER ID
 OWNER_ID = int(os.environ.get("OWNER_ID", "5356695781"))
 
-#Port
+# Port
 PORT = os.environ.get("PORT", "8080")
 
-#File Auto Delete
-FILE_AUTO_DELETE = int(os.environ.get("FILE_AUTO_DELETE", "60")) # auto delete in seconds
+# File Auto Delete
+FILE_AUTO_DELETE = int(os.environ.get("FILE_AUTO_DELETE", "60"))  # auto delete in seconds
 
-#Database 
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://TITANBOTS:TITANBOTS@cluster0.yagdfyt.mongodb.net/?appName=Cluster0")
+# Database
+DB_URI = os.environ.get(
+    "DATABASE_URL",
+    "mongodb+srv://TITANBOTS:TITANBOTS@cluster0.yagdfyt.mongodb.net/?appName=Cluster0"
+)
 DB_NAME = os.environ.get("DATABASE_NAME", "TitanBot")
 
-#force sub channel id, if you want enable force sub (Use different ForceSub Channel ID)
+# force sub channel id
 FORCE_SUB_CHANNEL_1 = int(os.environ.get("FORCE_SUB_CHANNEL_1", "-1002071945738"))
 FORCE_SUB_CHANNEL_2 = int(os.environ.get("FORCE_SUB_CHANNEL_2", "-1001972961497"))
 FORCE_SUB_CHANNEL_3 = int(os.environ.get("FORCE_SUB_CHANNEL_3", "-1001987271131"))
 FORCE_SUB_CHANNEL_4 = int(os.environ.get("FORCE_SUB_CHANNEL_4", "-1002038066716"))
-
 
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "2"))
 
@@ -49,36 +47,35 @@ START_PIC = os.environ.get("START_PIC", "https://envs.sh/WeX.jpg")
 FORCE_PIC = os.environ.get("FORCE_PIC", "https://envs.sh/TPh.jpg")
 
 HELP_TXT = "<b>ᴛʜɪs ɪs ᴀɴ ꜰɪʟᴇꜱᴛᴏʀᴇ ʙᴏᴛ ᴡᴏʀᴋ ғᴏʀ @TitanCineplex\n\n✯ ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅs\n├/start : sᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ\n├/about : ᴏᴜʀ Iɴғᴏʀᴍᴀᴛɪᴏɴ\n└/help : ʜᴇʟᴘ ʀᴇʟᴀᴛᴇᴅ ʙᴏᴛ\n\n sɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴏɴ ʟɪɴᴋ ᴀɴᴅ sᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ ᴊᴏɪɴ 𝟦 ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ ᴛʜᴀᴛs ɪᴛ.....!</b>"
+
 ABOUT_TXT = "<b>✯ ᴄʀᴇᴀᴛᴏʀ : <a href=https://t.me/TitanXBots>ᎩᎪᏚᎻཛ</a>\n✯ ʟᴀɴɢᴜᴀɢᴇ : <a href=https://www.python.org>ᴘʏᴛʜᴏɴ3</a>\n✯ ʟɪʙʀᴀʀʏ : <a href='https://docs.pyrogram.org/'>ᴘʏʀᴏɢʀᴀᴍ</a>\n✯ ꜱᴏᴜʀᴄᴇ ᴄᴏᴅᴇ : ᴘʀɪᴠᴀᴛᴇ\n✯ ᴜᴘᴅᴀᴛᴇꜱ ᴄʜᴀɴɴᴇʟ : <a href=https://t.me/TitanXBots>ᴛɪᴛᴀɴxʙᴏᴛꜱ</a>\n✯ ꜱᴜᴘᴘᴏʀᴛ : <a href=https://t.me/TitanMattersSupport>ᴛɪᴛᴀɴ ɢʀᴏᴜᴘ</a></b>"
-START_MSG = os.environ.get("START_MESSAGE", "ʜᴇʟʟᴏ {first}\n\nɪ ᴄᴀɴ ꜱᴛᴏʀᴇ ᴘʀɪᴠᴀᴛᴇ ꜰɪʟᴇꜱ ɪɴ ꜱᴘᴇᴄɪꜰɪᴇᴅ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ᴏᴛʜᴇʀ ᴜꜱᴇʀꜱ ᴄᴀɴ ᴀᴄᴄᴇꜱꜱ ɪᴛ ꜰʀᴏᴍ ꜱᴘᴇᴄɪᴀʟ ʟɪɴᴋ.")
-try:
-    ADMINS=[]
-    for x in (os.environ.get("ADMINS", "5356695781 2019222464").split()):
-        ADMINS.append(int(x))
-except ValueError:
-        raise Exception("Your Admins list does not contain valid integers.")
 
-#Force sub message 
-FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", "ʜᴇʟʟᴏ {first}\n\n<b>ʏᴏᴜ ɴᴇᴇᴅ ᴛᴏ ᴊᴏɪɴ ɪɴ ᴍʏ ᴄʜᴀɴɴᴇʟ/ɢʀᴏᴜᴘ ᴛᴏ ᴜꜱᴇ ᴍᴇ\n\nᴋɪɴᴅʟʏ ᴘʟᴇᴀꜱᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ</b>")
+START_MSG = os.environ.get(
+    "START_MESSAGE",
+    "ʜᴇʟʟᴏ {first}\n\nɪ ᴄᴀɴ ꜱᴛᴏʀᴇ ᴘʀɪᴠᴀᴛᴇ ꜰɪʟᴇꜱ ɪɴ ꜱᴘᴇᴄɪꜰɪᴇᴅ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ᴏᴛʜᴇʀ ᴜꜱᴇʀꜱ ᴄᴀɴ ᴀᴄᴄᴇꜱꜱ ɪᴛ ꜰʀᴏᴍ ꜱᴘᴇᴄɪᴀʟ ʟɪɴᴋ."
+)
 
-#set your Custom Caption here, Keep None for Disable Custom Caption
+# Force sub message
+FORCE_MSG = os.environ.get(
+    "FORCE_SUB_MESSAGE",
+    "ʜᴇʟʟᴏ {first}\n\n<b>ʏᴏᴜ ɴᴇᴇᴅ ᴛᴏ ᴊᴏɪɴ ɪɴ ᴍʏ ᴄʜᴀɴɴᴇʟ/ɢʀᴏᴜᴘ ᴛᴏ ᴜꜱᴇ ᴍᴇ\n\nᴋɪɴᴅʟʏ ᴘʟᴇᴀꜱᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ</b>"
+)
+
+# Custom Caption
 CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", None)
 
-#set True if you want to prevent users from forwarding files from bot
+# Protect Content
 PROTECT_CONTENT = True if os.environ.get('PROTECT_CONTENT', "False") == "True" else False
 
-#Set true if you want Disable your Channel Posts Share button
+# Disable channel share button
 if os.environ.get("DISABLE_CHANNEL_BUTTON", None) == 'True':
     DISABLE_CHANNEL_BUTTON = True
 else:
     DISABLE_CHANNEL_BUTTON = False
 
 BOT_STATS_TEXT = "<b>BOT UPTIME</b>\n{uptime}"
-USER_REPLY_TEXT = "👋ʜᴇʏ ꜰʀɪᴇɴᴅ, 🚫ᴅᴏɴ'ᴛ ꜱᴇɴᴅ ᴀɴʏ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ ᴍᴇ ᴅɪʀᴇᴄᴛʟʏ ɪ'ᴍ ᴏɴʟʏ ꜰɪʟᴇ ꜱʜᴀʀᴇ ʙᴏᴛ!"
 
-ADMINS.append(OWNER_ID)
-# Remove duplicates automatically
-ADMINS = list(set(ADMINS))
+USER_REPLY_TEXT = "👋ʜᴇʏ ꜰʀɪᴇɴᴅ, 🚫ᴅᴏɴ'ᴛ ꜱᴇɴᴅ ᴀɴʏ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ ᴍᴇ ᴅɪʀᴇᴄᴛʟʏ ɪ'ᴍ ᴏɴʟʏ ꜰɪʟᴇ ꜱʜᴀʀᴇ ʙᴏᴛ!"
 
 LOG_FILE_NAME = "filesharingbot.txt"
 
@@ -95,8 +92,8 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 def LOGGER(name: str) -> logging.Logger:
     return logging.getLogger(name)
