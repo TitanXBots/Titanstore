@@ -1,31 +1,23 @@
+# callback_handler.py
+
 from bot import Bot
 from config import *
-from Script import *
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import MessageNotModified
+from database.database import admins_collection, banned_users, OWNER_ID, is_admin
 import asyncio
-from database.database import *
+
 # -------------------------------
-# SAFE MESSAGE EDIT
+# Safe edit helper
 # -------------------------------
 async def safe_edit(message, text, buttons):
     try:
-        await message.edit_text(
-            text=text,
-            disable_web_page_preview=True,
-            reply_markup=buttons
-        )
+        await message.edit_text(text=text, disable_web_page_preview=True, reply_markup=buttons)
     except MessageNotModified:
         pass
 
 # -------------------------------
-# ADMIN CHECK
-# -------------------------------
-async def is_admin(user_id: int) -> bool:
-    return user_id == OWNER_ID or admins_collection.find_one({"_id": user_id}) is not None
-
-# -------------------------------
-# CALLBACK HANDLER
+# Callback handler
 # -------------------------------
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -80,7 +72,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await safe_edit(query.message, ABOUT_TXT.format(first=query.from_user.first_name), buttons)
 
     # -------------------------------
-    # START
+    # START MENU
     # -------------------------------
     elif data == "start":
         buttons = [[InlineKeyboardButton("🧠 Help", callback_data="help"),
@@ -141,7 +133,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
         await query.message.edit_text(
-            "🚫 Send the **User ID** to ban.\nYou can add a reason:\n<code>user_id reason</code>\nOr send /cancel to stop."
+            "🚫 Send the **User ID** to ban.\nYou can add a reason:\n<code>user_id reason</code>\nOr /cancel to stop."
         )
         try:
             msg = await client.listen(chat_id=query.message.chat.id, timeout=300)
@@ -154,7 +146,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 return
             ban_user_id = int(parts[0])
             reason = parts[1] if len(parts) > 1 else "No reason provided"
-            await bans_collection.update_one(
+            banned_users.update_one(
                 {"_id": ban_user_id},
                 {"$set": {"is_banned": True, "reason": reason}},
                 upsert=True
@@ -170,7 +162,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
-        await query.message.edit_text("✅ Send the **User ID** to unban.\nOr send /cancel to stop.")
+        await query.message.edit_text("✅ Send the **User ID** to unban.\nOr /cancel to stop.")
         try:
             msg = await client.listen(chat_id=query.message.chat.id, timeout=300)
             if msg.text == "/cancel":
@@ -180,7 +172,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 await msg.reply("⚠️ Invalid User ID!")
                 return
             unban_user_id = int(msg.text)
-            await bans_collection.update_one(
+            banned_users.update_one(
                 {"_id": unban_user_id},
                 {"$set": {"is_banned": False, "reason": ""}}
             )
@@ -195,8 +187,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
-        banned_users = bans_collection.find({"is_banned": True})
-        lines = [f"• {user['_id']} - {user.get('reason','No reason')}" async for user in banned_users]
+        banned_list = banned_users.find({"is_banned": True})
+        lines = [f"• {user['_id']} - {user.get('reason','No reason')}" for user in banned_list]
         text = "🚫 Banned Users:\n" + "\n".join(lines) if lines else "No users banned."
         await query.message.edit_text(text)
 
@@ -207,7 +199,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
-        await query.message.edit_text("➕ Send the **User ID** to add as admin.\nOr send /cancel to stop.")
+        await query.message.edit_text("➕ Send the **User ID** to add as admin.\nOr /cancel to stop.")
         try:
             msg = await client.listen(chat_id=query.message.chat.id, timeout=300)
             if msg.text == "/cancel":
@@ -229,7 +221,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
-        await query.message.edit_text("➖ Send the **User ID** to remove from admin.\nOr send /cancel to stop.")
+        await query.message.edit_text("➖ Send the **User ID** to remove admin.\nOr /cancel to stop.")
         try:
             msg = await client.listen(chat_id=query.message.chat.id, timeout=300)
             if msg.text == "/cancel":
@@ -251,8 +243,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
-        admins = admins_collection.find({})
-        lines = [f"• {admin['_id']}" async for admin in admins]
+        admin_list = admins_collection.find({})
+        lines = [f"• {admin['_id']}" for admin in admin_list]
         text = "👨‍💻 Admin List:\n" + "\n".join(lines) if lines else "No admins found."
         await query.message.edit_text(text)
 
