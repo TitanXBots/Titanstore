@@ -259,22 +259,51 @@ async def broadcast_handler(client, message):
 # -------------------------------
 # File auto delete
 # -------------------------------
-async def delete_files(messages, client, warn_msg, command_payload=None):
+async def delete_files(messages, client, main_message, command_payload=None):
+    """
+    Deletes messages after FILE_AUTO_DELETE seconds if enabled.
+    Then edits the main message to include a 'Get File Again' button if command_payload exists.
+    """
     global AUTO_DELETE_ENABLED
+
     if not AUTO_DELETE_ENABLED:
+        logging.info("Auto-delete is disabled. Skipping deletion.")
         return
 
+    # Wait before deletion
     await asyncio.sleep(FILE_AUTO_DELETE)
+
+    # Delete all messages
     for msg in messages:
         try:
-            await client.delete_messages(msg.chat.id, msg.id)
-        except:
-            pass
+            await client.delete_messages(chat_id=msg.chat.id, message_ids=[msg.id])
+            logging.info(f"Deleted message {msg.id} in chat {msg.chat.id}")
+        except Exception as e:
+            logging.error(f"Failed to delete message {msg.id}: {e}")
 
+    # Prepare 'Get File Again' button if payload exists
+    keyboard = None
+    if command_payload:
+        try:
+            me = await client.get_me()
+            button_url = f"https://t.me/{me.username}?start={command_payload}"
+            keyboard = InlineKeyboardMarkup(
+                [[InlineKeyboardButton("ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ!", url=button_url)]]
+            )
+        except Exception as e:
+            logging.error(f"Failed to build 'Get File Again' button: {e}")
+
+    # Edit main message to notify deletion and add button
     try:
-        await warn_msg.edit_text("Your file has been deleted.")
-    except:
-        pass
+        await main_message.edit_text(
+            "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ ✅\n"
+            "ɴᴏᴡ ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇",
+            reply_markup=keyboard
+        )
+        logging.info(f"Edited main message {main_message.id} in chat {main_message.chat.id}")
+    except Exception as e:
+        logging.error(f"Error editing main message after deletion: {e}")
+
 
 # -------------------------------
 # Auto delete toggle (owner only)
