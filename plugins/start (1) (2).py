@@ -148,26 +148,30 @@ async def start_command(client: Client, message: Message):
     # -------------------------------
     # Start menu
     # -------------------------------
-    buttons = [
-        [InlineKeyboardButton("🧠 HELP", callback_data="help"),
-         InlineKeyboardButton("📗 ABOUT", callback_data="about")]
-    ]
+    # -------------------------------
+# Start menu
+# -------------------------------
+buttons = [
+    [InlineKeyboardButton("🧠 HELP", callback_data="help"),
+     InlineKeyboardButton("📗 ABOUT", callback_data="about")]
+]
 
-    if admin_status:
-        buttons.append([InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")])
+# Show SETTINGS only to admins or owner
+if user_id == OWNER_ID or await database.is_admin(user_id):
+    buttons.append([InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")])
 
-    reply_markup = InlineKeyboardMarkup(buttons)
-    await message.reply_photo(
-        photo=START_PIC,
-        caption=START_MSG.format(
-            first=message.from_user.first_name,
-            last=message.from_user.last_name,
-            username=f"@{message.from_user.username}" if message.from_user.username else "None",
-            mention=message.from_user.mention,
-            id=user_id
-        ),
-        reply_markup=reply_markup
-    )
+reply_markup = InlineKeyboardMarkup(buttons)
+await message.reply_photo(
+    photo=START_PIC,
+    caption=START_MSG.format(
+        first=message.from_user.first_name,
+        last=message.from_user.last_name or "",
+        username=f"@{message.from_user.username}" if message.from_user.username else "None",
+        mention=message.from_user.mention,
+        id=user_id
+    ),
+    reply_markup=reply_markup
+)
 
 # -------------------------------
 # Force join
