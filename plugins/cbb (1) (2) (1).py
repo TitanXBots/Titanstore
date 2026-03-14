@@ -1,6 +1,7 @@
 # callback_handler.py
 from bot import Bot
 from config import *
+from Script import *
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import MessageNotModified
 from database.database import admins_collection, banned_users, is_admin
