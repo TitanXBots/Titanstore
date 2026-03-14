@@ -4,7 +4,7 @@ from pyrogram import filters
 from datetime import datetime
 from helper_func import get_readable_time
 from config import BOT_STATS_TEXT, USER_REPLY_TEXT
-from database.database import is_admin  # <- Correct import from DB module
+from database.database import * # <- Correct import from DB module
 
 # -------------------------------
 # Stats command (admin only)
