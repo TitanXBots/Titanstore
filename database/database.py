@@ -1,13 +1,15 @@
 # TitanXBots
 
 import pymongo
-from config import DB_URI, DB_NAME, OWNER_ID, ADMINS
+from config import DB_URI, DB_NAME, OWNER_ID
 
 dbclient = pymongo.MongoClient(DB_URI)
 database = dbclient[DB_NAME]
 
 user_data = database['users']
 banned_users = database['banned_users']
+admins_collection = database['admins']
+
 
 # -------------------------------
 # User management
@@ -22,28 +24,29 @@ async def add_user(user_id: int):
     user_data.update_one({'_id': user_id}, {'$set': {'_id': user_id}}, upsert=True)
 
 async def full_userbase() -> list:
-    """Return a list of all user IDs."""
+    """Return list of all user IDs."""
     users = user_data.find()
     return [doc['_id'] for doc in users]
 
 async def del_user(user_id: int):
-    """Delete a user from the database."""
+    """Delete a user from database."""
     user_data.delete_one({'_id': user_id})
+
 
 # -------------------------------
 # Ban and Unban management 
 # -------------------------------
 async def is_banned(user_id: int) -> bool:
-    """Check if a user is banned."""
+    """Check if user is banned."""
     return banned_users.find_one({"_id": user_id}) is not None
 
 async def get_ban_reason(user_id: int) -> str:
-    """Return the ban reason of a user."""
+    """Return ban reason."""
     data = banned_users.find_one({"_id": user_id})
     return data.get("reason", "No reason provided") if data else "No reason provided"
 
 async def ban_user(user_id: int, reason: str):
-    """Ban a user with a reason."""
+    """Ban a user."""
     banned_users.update_one(
         {"_id": user_id},
         {"$set": {"reason": reason}},
@@ -55,16 +58,37 @@ async def unban_user(user_id: int):
     banned_users.delete_one({"_id": user_id})
 
 async def banned_users_list() -> list:
-    """Return a list of all banned users."""
+    """Return list of banned users."""
     return list(banned_users.find())
+
+
+# -------------------------------
+# Admin management
+# -------------------------------
+async def add_admin(user_id: int):
+    """Add admin."""
+    admins_collection.update_one(
+        {"_id": user_id},
+        {"$set": {"_id": user_id}},
+        upsert=True
+    )
+
+async def remove_admin(user_id: int):
+    """Remove admin."""
+    admins_collection.delete_one({"_id": user_id})
+
+async def get_admins() -> list:
+    """Return admin list."""
+    return [doc["_id"] for doc in admins_collection.find()]
+
 
 # -------------------------------
 # Owner and Admin check
 # -------------------------------
 async def is_owner(user_id: int) -> bool:
-    """Check if the user is the owner."""
+    """Check if user is owner."""
     return user_id == OWNER_ID
 
 async def is_admin(user_id: int) -> bool:
-    """Check if the user is an admin (Owner is automatically admin)."""
-    return user_id == OWNER_ID or user_id in ADMINS
+    """Check if user is admin or owner."""
+    return user_id == OWNER_ID or admins_collection.find_one({"_id": user_id}) is not None
