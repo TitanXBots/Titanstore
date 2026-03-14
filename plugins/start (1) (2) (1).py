@@ -15,7 +15,7 @@ from Script import *
 from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
-
+from database.database import *
 # -------------------------------
 # Database setup
 # -------------------------------
