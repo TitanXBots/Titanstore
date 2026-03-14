@@ -1,23 +1,26 @@
 # callback_handler.py
-
 from bot import Bot
 from config import *
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import MessageNotModified
-from database.database import admins_collection, banned_users, OWNER_ID, is_admin
+from database.database import admins_collection, banned_users, is_admin
 import asyncio
 
 # -------------------------------
-# Safe edit helper
+# SAFE MESSAGE EDIT
 # -------------------------------
 async def safe_edit(message, text, buttons):
     try:
-        await message.edit_text(text=text, disable_web_page_preview=True, reply_markup=buttons)
+        await message.edit_text(
+            text=text,
+            disable_web_page_preview=True,
+            reply_markup=buttons
+        )
     except MessageNotModified:
         pass
 
 # -------------------------------
-# Callback handler
+# CALLBACK HANDLER
 # -------------------------------
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -72,7 +75,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await safe_edit(query.message, ABOUT_TXT.format(first=query.from_user.first_name), buttons)
 
     # -------------------------------
-    # START MENU
+    # START
     # -------------------------------
     elif data == "start":
         buttons = [[InlineKeyboardButton("🧠 Help", callback_data="help"),
@@ -132,18 +135,26 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
+
         await query.message.edit_text(
             "🚫 Send the **User ID** to ban.\nYou can add a reason:\n<code>user_id reason</code>\nOr /cancel to stop."
         )
+
+        client.user_states = getattr(client, "user_states", {})
+        client.user_states[user_id] = "ban_user"
+
         try:
             msg = await client.listen(chat_id=query.message.chat.id, timeout=300)
-            if msg.text == "/cancel":
+            if msg.text.lower() == "/cancel":
+                client.user_states.pop(user_id, None)
                 await msg.reply("❌ Ban canceled!")
                 return
+
             parts = msg.text.split(maxsplit=1)
             if not parts[0].isdigit():
                 await msg.reply("⚠️ Invalid User ID!")
                 return
+
             ban_user_id = int(parts[0])
             reason = parts[1] if len(parts) > 1 else "No reason provided"
             banned_users.update_one(
@@ -152,8 +163,11 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 upsert=True
             )
             await msg.reply(f"✅ User `{ban_user_id}` banned.\nReason: {reason}")
+
         except asyncio.TimeoutError:
             await query.message.reply("⌛ Timeout! Ban canceled.")
+        finally:
+            client.user_states.pop(user_id, None)
 
     # -------------------------------
     # UNBAN USER
@@ -162,23 +176,34 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
+
         await query.message.edit_text("✅ Send the **User ID** to unban.\nOr /cancel to stop.")
+
+        client.user_states = getattr(client, "user_states", {})
+        client.user_states[user_id] = "unban_user"
+
         try:
             msg = await client.listen(chat_id=query.message.chat.id, timeout=300)
-            if msg.text == "/cancel":
+            if msg.text.lower() == "/cancel":
+                client.user_states.pop(user_id, None)
                 await msg.reply("❌ Unban canceled!")
                 return
+
             if not msg.text.isdigit():
                 await msg.reply("⚠️ Invalid User ID!")
                 return
+
             unban_user_id = int(msg.text)
             banned_users.update_one(
                 {"_id": unban_user_id},
                 {"$set": {"is_banned": False, "reason": ""}}
             )
             await msg.reply(f"✅ User `{unban_user_id}` unbanned.")
+
         except asyncio.TimeoutError:
             await query.message.reply("⌛ Timeout! Unban canceled.")
+        finally:
+            client.user_states.pop(user_id, None)
 
     # -------------------------------
     # BANNED LIST
@@ -187,8 +212,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
-        banned_list = banned_users.find({"is_banned": True})
-        lines = [f"• {user['_id']} - {user.get('reason','No reason')}" for user in banned_list]
+
+        banned = list(banned_users.find({"is_banned": True}))
+        lines = [f"• {u['_id']} - {u.get('reason','No reason')}" for u in banned]
         text = "🚫 Banned Users:\n" + "\n".join(lines) if lines else "No users banned."
         await query.message.edit_text(text)
 
@@ -199,20 +225,30 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
+
         await query.message.edit_text("➕ Send the **User ID** to add as admin.\nOr /cancel to stop.")
+        client.user_states = getattr(client, "user_states", {})
+        client.user_states[user_id] = "add_admin"
+
         try:
             msg = await client.listen(chat_id=query.message.chat.id, timeout=300)
-            if msg.text == "/cancel":
+            if msg.text.lower() == "/cancel":
+                client.user_states.pop(user_id, None)
                 await msg.reply("❌ Add Admin canceled!")
                 return
+
             if not msg.text.isdigit():
                 await msg.reply("⚠️ Invalid User ID!")
                 return
+
             new_admin_id = int(msg.text)
             admins_collection.update_one({"_id": new_admin_id}, {"$set": {"is_admin": True}}, upsert=True)
             await msg.reply(f"✅ User `{new_admin_id}` added as admin.")
+
         except asyncio.TimeoutError:
             await query.message.reply("⌛ Timeout! Add Admin canceled.")
+        finally:
+            client.user_states.pop(user_id, None)
 
     # -------------------------------
     # REMOVE ADMIN
@@ -221,20 +257,30 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
-        await query.message.edit_text("➖ Send the **User ID** to remove admin.\nOr /cancel to stop.")
+
+        await query.message.edit_text("➖ Send the **User ID** to remove from admin.\nOr /cancel to stop.")
+        client.user_states = getattr(client, "user_states", {})
+        client.user_states[user_id] = "remove_admin"
+
         try:
             msg = await client.listen(chat_id=query.message.chat.id, timeout=300)
-            if msg.text == "/cancel":
+            if msg.text.lower() == "/cancel":
+                client.user_states.pop(user_id, None)
                 await msg.reply("❌ Remove Admin canceled!")
                 return
+
             if not msg.text.isdigit():
                 await msg.reply("⚠️ Invalid User ID!")
                 return
+
             remove_admin_id = int(msg.text)
             admins_collection.delete_one({"_id": remove_admin_id})
             await msg.reply(f"✅ User `{remove_admin_id}` removed from admin.")
+
         except asyncio.TimeoutError:
             await query.message.reply("⌛ Timeout! Remove Admin canceled.")
+        finally:
+            client.user_states.pop(user_id, None)
 
     # -------------------------------
     # ADMIN LIST
@@ -243,8 +289,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
-        admin_list = admins_collection.find({})
-        lines = [f"• {admin['_id']}" for admin in admin_list]
+
+        admins = list(admins_collection.find({}))
+        lines = [f"• {admin['_id']}" for admin in admins]
         text = "👨‍💻 Admin List:\n" + "\n".join(lines) if lines else "No admins found."
         await query.message.edit_text(text)
 
