@@ -1,8 +1,10 @@
+# link_generator.py
+
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from bot import Bot
 from helper_func import encode, get_message_id
-from database.database import * # <- dynamic admin check
+from database.database import is_admin  # dynamic admin/owner check
 
 # -------------------------------
 # Batch link generator (admin only)
@@ -13,11 +15,12 @@ async def batch(client: Client, message: Message):
     if not await is_admin(user_id):  # Check if user is admin/owner
         return  # Ignore non-admins
 
+    # Ask for first message
     while True:
         try:
             first_message = await client.ask(
                 text="Forward the First Message from DB Channel (with Quotes)..\n\nor Send the DB Channel Post Link",
-                chat_id=message.from_user.id,
+                chat_id=user_id,
                 filters=(filters.forwarded | (filters.text & ~filters.forwarded)),
                 timeout=60
             )
@@ -28,13 +31,13 @@ async def batch(client: Client, message: Message):
             break
         else:
             await first_message.reply("❌ Error\n\nThis Forwarded Post is not from my DB Channel or this Link is invalid", quote=True)
-            continue
 
+    # Ask for second message
     while True:
         try:
             second_message = await client.ask(
-                text="Forward the Last Message from DB Channel (with Quotes)..\nor Send the DB Channel Post link",
-                chat_id=message.from_user.id,
+                text="Forward the Last Message from DB Channel (with Quotes)..\nor Send the DB Channel Post Link",
+                chat_id=user_id,
                 filters=(filters.forwarded | (filters.text & ~filters.forwarded)),
                 timeout=60
             )
@@ -45,8 +48,8 @@ async def batch(client: Client, message: Message):
             break
         else:
             await second_message.reply("❌ Error\n\nThis Forwarded Post is not from my DB Channel or this Link is invalid", quote=True)
-            continue
 
+    # Generate link
     string = f"get-{f_msg_id * abs(client.db_channel.id)}-{s_msg_id * abs(client.db_channel.id)}"
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
@@ -65,11 +68,12 @@ async def link_generator(client: Client, message: Message):
     if not await is_admin(user_id):  # Check if user is admin/owner
         return  # Ignore non-admins
 
+    # Ask for message
     while True:
         try:
             channel_message = await client.ask(
-                text="Forward Message from the DB Channel (with Quotes)..\nor Send the DB Channel Post link",
-                chat_id=message.from_user.id,
+                text="Forward Message from the DB Channel (with Quotes)..\nor Send the DB Channel Post Link",
+                chat_id=user_id,
                 filters=(filters.forwarded | (filters.text & ~filters.forwarded)),
                 timeout=60
             )
@@ -80,8 +84,8 @@ async def link_generator(client: Client, message: Message):
             break
         else:
             await channel_message.reply("❌ Error\n\nThis Forwarded Post is not from my DB Channel or this Link is invalid", quote=True)
-            continue
 
+    # Generate link
     base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
     link = f"https://t.me/{client.username}?start={base64_string}"
     reply_markup = InlineKeyboardMarkup(
