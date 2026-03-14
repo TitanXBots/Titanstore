@@ -5,16 +5,14 @@ from config import *
 from Script import *
 from database.database import add_admin, remove_admin, admin_list, ban_user, unban_user, banned_users_list
 
-
 # -------------------------------
-# Helper function: listen with cancel
+# Helper function: listen with /cancel
 # -------------------------------
-async def listen_with_cancel(client: Bot, chat_id: int, cancel_callback_data: str = None, timeout: int = 300):
+async def listen_with_cancel(client: Bot, chat_id: int, timeout: int = 300):
     """
-    Listen for user input with optional inline Cancel button and /cancel command.
-    Returns the message object or None if cancelled or timed out.
+    Listen for user input with /cancel command to abort.
+    Returns message object or None if cancelled or timed out.
     """
-    buttons = [[InlineKeyboardButton("❌ Cancel", callback_data=cancel_callback_data)]] if cancel_callback_data else []
     try:
         msg = await client.listen(chat_id=chat_id, timeout=timeout)
         if msg.text.lower() == "/cancel":
@@ -22,7 +20,6 @@ async def listen_with_cancel(client: Bot, chat_id: int, cancel_callback_data: st
         return msg
     except asyncio.TimeoutError:
         return None
-
 
 # -------------------------------
 # Callback handler
@@ -133,23 +130,21 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 # -------------------------------
-# ADD / REMOVE ADMIN WITH CANCEL
+# ADD / REMOVE ADMIN WITH /CANCEL
 # -------------------------------
     elif data in ["add_admin", "remove_admin"]:
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
         action = "Add" if data == "add_admin" else "Remove"
-        cancel_cb = "admin_menu"
-        buttons = [[InlineKeyboardButton("⬅ Back", callback_data="admin_menu")],
-                   [InlineKeyboardButton("❌ Cancel", callback_data=cancel_cb)]]
+        buttons = [[InlineKeyboardButton("⬅ Back", callback_data="admin_menu")]]
 
         await query.message.edit_text(
-            f"Send the **User ID** to {action} as admin or /cancel:",
+            f"Send the **User ID** to {action} as admin.\nType /cancel to abort.",
             reply_markup=InlineKeyboardMarkup(buttons)
         )
 
-        msg = await listen_with_cancel(client, query.message.chat.id, cancel_callback_data=cancel_cb, timeout=120)
+        msg = await listen_with_cancel(client, query.message.chat.id, timeout=120)
         if not msg:
             return await query.message.reply_text("❌ Action cancelled!", reply_markup=InlineKeyboardMarkup(buttons))
 
@@ -194,24 +189,20 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await query.message.edit_text("🚫 **Ban Control Panel**", reply_markup=InlineKeyboardMarkup(buttons))
 
 # -------------------------------
-# BAN USER WITH CANCEL
+# BAN USER WITH /CANCEL
 # -------------------------------
     elif data == "ban_user":
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
-        cancel_cb = "ban_menu"
-        buttons = [[InlineKeyboardButton("⬅ Back", callback_data="ban_menu")],
-                   [InlineKeyboardButton("❌ Cancel", callback_data=cancel_cb)]]
+        buttons = [[InlineKeyboardButton("⬅ Back", callback_data="ban_menu")]]
 
         await query.message.edit_text(
-            "<b>Send User ID to ban with optional reason:\n"
-            "<code>123456789 reason</code>\n\n"
-            "Or press /cancel / Cancel button to abort.</b>",
+            "<b>Send User ID to ban with optional reason:\nExample: 123456789 spam\nOr type /cancel to abort.</b>",
             reply_markup=InlineKeyboardMarkup(buttons)
         )
 
-        msg = await listen_with_cancel(client, query.message.chat.id, cancel_callback_data=cancel_cb, timeout=300)
+        msg = await listen_with_cancel(client, query.message.chat.id, timeout=300)
         if not msg:
             return await query.message.reply_text("❌ Action cancelled!", reply_markup=InlineKeyboardMarkup(buttons))
 
@@ -225,22 +216,20 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await msg.reply_text(f"✅ User `{uid}` banned.\nReason: {reason}", reply_markup=InlineKeyboardMarkup(buttons))
 
 # -------------------------------
-# UNBAN USER WITH CANCEL
+# UNBAN USER WITH /CANCEL
 # -------------------------------
     elif data == "unban_user":
         if not is_admin_user:
             return await query.answer("Admins only.", show_alert=True)
 
-        cancel_cb = "ban_menu"
-        buttons = [[InlineKeyboardButton("⬅ Back", callback_data="ban_menu")],
-                   [InlineKeyboardButton("❌ Cancel", callback_data=cancel_cb)]]
+        buttons = [[InlineKeyboardButton("⬅ Back", callback_data="ban_menu")]]
 
         await query.message.edit_text(
-            "<b>Send User ID to unban:\n\nOr press /cancel / Cancel button to abort.</b>",
+            "<b>Send User ID to unban.\nOr type /cancel to abort.</b>",
             reply_markup=InlineKeyboardMarkup(buttons)
         )
 
-        msg = await listen_with_cancel(client, query.message.chat.id, cancel_callback_data=cancel_cb, timeout=300)
+        msg = await listen_with_cancel(client, query.message.chat.id, timeout=300)
         if not msg:
             return await query.message.reply_text("❌ Action cancelled!", reply_markup=InlineKeyboardMarkup(buttons))
 
