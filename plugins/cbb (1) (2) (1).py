@@ -24,7 +24,8 @@ async def safe_edit(message, text, buttons):
 # OWNER / ADMIN CHECK
 # -------------------------------
 async def is_admin(user_id: int) -> bool:
-    return user_id == OWNER_ID or user_id in ADMINS
+    return user_id == OWNER_ID or admins_collection.find_one({"_id": user_id}) is not None
+    
 
 
 # -------------------------------
