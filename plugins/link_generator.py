@@ -2,7 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from bot import Bot
 from helper_func import encode, get_message_id
-from database.database import is_admin  # <- dynamic admin check
+from database.database import * # <- dynamic admin check
 
 # -------------------------------
 # Batch link generator (admin only)
