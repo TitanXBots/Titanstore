@@ -15,60 +15,17 @@ from Script import *
 from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
+from database import database  # import your full database.py as module
 
 # -------------------------------
 # Database setup
 # -------------------------------
 client_db = MongoClient(DB_URI)
 db = client_db[DB_NAME]
-
-user_data = db['users']
-banned_users = db['banned_users']
 telegram_files = db['TelegramFiles']
 
 AUTO_DELETE_ENABLED = True
 file_auto_delete = humanize.naturaldelta(FILE_AUTO_DELETE)
-
-# -------------------------------
-# User management
-# -------------------------------
-async def is_user_present(user_id: int) -> bool:
-    return user_data.find_one({'_id': user_id}) is not None
-
-async def add_user(user_id: int, first_name: str, username: str):
-    user_data.update_one(
-        {'_id': user_id},
-        {'$set': {'_id': user_id, 'first_name': first_name, 'username': username, 'joined_at': datetime.utcnow()}},
-        upsert=True
-    )
-
-# -------------------------------
-# Ban management
-# -------------------------------
-async def is_user_banned(user_id: int) -> bool:
-    return banned_users.find_one({'_id': user_id}) is not None
-
-async def get_ban_reason(user_id: int) -> str:
-    data = banned_users.find_one({'_id': user_id})
-    return data.get('reason', 'No reason provided') if data else 'No reason provided'
-
-# -------------------------------
-# Owner/Admin check
-# -------------------------------
-async def is_owner(user_id: int) -> bool:
-    return user_id == OWNER_ID
-
-async def is_admin(user_id: int) -> bool:
-    return user_id == OWNER_ID or user_id in ADMINS
-
-# -------------------------------
-# Maintenance check
-# -------------------------------
-async def is_maintenance(user_id: int) -> bool:
-    data = telegram_files.find_one({"maintenance": "on"})
-    if data and user_id != OWNER_ID:
-        return True
-    return False
 
 # -------------------------------
 # START COMMAND
@@ -82,17 +39,17 @@ async def start_command(client: Client, message: Message):
     # -------------------------------
     # Ban check
     # -------------------------------
-    if await is_user_banned(user_id):
-        reason = await get_ban_reason(user_id)
+    if await database.is_banned(user_id):
+        reason = await database.get_ban_reason(user_id)
         await message.reply_text(f"🚫 You are banned from using this bot.\n\nReason: {reason}")
         return
 
     # -------------------------------
     # Add user
     # -------------------------------
-    if not await is_user_present(user_id):
+    if not await database.present_user(user_id):
         try:
-            await add_user(user_id, message.from_user.first_name, message.from_user.username)
+            await database.add_user(user_id, message.from_user.first_name, message.from_user.username)
             log_text = NEW_USER_TXT.format(
                 message.from_user.mention,
                 user_id,
@@ -105,14 +62,14 @@ async def start_command(client: Client, message: Message):
     # -------------------------------
     # Maintenance mode
     # -------------------------------
-    if await is_maintenance(user_id):
+    if telegram_files.find_one({"maintenance": "on"}) and user_id != OWNER_ID:
         await message.reply_text("⚙️ Bot is under maintenance.\nPlease try again later.")
         return
 
     # -------------------------------
     # Admin check
     # -------------------------------
-    admin_status = await is_admin(user_id)
+    admin_status = await database.is_admin(user_id)
 
     # -------------------------------
     # File link payload
