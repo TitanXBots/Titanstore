@@ -2,7 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 from pymongo import MongoClient
 from config import DB_URI, DB_NAME
-from database.database import is_admin  # <- dynamic admin check from your DB
+from database.database import * # <- dynamic admin check from your DB
 
 client = MongoClient(DB_URI)
 db = client[DB_NAME]
