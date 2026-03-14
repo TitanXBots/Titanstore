@@ -1,4 +1,3 @@
-# start.py
 import os
 import asyncio
 import humanize
@@ -15,7 +14,7 @@ from Script import *
 from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
-from database import database  # import your full database.py as module
+from database import database  # full database.py module
 
 # -------------------------------
 # Database setup
@@ -32,21 +31,16 @@ file_auto_delete = humanize.naturaldelta(FILE_AUTO_DELETE)
 # -------------------------------
 @Bot.on_message(filters.command("start") & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
-
     user_id = message.from_user.id
     text = message.text
 
-    # -------------------------------
     # Ban check
-    # -------------------------------
     if await database.is_banned(user_id):
         reason = await database.get_ban_reason(user_id)
-        await message.reply_text(f"🚫 You are banned from using this bot.\n\nReason: {reason}")
+        await message.reply_text(f"🚫 You are banned.\nReason: {reason}")
         return
 
-    # -------------------------------
     # Add user
-    # -------------------------------
     if not await database.present_user(user_id):
         try:
             await database.add_user(user_id, message.from_user.first_name, message.from_user.username)
@@ -59,21 +53,15 @@ async def start_command(client: Client, message: Message):
         except Exception as e:
             print(f"User add error: {e}")
 
-    # -------------------------------
     # Maintenance mode
-    # -------------------------------
     if telegram_files.find_one({"maintenance": "on"}) and user_id != OWNER_ID:
-        await message.reply_text("⚙️ Bot is under maintenance.\nPlease try again later.")
+        await message.reply_text("⚙️ Bot is under maintenance. Please try later.")
         return
 
-    # -------------------------------
-    # Admin check
-    # -------------------------------
+    # Admin status
     admin_status = await database.is_admin(user_id)
 
-    # -------------------------------
-    # File link payload
-    # -------------------------------
+    # File payload
     if len(text.split()) > 1:
         try:
             base64_string = text.split(" ", 1)[1]
@@ -139,39 +127,32 @@ async def start_command(client: Client, message: Message):
 
         warn_msg = await client.send_message(
             chat_id=user_id,
-            text=f"<b>IMPORTANT</b>\n\nThis file will be deleted in {file_auto_delete}.\n\nForward it somewhere to save."
+            text=f"<b>IMPORTANT</b>\n\nThis file will be deleted in {file_auto_delete}.\nForward it somewhere to save."
         )
 
         asyncio.create_task(delete_files(copied_msgs, client, warn_msg, base64_string))
         return
 
-    # -------------------------------
     # Start menu
-    # -------------------------------
-    # -------------------------------
-# Start menu
-# -------------------------------
-buttons = [
-    [InlineKeyboardButton("🧠 HELP", callback_data="help"),
-     InlineKeyboardButton("📗 ABOUT", callback_data="about")]
-]
+    buttons = [
+        [InlineKeyboardButton("🧠 HELP", callback_data="help"),
+         InlineKeyboardButton("📗 ABOUT", callback_data="about")]
+    ]
+    if admin_status:
+        buttons.append([InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")])
 
-# Show SETTINGS only to admins or owner
-if user_id == OWNER_ID or await database.is_admin(user_id):
-    buttons.append([InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")])
-
-reply_markup = InlineKeyboardMarkup(buttons)
-await message.reply_photo(
-    photo=START_PIC,
-    caption=START_MSG.format(
-        first=message.from_user.first_name,
-        last=message.from_user.last_name or "",
-        username=f"@{message.from_user.username}" if message.from_user.username else "None",
-        mention=message.from_user.mention,
-        id=user_id
-    ),
-    reply_markup=reply_markup
-)
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await message.reply_photo(
+        photo=START_PIC,
+        caption=START_MSG.format(
+            first=message.from_user.first_name,
+            last=message.from_user.last_name or "",
+            username=f"@{message.from_user.username}" if message.from_user.username else "None",
+            mention=message.from_user.mention,
+            id=user_id
+        ),
+        reply_markup=reply_markup
+    )
 
 # -------------------------------
 # Force join
@@ -223,10 +204,7 @@ async def delete_files(messages, client, k, command_payload=None):
     if command_payload:
         me = await client.get_me()
         keyboard = InlineKeyboardMarkup(
-            [[InlineKeyboardButton(
-                "Get File Again",
-                url=f"https://t.me/{me.username}?start={command_payload}"
-            )]]
+            [[InlineKeyboardButton("Get File Again", url=f"https://t.me/{me.username}?start={command_payload}")]]
         )
 
     try:
