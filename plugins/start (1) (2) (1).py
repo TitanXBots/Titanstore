@@ -1,4 +1,5 @@
 # start.py
+
 import os
 import asyncio
 import humanize
@@ -15,7 +16,8 @@ from Script import *
 from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
-from database.database import *
+from database.database import is_admin, is_owner  # use database admin checks
+
 # -------------------------------
 # Database setup
 # -------------------------------
@@ -61,16 +63,6 @@ async def get_ban_reason(user_id: int) -> str:
     return data.get('reason', 'No reason provided') if data else 'No reason provided'
 
 # -------------------------------
-# Owner/Admin check
-# -------------------------------
-async def is_owner(user_id: int) -> bool:
-    return user_id == OWNER_ID
-
-
-async def is_admin(user_id: int) -> bool:
-    return user_id == OWNER_ID or admins_collection.find_one({"_id": user_id}) is not None
-
-# -------------------------------
 # Maintenance check
 # -------------------------------
 async def is_maintenance(user_id: int) -> bool:
@@ -88,13 +80,17 @@ async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
     text = message.text
 
+    # -------------------------------
     # Ban check
+    # -------------------------------
     if await is_user_banned(user_id):
         reason = await get_ban_reason(user_id)
         await message.reply_text(f"🚫 You are banned from using this bot.\n\nReason: {reason}")
         return
 
+    # -------------------------------
     # Add user
+    # -------------------------------
     if not await is_user_present(user_id):
         try:
             await add_user(user_id, message.from_user.first_name, message.from_user.username)
@@ -110,19 +106,17 @@ async def start_command(client: Client, message: Message):
         except Exception as e:
             print(f"User add error: {e}")
 
+    # -------------------------------
     # Maintenance mode
+    # -------------------------------
     if await is_maintenance(user_id):
         await message.reply_text("⚙️ Bot is under maintenance.\nPlease try again later.")
         return
 
-    # Admin check
-    admin_status = await is_admin(user_id)
-
     # -------------------------------
-    # File link payload
+    # File link payload handling
     # -------------------------------
     if len(text.split()) > 1:
-
         try:
             base64_string = text.split(" ", 1)[1]
             string = await decode(base64_string)
@@ -172,20 +166,16 @@ async def start_command(client: Client, message: Message):
                 caption = msg.caption.html
 
             try:
-
                 copied = await msg.copy(
                     chat_id=user_id,
                     caption=caption,
                     parse_mode=ParseMode.HTML,
                     protect_content=PROTECT_CONTENT
                 )
-
                 copied_msgs.append(copied)
 
             except FloodWait as e:
-
                 await asyncio.sleep(e.value)
-
                 copied = await msg.copy(chat_id=user_id)
                 copied_msgs.append(copied)
 
@@ -200,8 +190,8 @@ async def start_command(client: Client, message: Message):
     # -------------------------------
     # Start menu
     # -------------------------------
-    # Check admin status
     admin_status = await is_admin(user_id)
+
     buttons = [
         [
             InlineKeyboardButton("🧠 HELP", callback_data="help"),
@@ -209,7 +199,7 @@ async def start_command(client: Client, message: Message):
         ]
     ]
 
-    if admin_status:
+    if admin_status:  # Only admins/owner see SETTINGS
         buttons.append(
             [InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")]
         )
@@ -226,8 +216,9 @@ async def start_command(client: Client, message: Message):
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
+
 # -------------------------------
-# Force join (your code)
+# Force join (if user not joined)
 # -------------------------------
 @Bot.on_message(filters.command('start') & filters.private)
 async def not_joined(client: Client, message: Message):
@@ -267,8 +258,9 @@ async def not_joined(client: Client, message: Message):
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
+
 # -------------------------------
-# Users command
+# Users command (admin only)
 # -------------------------------
 @Bot.on_message(filters.command("users") & filters.private)
 async def total_users(client, message):
@@ -280,8 +272,9 @@ async def total_users(client, message):
     total = user_data.count_documents({})
     await message.reply_text(f"👥 Total Users: {total}")
 
+
 # -------------------------------
-# Broadcast command
+# Broadcast command (admin only)
 # -------------------------------
 @Bot.on_message(filters.command("broadcast") & filters.private)
 async def broadcast_handler(client, message):
@@ -295,19 +288,16 @@ async def broadcast_handler(client, message):
         return
 
     users = user_data.find()
-
     success = 0
     failed = 0
 
     msg = await message.reply_text("📢 Broadcast started...")
 
     for user in users:
-
         try:
             await message.reply_to_message.copy(user['_id'])
             success += 1
             await asyncio.sleep(0.1)
-
         except:
             failed += 1
 
@@ -317,10 +307,11 @@ async def broadcast_handler(client, message):
         f"❌ Failed: {failed}"
     )
 
+
 # -------------------------------
 # File auto delete
 # -------------------------------
-async def delete_files(messages, client, k, command_payload=None):
+async def delete_files(messages, client, warn_msg, command_payload=None):
 
     global AUTO_DELETE_ENABLED
 
@@ -336,15 +327,15 @@ async def delete_files(messages, client, k, command_payload=None):
             pass
 
     try:
-        await k.edit_text("Your file has been deleted.")
+        await warn_msg.edit_text("Your file has been deleted.")
     except:
         pass
 
+
 # -------------------------------
-# Auto delete toggle
+# Auto delete toggle (owner only)
 # -------------------------------
 def set_auto_delete(state: bool):
-
     global AUTO_DELETE_ENABLED
     AUTO_DELETE_ENABLED = state
     return AUTO_DELETE_ENABLED
@@ -352,13 +343,11 @@ def set_auto_delete(state: bool):
 
 @Client.on_message(filters.command("autodeleteon") & filters.user(OWNER_ID))
 async def enable_autodelete(client, message):
-
     set_auto_delete(True)
     await message.reply_text("✅ Auto Delete Enabled")
 
 
 @Client.on_message(filters.command("autodeleteoff") & filters.user(OWNER_ID))
 async def disable_autodelete(client, message):
-
     set_auto_delete(False)
     await message.reply_text("❌ Auto Delete Disabled")
