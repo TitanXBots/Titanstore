@@ -1,39 +1,45 @@
-# useless.py
-
 from bot import Bot
-from pyrogram import filters
 from pyrogram.types import Message
-from config import USER_REPLY_TEXT, BOT_STATS_TEXT
-from database.database import is_admin  # dynamic admin/owner check
+from pyrogram import filters
+from config import BOT_STATS_TEXT, USER_REPLY_TEXT
 from datetime import datetime
 from helper_func import get_readable_time
+from database.database import is_admin
 
-# -------------------------------
-# Private messages auto-reply for all users
-# -------------------------------
-@Bot.on_message(filters.private & filters.incoming)
-async def user_reply(_, message: Message):
-    if USER_REPLY_TEXT:
-        await message.reply(USER_REPLY_TEXT)
+#-------------------------------
 
+#STATS COMMAND (Admin Only)
 
-# -------------------------------
-# Admin-only /stats command with feedback for normal users
-# -------------------------------
-@Bot.on_message(filters.command("stats"))
+#-------------------------------
+
+@Bot.on_message(filters.command("stats") & filters.private)
 async def stats(bot: Bot, message: Message):
-    user_id = message.from_user.id
-    if not await is_admin(user_id):  # only allow admins/owner
-        await message.reply("❌ You are not authorized to use this command.")
-        return
 
-    uptime = getattr(bot, "uptime", None)
-    if uptime is None:
-        await message.reply("Bot uptime not initialized.")
-        return
+user_id = message.from_user.id
 
-    now = datetime.now()
-    delta = now - bot.uptime
-    readable_time = get_readable_time(delta.seconds)
+# Check admin from database
+if not await is_admin(user_id):
+    await message.reply("❌ You are not authorized to use this command.")
+    return
 
-    await message.reply(BOT_STATS_TEXT.format(uptime=readable_time))
+now = datetime.now()
+delta = now - bot.uptime
+time = get_readable_time(delta.seconds)
+
+await message.reply(BOT_STATS_TEXT.format(uptime=time))
+
+#-------------------------------
+
+#AUTO USER REPLY
+
+#-------------------------------
+
+@Bot.on_message(filters.private & filters.incoming)
+async def useless(_, message: Message):
+
+# Ignore commands like /stats /start etc
+if message.text and message.text.startswith("/"):
+    return
+
+if USER_REPLY_TEXT:
+    await message.reply(USER_REPLY_TEXT)
