@@ -1,14 +1,11 @@
 from bot import Bot
 from pyrogram.types import Message
 from pyrogram import filters
-from config import USER_REPLY_TEXT
+from config import BOT_STATS_TEXT, USER_REPLY_TEXT
 from datetime import datetime
 from helper_func import get_readable_time
-from database.database import is_admin
+from database.database import is_admin   # import admin check from database
 
-#-------------------------------
-#STATS COMMAND (Admin Only)
-#-------------------------------
 
 @Bot.on_message(filters.command("stats") & filters.private)
 async def stats(bot: Bot, message: Message):
@@ -22,18 +19,15 @@ if not await is_admin(user_id):
 
 now = datetime.now()
 delta = now - bot.uptime
-uptime = get_readable_time(delta.seconds)
+time = get_readable_time(delta.seconds)
 
-await message.reply(f"⏱ Bot Uptime : {uptime}")
+await message.reply(BOT_STATS_TEXT.format(uptime=time))
 
-#-------------------------------
-#AUTO USER REPLY
-#-------------------------------
 
 @Bot.on_message(filters.private & filters.incoming)
 async def useless(_, message: Message):
 
-# Ignore commands
+# Ignore commands like /start /stats
 if message.text and message.text.startswith("/"):
     return
 
