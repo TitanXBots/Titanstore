@@ -36,8 +36,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("🧑‍💻 Contact Owner", user_id=OWNER_ID),
              InlineKeyboardButton("💬 Commands", callback_data="commands")],
-            [InlineKeyboardButton("🏠 Home", callback_data="start"),
-             InlineKeyboardButton("❌ Close", callback_data="close")]
+            [InlineKeyboardButton("⚓ Home", callback_data="start"),
+             InlineKeyboardButton("⚡ Close", callback_data="close")]
         ])
         await safe_edit(query.message, HELP_TXT.format(first=query.from_user.first_name), buttons)
 
@@ -47,8 +47,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     elif data == "commands":
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("🔙 Back", callback_data="help")],
-            [InlineKeyboardButton("🏠 Home", callback_data="start"),
-             InlineKeyboardButton("❌ Close", callback_data="close")]
+            [InlineKeyboardButton("⚓ Home", callback_data="start"),
+             InlineKeyboardButton("⚡ Close", callback_data="close")]
         ])
         await safe_edit(query.message, COMMANDS_TXT, buttons)
 
@@ -58,8 +58,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     elif data == "disclaimer":
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("🔙 Back", callback_data="about")],
-            [InlineKeyboardButton("🏠 Home", callback_data="start"),
-             InlineKeyboardButton("❌ Close", callback_data="close")]
+            [InlineKeyboardButton("⚓ Home", callback_data="start"),
+             InlineKeyboardButton("⚡ Close", callback_data="close")]
         ])
         await safe_edit(query.message, DISCLAIMER_TXT, buttons)
 
@@ -70,8 +70,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("📜 Disclaimer", callback_data="disclaimer"),
              InlineKeyboardButton("🔐 Source", url="https://github.com/TitanXBots/FileStore-Bot")],
-            [InlineKeyboardButton("🏠 Home", callback_data="start"),
-             InlineKeyboardButton("❌ Close", callback_data="close")]
+            [InlineKeyboardButton("⚓ Home", callback_data="start"),
+             InlineKeyboardButton("⚡ Close", callback_data="close")]
         ])
         await safe_edit(query.message, ABOUT_TXT.format(first=query.from_user.first_name), buttons)
 
@@ -80,7 +80,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------------
     elif data == "start":
         buttons = [[InlineKeyboardButton("🧠 Help", callback_data="help"),
-                    InlineKeyboardButton("📗 About", callback_data="about")]]
+                    InlineKeyboardButton("🔰 About", callback_data="about")]]
         if admin_status:
             buttons.append([InlineKeyboardButton("⚙️ Settings", callback_data="settings")])
         await safe_edit(query.message, START_MSG.format(first=query.from_user.first_name), InlineKeyboardMarkup(buttons))
