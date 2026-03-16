@@ -169,7 +169,7 @@ async def start_command(client: Client, message: Message):
     admin_status = await is_admin(user_id)
     buttons = [
         [InlineKeyboardButton("🧠 HELP", callback_data="help"),
-         InlineKeyboardButton("📗 ABOUT", callback_data="about")]
+         InlineKeyboardButton("🔰 ABOUT", callback_data="about")]
     ]
     if admin_status:
         buttons.append([InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")])
