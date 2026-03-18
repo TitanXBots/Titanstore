@@ -316,9 +316,9 @@ def set_auto_delete(state: bool):
 @Client.on_message(filters.command("autodeleteon") & filters.user(OWNER_ID))
 async def enable_autodelete(client, message):
     set_auto_delete(True)
-    await message.reply_text("✅ Auto Delete Enabled")
+    await message.reply_text("✅ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴇɴᴀʙʟᴇᴅ")
 
 @Client.on_message(filters.command("autodeleteoff") & filters.user(OWNER_ID))
 async def disable_autodelete(client, message):
     set_auto_delete(False)
-    await message.reply_text("❌ Auto Delete Disabled")
+    await message.reply_text("❌ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴅɪꜱᴀʙʟᴇᴅ")
