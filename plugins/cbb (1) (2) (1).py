@@ -256,7 +256,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------------
     elif data == "remove_admin":
         if not admin_status:
-            await query.answer("⚠️ Only admins allowed.", show_alert=True)
+            await query.answer("⚠️ ᴏᴏᴘꜱ! ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀʀᴇ ᴀʟʟᴏᴡᴇᴅ ᴛᴏ ᴜꜱᴇ ᴛʜɪꜱ.", show_alert=True)
             return
 
         await query.message.edit_text("➖ Send the User ID to remove from admin.\nOr /cancel to stop.")
