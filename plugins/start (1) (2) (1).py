@@ -56,7 +56,7 @@ async def is_user_banned(user_id: int) -> bool:
 
 async def get_ban_reason(user_id: int) -> str:
     data = banned_users.find_one({'_id': user_id})
-    return data.get('reason', 'No reason provided') if data else 'No reason provided'
+    return data.get('reason', 'ɴᴏ ʀᴇᴀꜱᴏɴ ᴘʀᴏᴠɪᴅᴇᴅ') if data else 'ɴᴏ ʀᴇᴀꜱᴏɴ ᴘʀᴏᴠɪᴅᴇᴅ'
 
 # -------------------------------
 # Maintenance check
