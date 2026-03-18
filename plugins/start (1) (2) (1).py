@@ -52,7 +52,8 @@ async def add_user(user_id: int, first_name: str, username: str):
 # Ban management
 # -------------------------------
 async def is_user_banned(user_id: int) -> bool:
-    return banned_users.find_one({'_id': user_id}) is not None
+    data = banned_users.find_one({'_id': user_id})
+    return data.get("is_banned", False) if data else False
 
 async def get_ban_reason(user_id: int) -> str:
     data = banned_users.find_one({'_id': user_id})
