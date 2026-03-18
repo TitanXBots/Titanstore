@@ -1,54 +1,76 @@
 from bot import Bot
 from config import *
 from Script import *
+
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import MessageNotModified
-from database.database import admins_collection, banned_users, is_admin
+
+from database.database import (
+    is_admin, add_admin, remove_admin,
+    get_admins, ban_user, unban_user,
+    get_banned_users
+)
+
 import asyncio
 
 # -------------------------------
-# SAFE MESSAGE EDIT
+# ACTIVE INPUT TRACKER
 # -------------------------------
-async def safe_edit(message, text, buttons=None):
+active_inputs = {}
+
+# -------------------------------
+# SAFE EDIT
+# -------------------------------
+async def safe_edit(message, text, buttons):
     try:
         await message.edit_text(
-            text=text,
+            text,
             reply_markup=buttons,
             disable_web_page_preview=True
         )
     except MessageNotModified:
         pass
     except:
+        await message.reply_text(
+            text,
+            reply_markup=buttons,
+            disable_web_page_preview=True
+        )
+
+# -------------------------------
+# INPUT SYSTEM (CANCEL + BACK)
+# -------------------------------
+async def get_input(client, query, prompt, back_callback):
+
+    user_id = query.from_user.id
+    chat_id = query.message.chat.id
+
+    active_inputs[user_id] = True
+
+    buttons = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("❌ Cancel", callback_data="cancel_input"),
+            InlineKeyboardButton("🔙 Back", callback_data=back_callback)
+        ]
+    ])
+
+    await query.message.edit_text(prompt, reply_markup=buttons)
+
+    while active_inputs.get(user_id):
         try:
-            await message.reply_text(
-                text=text,
-                reply_markup=buttons,
-                disable_web_page_preview=True
-            )
-        except:
-            pass
+            msg = await client.listen(chat_id, timeout=300)
 
-# -------------------------------
-# INPUT HELPER
-# -------------------------------
-async def get_input(client, message, prompt):
-    await message.edit_text(prompt)
-    try:
-        msg = await client.listen(message.chat.id, timeout=300)
+            if not active_inputs.get(user_id):
+                return None
 
-        if not msg.text:
-            await msg.reply("❌ Invalid input!")
+            if msg.text:
+                active_inputs.pop(user_id, None)
+                return msg.text
+
+        except asyncio.TimeoutError:
+            active_inputs.pop(user_id, None)
+            await query.message.reply("⌛ Timeout")
             return None
-
-        if msg.text.lower() == "/cancel":
-            await msg.reply("❌ Cancelled!")
-            return None
-
-        return msg.text
-
-    except asyncio.TimeoutError:
-        await message.reply("⌛ Timeout! Try again.")
-        return None
 
 # -------------------------------
 # CALLBACK HANDLER
@@ -66,16 +88,34 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     admin_status = await is_admin(user_id)
 
     # -------------------------------
+    # CANCEL INPUT
+    # -------------------------------
+    if data == "cancel_input":
+        if active_inputs.get(user_id):
+            active_inputs.pop(user_id, None)
+
+            return await safe_edit(
+                query.message,
+                "❌ Process Cancelled",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔙 Back", callback_data="settings")]
+                ])
+            )
+        else:
+            return await query.answer("Nothing to cancel", show_alert=True)
+
+    # -------------------------------
     # START
     # -------------------------------
-    if data == "start":
-        buttons = [
-            [InlineKeyboardButton("🧠 Help", callback_data="help"),
-             InlineKeyboardButton("🔰 About", callback_data="about")]
-        ]
-
+    elif data == "start":
+        buttons = [[
+            InlineKeyboardButton("🧠 Help", callback_data="help"),
+            InlineKeyboardButton("🔰 About", callback_data="about")
+        ]]
         if admin_status:
-            buttons.append([InlineKeyboardButton("⚙️ Settings", callback_data="settings")])
+            buttons.append([
+                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
+            ])
 
         await safe_edit(
             query.message,
@@ -87,17 +127,19 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # HELP
     # -------------------------------
     elif data == "help":
-        buttons = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🧑‍💻 Contact Owner", user_id=OWNER_ID),
-             InlineKeyboardButton("💬 Commands", callback_data="commands")],
-            [InlineKeyboardButton("⚓ Home", callback_data="start"),
-             InlineKeyboardButton("⚡ Close", callback_data="close")]
-        ])
-
         await safe_edit(
             query.message,
             HELP_TXT.format(first=query.from_user.first_name),
-            buttons
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("📜 Commands", callback_data="commands"),
+                    InlineKeyboardButton("ℹ️ About", callback_data="about")
+                ],
+                [
+                    InlineKeyboardButton("🏠 Home", callback_data="start"),
+                    InlineKeyboardButton("❌ Close", callback_data="close")
+                ]
+            ])
         )
 
     # -------------------------------
@@ -109,8 +151,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             COMMANDS_TXT,
             InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔙 Back", callback_data="help")],
-                [InlineKeyboardButton("⚓ Home", callback_data="start"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
+                [InlineKeyboardButton("🏠 Home", callback_data="start")]
             ])
         )
 
@@ -122,10 +163,11 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             query.message,
             ABOUT_TXT.format(first=query.from_user.first_name),
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("📜 Disclaimer", callback_data="disclaimer"),
-                 InlineKeyboardButton("🔐 Source", url="https://github.com/TitanXBots/FileStore-Bot")],
-                [InlineKeyboardButton("⚓ Home", callback_data="start"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
+                [InlineKeyboardButton("📜 Disclaimer", callback_data="disclaimer")],
+                [
+                    InlineKeyboardButton("🔙 Back", callback_data="help"),
+                    InlineKeyboardButton("🏠 Home", callback_data="start")
+                ]
             ])
         )
 
@@ -138,8 +180,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             DISCLAIMER_TXT,
             InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔙 Back", callback_data="about")],
-                [InlineKeyboardButton("⚓ Home", callback_data="start"),
-                 InlineKeyboardButton("⚡ Close", callback_data="close")]
+                [InlineKeyboardButton("🏠 Home", callback_data="start")]
             ])
         )
 
@@ -148,14 +189,16 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------------
     elif data == "settings":
         if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
+            return await query.answer("Admins only!", show_alert=True)
 
         await safe_edit(
             query.message,
-            "⚙️ Admin Settings Panel",
+            "⚙️ Admin Panel",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("👨‍💻 Admin Menu", callback_data="admin_menu"),
-                 InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
+                [
+                    InlineKeyboardButton("👨‍💻 Admin Menu", callback_data="admin_menu"),
+                    InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")
+                ],
                 [InlineKeyboardButton("🔙 Back", callback_data="start")]
             ])
         )
@@ -164,161 +207,97 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # ADMIN MENU
     # -------------------------------
     elif data == "admin_menu":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
-
         await safe_edit(
             query.message,
-            "👨‍💻 Admin Management Panel",
+            "👨‍💻 Admin Menu",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("➕ Add Admin", callback_data="add_admin"),
-                 InlineKeyboardButton("➖ Remove Admin", callback_data="remove_admin")],
-                [InlineKeyboardButton("📜 Admin List", callback_data="admin_list")],
+                [
+                    InlineKeyboardButton("➕ Add Admin", callback_data="add_admin"),
+                    InlineKeyboardButton("➖ Remove Admin", callback_data="remove_admin")
+                ],
+                [InlineKeyboardButton("📋 Admin List", callback_data="admin_list")],
                 [InlineKeyboardButton("🔙 Back", callback_data="settings")]
             ])
         )
+
+    # ADD ADMIN
+    elif data == "add_admin":
+        text = await get_input(client, query, "Send User ID to add admin", "admin_menu")
+        if not text or not text.isdigit():
+            return
+        await add_admin(int(text))
+        await safe_edit(query.message, "✅ Admin Added",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]]))
+
+    # REMOVE ADMIN
+    elif data == "remove_admin":
+        text = await get_input(client, query, "Send User ID to remove admin", "admin_menu")
+        if not text or not text.isdigit():
+            return
+        await remove_admin(int(text))
+        await safe_edit(query.message, "✅ Admin Removed",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]]))
+
+    # ADMIN LIST
+    elif data == "admin_list":
+        admins = await get_admins()
+        text = "👨‍💻 Admins:\n\n" + "\n".join(map(str, admins)) if admins else "No admins found"
+        await safe_edit(query.message, text,
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]]))
 
     # -------------------------------
     # BAN MENU
     # -------------------------------
     elif data == "ban_menu":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
-
         await safe_edit(
             query.message,
-            "🚫 Ban Management Panel",
+            "🚫 Ban Menu",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("🚫 Ban User", callback_data="ban_user"),
-                 InlineKeyboardButton("✅ Unban User", callback_data="unban_user")],
+                [
+                    InlineKeyboardButton("🔨 Ban User", callback_data="ban_user"),
+                    InlineKeyboardButton("♻️ Unban User", callback_data="unban_user")
+                ],
                 [InlineKeyboardButton("📋 Banned List", callback_data="banned_list")],
                 [InlineKeyboardButton("🔙 Back", callback_data="settings")]
             ])
         )
 
-    # -------------------------------
     # BAN USER
-    # -------------------------------
     elif data == "ban_user":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
-
-        text = await get_input(client, query.message, "Send user_id [reason]")
+        text = await get_input(client, query, "Send user_id reason", "ban_menu")
         if not text:
             return
-
         parts = text.split(maxsplit=1)
         if not parts[0].isdigit():
-            return await query.message.reply("❌ Invalid User ID!")
-
+            return await query.message.reply("Invalid ID")
         uid = int(parts[0])
         reason = parts[1] if len(parts) > 1 else "No reason"
+        await ban_user(uid, reason)
+        await safe_edit(query.message, "🚫 User Banned",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]]))
 
-        banned_users.update_one(
-            {"_id": uid},
-            {"$set": {"is_banned": True, "reason": reason}},
-            upsert=True
-        )
-
-        await query.message.reply(f"✅ User `{uid}` banned.\nReason: {reason}")
-
-    # -------------------------------
     # UNBAN USER
-    # -------------------------------
     elif data == "unban_user":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
-
-        text = await get_input(client, query.message, "Send user_id")
+        text = await get_input(client, query, "Send user_id", "ban_menu")
         if not text or not text.isdigit():
             return
+        await unban_user(int(text))
+        await safe_edit(query.message, "♻️ User Unbanned",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]]))
 
-        uid = int(text)
-
-        banned_users.update_one(
-            {"_id": uid},
-            {"$set": {"is_banned": False, "reason": ""}}
-        )
-
-        await query.message.reply(f"✅ User `{uid}` unbanned.")
-
-    # -------------------------------
     # BANNED LIST
-    # -------------------------------
     elif data == "banned_list":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
+        users = await get_banned_users()
+        if not users:
+            text = "No banned users"
+        else:
+            text = "🚫 Banned Users:\n\n"
+            for u in users:
+                text += f"{u['_id']} - {u.get('reason','')}\n"
 
-        banned = list(banned_users.find({"is_banned": True}))
+        await safe_edit(query.message, text,
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]]))
 
-        if not banned:
-            return await query.message.edit_text("No banned users.")
-
-        text = "\n".join(
-            [f"• {u['_id']} - {u.get('reason', 'No reason')}" for u in banned]
-        )
-
-        await query.message.edit_text(f"🚫 Banned Users:\n\n{text}")
-
-    # -------------------------------
-    # ADD ADMIN
-    # -------------------------------
-    elif data == "add_admin":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
-
-        text = await get_input(client, query.message, "Send user_id to add admin")
-        if not text or not text.isdigit():
-            return
-
-        uid = int(text)
-
-        admins_collection.update_one(
-            {"_id": uid},
-            {"$set": {"is_admin": True}},
-            upsert=True
-        )
-
-        await query.message.reply(f"✅ User `{uid}` added as admin.")
-
-    # -------------------------------
-    # REMOVE ADMIN
-    # -------------------------------
-    elif data == "remove_admin":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
-
-        text = await get_input(client, query.message, "Send user_id to remove admin")
-        if not text or not text.isdigit():
-            return
-
-        uid = int(text)
-
-        admins_collection.delete_one({"_id": uid})
-
-        await query.message.reply(f"✅ User `{uid}` removed from admin.")
-
-    # -------------------------------
-    # ADMIN LIST
-    # -------------------------------
-    elif data == "admin_list":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
-
-        admins = list(admins_collection.find({}))
-
-        if not admins:
-            return await query.message.edit_text("No admins found.")
-
-        text = "\n".join([f"• {admin['_id']}" for admin in admins])
-
-        await query.message.edit_text(f"👨‍💻 Admin List:\n\n{text}")
-
-    # -------------------------------
     # CLOSE
-    # -------------------------------
     elif data == "close":
-        try:
-            await query.message.delete()
-        except:
-            pass
+        await query.message.delete()
