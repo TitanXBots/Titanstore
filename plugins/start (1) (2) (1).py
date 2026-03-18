@@ -13,7 +13,7 @@ from pyrogram.errors import FloodWait
 from bot import Bot
 from config import *
 from helper_func import subscribed, encode, decode, get_messages
-from database.database import is_admin
+from database.database import *
 
 # -------------------------------
 # Logging
