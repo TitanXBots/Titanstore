@@ -223,7 +223,7 @@ async def not_joined(client: Client, message: Message):
 @Bot.on_message(filters.command("users") & filters.private)
 async def total_users(client, message):
     if not await is_admin(message.from_user.id):
-        await message.reply_text("⚠️ Only admins allowed.")
+        await message.reply_text("⚠️ ᴏᴏᴘꜱ! ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀʀᴇ ᴀʟʟᴏᴡᴇᴅ ᴛᴏ ᴜꜱᴇ ᴛʜɪꜱ.")
         return
     total = user_data.count_documents({})
     await message.reply_text(f"👥 Total Users: {total}")
@@ -234,7 +234,7 @@ async def total_users(client, message):
 @Bot.on_message(filters.command("broadcast") & filters.private)
 async def broadcast_handler(client, message):
     if not await is_admin(message.from_user.id):
-        await message.reply_text("⚠️ Only admins allowed.")
+        await message.reply_text("⚠️ ᴏᴏᴘꜱ! ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀʀᴇ ᴀʟʟᴏᴡᴇᴅ ᴛᴏ ᴜꜱᴇ ᴛʜɪꜱ.")
         return
     if not message.reply_to_message:
         await message.reply_text("Reply to a message to broadcast.")
