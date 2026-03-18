@@ -78,7 +78,7 @@ async def start_command(client: Client, message: Message):
     # -------------------------------
     if await is_user_banned(user_id):
         reason = await get_ban_reason(user_id)
-        await message.reply_text(f"🚫 You are banned.\nReason: {reason}")
+        await message.reply_text(f"🚫 ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ.\nʀᴇᴀꜱᴏɴ: {reason}")
         return
 
     # -------------------------------
@@ -100,7 +100,7 @@ async def start_command(client: Client, message: Message):
     # Maintenance mode
     # -------------------------------
     if await is_maintenance(user_id):
-        await message.reply_text("⚙️ Bot is under maintenance.\nPlease try again later.")
+        await message.reply_text("ʙᴏᴛ ɪꜱ ᴜɴᴅᴇʀ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ.\nᴘʟᴇᴀꜱᴇ ᴛʀʏ ᴀɢᴀɪɴ ʟᴀᴛᴇʀ.")
         return
 
     # -------------------------------
