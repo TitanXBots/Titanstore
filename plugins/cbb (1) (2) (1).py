@@ -97,7 +97,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
              InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
             [InlineKeyboardButton("🔙 Back", callback_data="start")]
         ])
-        await safe_edit(query.message, "⚙️ Admin Settings Panel", buttons)
+        await safe_edit(query.message, "⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ ᴘᴀɴɴᴇʟ", buttons)
 
     # -------------------------------
     # ADMIN MENU
@@ -112,7 +112,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             [InlineKeyboardButton("📜 Admin List", callback_data="admin_list")],
             [InlineKeyboardButton("🔙 Back", callback_data="settings")]
         ])
-        await safe_edit(query.message, "👨‍💻 Admin Management Panel", buttons)
+        await safe_edit(query.message, "👨‍💻 ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ ᴘᴀɴɴᴇʟ", buttons)
 
     # -------------------------------
     # BAN MENU
@@ -127,7 +127,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             [InlineKeyboardButton("📋 Banned List", callback_data="banned_list")],
             [InlineKeyboardButton("🔙 Back", callback_data="settings")]
         ])
-        await safe_edit(query.message, "🚫 Ban Management Panel", buttons)
+        await safe_edit(query.message, "🚫 ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ ᴘᴀɴɴᴇʟ", buttons)
 
     # -------------------------------
     # BAN USER
@@ -138,7 +138,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return
 
         await query.message.edit_text(
-            "🚫 Send the **User ID** to ban.\nYou can add a reason:\n<code>user_id reason</code>\nOr /cancel to stop."
+            "🚫 Send the User ID to ban.\nYou can add a reason:\n<code>user_id reason</code>\nOr /cancel to stop."
         )
 
         client.user_states = getattr(client, "user_states", {})
@@ -259,7 +259,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             await query.answer("⚠️ Only admins allowed.", show_alert=True)
             return
 
-        await query.message.edit_text("➖ Send the **User ID** to remove from admin.\nOr /cancel to stop.")
+        await query.message.edit_text("➖ Send the User ID to remove from admin.\nOr /cancel to stop.")
         client.user_states = getattr(client, "user_states", {})
         client.user_states[user_id] = "remove_admin"
 
