@@ -90,21 +90,21 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------------
     elif data == "settings":
         if not admin_status:
-            await query.answer("⚠️ Only admins allowed.", show_alert=True)
+            await query.answer("⚠️ ᴏᴏᴘꜱ! ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀʀᴇ ᴀʟʟᴏᴡᴇᴅ ᴛᴏ ᴜꜱᴇ ᴛʜɪꜱ.", show_alert=True)
             return
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("👨‍💻 Admin Menu", callback_data="admin_menu"),
              InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
             [InlineKeyboardButton("🔙 Back", callback_data="start")]
         ])
-        await safe_edit(query.message, "⚙️ **Admin Settings Panel**", buttons)
+        await safe_edit(query.message, "⚙️ Admin Settings Panel", buttons)
 
     # -------------------------------
     # ADMIN MENU
     # -------------------------------
     elif data == "admin_menu":
         if not admin_status:
-            await query.answer("⚠️ Only admins allowed.", show_alert=True)
+            await query.answer("⚠️ ᴏᴏᴘꜱ! ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀʀᴇ ᴀʟʟᴏᴡᴇᴅ ᴛᴏ ᴜꜱᴇ ᴛʜɪꜱ.", show_alert=True)
             return
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("➕ Add Admin", callback_data="add_admin"),
@@ -112,14 +112,14 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             [InlineKeyboardButton("📜 Admin List", callback_data="admin_list")],
             [InlineKeyboardButton("🔙 Back", callback_data="settings")]
         ])
-        await safe_edit(query.message, "👨‍💻 **Admin Management Panel**", buttons)
+        await safe_edit(query.message, "👨‍💻 Admin Management Panel", buttons)
 
     # -------------------------------
     # BAN MENU
     # -------------------------------
     elif data == "ban_menu":
         if not admin_status:
-            await query.answer("⚠️ Only admins allowed.", show_alert=True)
+            await query.answer("⚠️ ᴏᴏᴘꜱ! ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀʀᴇ ᴀʟʟᴏᴡᴇᴅ ᴛᴏ ᴜꜱᴇ ᴛʜɪꜱ.", show_alert=True)
             return
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("🚫 Ban User", callback_data="ban_user"),
@@ -127,14 +127,14 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             [InlineKeyboardButton("📋 Banned List", callback_data="banned_list")],
             [InlineKeyboardButton("🔙 Back", callback_data="settings")]
         ])
-        await safe_edit(query.message, "🚫 **Ban Management Panel**", buttons)
+        await safe_edit(query.message, "🚫 Ban Management Panel", buttons)
 
     # -------------------------------
     # BAN USER
     # -------------------------------
     elif data == "ban_user":
         if not admin_status:
-            await query.answer("⚠️ Only admins allowed.", show_alert=True)
+            await query.answer("⚠️ ᴏᴏᴘꜱ! ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀʀᴇ ᴀʟʟᴏᴡᴇᴅ ᴛᴏ ᴜꜱᴇ ᴛʜɪꜱ.", show_alert=True)
             return
 
         await query.message.edit_text(
@@ -175,10 +175,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------------
     elif data == "unban_user":
         if not admin_status:
-            await query.answer("⚠️ Only admins allowed.", show_alert=True)
+            await query.answer("⚠️ ᴏᴏᴘꜱ! ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀʀᴇ ᴀʟʟᴏᴡᴇᴅ ᴛᴏ ᴜꜱᴇ ᴛʜɪꜱ.", show_alert=True)
             return
 
-        await query.message.edit_text("✅ Send the **User ID** to unban.\nOr /cancel to stop.")
+        await query.message.edit_text("✅ Send the User ID to unban.\nOr /cancel to stop.")
 
         client.user_states = getattr(client, "user_states", {})
         client.user_states[user_id] = "unban_user"
@@ -211,7 +211,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------------
     elif data == "banned_list":
         if not admin_status:
-            await query.answer("⚠️ Only admins allowed.", show_alert=True)
+            await query.answer("⚠️ ᴏᴏᴘꜱ! ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀʀᴇ ᴀʟʟᴏᴡᴇᴅ ᴛᴏ ᴜꜱᴇ ᴛʜɪꜱ.", show_alert=True)
             return
 
         banned = list(banned_users.find({"is_banned": True}))
@@ -224,10 +224,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------------
     elif data == "add_admin":
         if not admin_status:
-            await query.answer("⚠️ Only admins allowed.", show_alert=True)
+            await query.answer("⚠️ ᴏᴏᴘꜱ! ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀʀᴇ ᴀʟʟᴏᴡᴇᴅ ᴛᴏ ᴜꜱᴇ ᴛʜɪꜱ.", show_alert=True)
             return
 
-        await query.message.edit_text("➕ Send the **User ID** to add as admin.\nOr /cancel to stop.")
+        await query.message.edit_text("➕ Send the User ID to add as admin.\nOr /cancel to stop.")
         client.user_states = getattr(client, "user_states", {})
         client.user_states[user_id] = "add_admin"
 
@@ -288,7 +288,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------------
     elif data == "admin_list":
         if not admin_status:
-            await query.answer("⚠️ Only admins allowed.", show_alert=True)
+            await query.answer("⚠️ ᴏᴏᴘꜱ! ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀʀᴇ ᴀʟʟᴏᴡᴇᴅ ᴛᴏ ᴜꜱᴇ ᴛʜɪꜱ.", show_alert=True)
             return
 
         admins = list(admins_collection.find({}))
