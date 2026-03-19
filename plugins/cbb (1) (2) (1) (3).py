@@ -6,6 +6,7 @@ from pyrogram.errors import MessageNotModified
 from database.database import admins_collection, banned_users, is_admin
 import asyncio
 
+
 # -------------------------------
 # SAFE MESSAGE EDIT
 # -------------------------------
@@ -28,6 +29,7 @@ async def safe_edit(message, text, buttons=None):
         except:
             pass
 
+
 # -------------------------------
 # INPUT HELPER
 # -------------------------------
@@ -49,6 +51,7 @@ async def get_input(client, message, prompt):
     except asyncio.TimeoutError:
         await message.reply("⌛ Timeout! Try again.")
         return None
+
 
 # -------------------------------
 # CALLBACK HANDLER
@@ -75,7 +78,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         ]
 
         if admin_status:
-            buttons.append([InlineKeyboardButton("⚙️ Settings", callback_data="settings")])
+            buttons.append(
+                [InlineKeyboardButton("⚙️ Settings", callback_data="settings")]
+            )
 
         await safe_edit(
             query.message,
@@ -88,7 +93,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------------
     elif data == "help":
         buttons = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🧑‍💻 Contact Owner", user_id=OWNER_ID),
+            [InlineKeyboardButton("🧑‍💻 Contact Owner", url=f"tg://user?id={OWNER_ID}"),
              InlineKeyboardButton("💬 Commands", callback_data="commands")],
             [InlineKeyboardButton("⚓ Home", callback_data="start"),
              InlineKeyboardButton("⚡ Close", callback_data="close")]
@@ -243,7 +248,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await query.message.reply(f"✅ User `{uid}` unbanned.")
 
     # -------------------------------
-    # BANNED LIST
+    # BANNED LIST (WITH BACK)
     # -------------------------------
     elif data == "banned_list":
         if not admin_status:
@@ -252,13 +257,23 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         banned = list(banned_users.find({"is_banned": True}))
 
         if not banned:
-            return await query.message.edit_text("No banned users.")
+            return await query.message.edit_text(
+                "🚫 No banned users.",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]
+                ])
+            )
 
         text = "\n".join(
             [f"• {u['_id']} - {u.get('reason', 'No reason')}" for u in banned]
         )
 
-        await query.message.edit_text(f"🚫 Banned Users:\n\n{text}")
+        await query.message.edit_text(
+            f"🚫 Banned Users:\n\n{text}",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]
+            ])
+        )
 
     # -------------------------------
     # ADD ADMIN
@@ -299,7 +314,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await query.message.reply(f"✅ User `{uid}` removed from admin.")
 
     # -------------------------------
-    # ADMIN LIST
+    # ADMIN LIST (WITH BACK)
     # -------------------------------
     elif data == "admin_list":
         if not admin_status:
@@ -308,11 +323,21 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         admins = list(admins_collection.find({}))
 
         if not admins:
-            return await query.message.edit_text("No admins found.")
+            return await query.message.edit_text(
+                "👨‍💻 No admins found.",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]
+                ])
+            )
 
         text = "\n".join([f"• {admin['_id']}" for admin in admins])
 
-        await query.message.edit_text(f"👨‍💻 Admin List:\n\n{text}")
+        await query.message.edit_text(
+            f"👨‍💻 Admin List:\n\n{text}",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]
+            ])
+        )
 
     # -------------------------------
     # CLOSE
