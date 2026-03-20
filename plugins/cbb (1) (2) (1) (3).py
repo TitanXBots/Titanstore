@@ -4,12 +4,11 @@ from Script import *
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import MessageNotModified
 from database.database import admins_collection, banned_users, is_admin
-import asyncio
 
 # -------------------------------
-# CANCEL STATE
+# USER STATE (IMPORTANT)
 # -------------------------------
-cancel_states = {}
+user_states = {}
 
 # -------------------------------
 # SAFE MESSAGE EDIT
@@ -35,42 +34,6 @@ async def safe_edit(message, text, buttons=None):
 
 
 # -------------------------------
-# INPUT HELPER (WITH CANCEL BUTTON)
-# -------------------------------
-async def get_input(client, message, prompt):
-    user_id = message.chat.id
-    cancel_states[user_id] = False
-
-    cancel_btn = InlineKeyboardMarkup([
-        [InlineKeyboardButton("❌ Cancel", callback_data="cancel_input")]
-    ])
-
-    await message.edit_text(prompt, reply_markup=cancel_btn)
-
-    try:
-        while True:
-            msg = await client.listen(message.chat.id, timeout=300)
-
-            # ✅ If cancel pressed → stop immediately
-            if cancel_states.get(user_id):
-                cancel_states[user_id] = False
-                return None
-
-            if not msg.text:
-                await msg.reply("❌ Invalid input!")
-                continue
-
-            if msg.text.lower() == "/cancel":
-                return None
-
-            return msg.text
-
-    except asyncio.TimeoutError:
-        await message.reply("⌛ Timeout! Try again.")
-        return None
-
-
-# -------------------------------
 # CALLBACK HANDLER
 # -------------------------------
 @Bot.on_callback_query()
@@ -86,16 +49,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     admin_status = await is_admin(user_id)
 
     # -------------------------------
-    # CANCEL BUTTON HANDLER (FIXED)
+    # CANCEL INPUT
     # -------------------------------
     if data == "cancel_input":
-        cancel_states[user_id] = True
-
-        # 🔥 IMPORTANT: stop listener
-        try:
-            await client.stop_listening(query.message.chat.id)
-        except:
-            pass
+        user_states.pop(user_id, None)
 
         return await safe_edit(
             query.message,
@@ -239,88 +196,105 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
     # -------------------------------
-    # BAN USER
+    # STATE SETTERS
     # -------------------------------
     elif data == "ban_user":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
+        user_states[user_id] = "ban_user"
 
-        text = await get_input(client, query.message, "Send user_id [reason]")
-        if text is None:
-            return
-
-        parts = text.split(maxsplit=1)
-        if not parts[0].isdigit():
-            return await query.message.reply("❌ Invalid User ID!")
-
-        uid = int(parts[0])
-        reason = parts[1] if len(parts) > 1 else "No reason"
-
-        banned_users.update_one(
-            {"_id": uid},
-            {"$set": {"is_banned": True, "reason": reason}},
-            upsert=True
+        return await safe_edit(
+            query.message,
+            "Send user_id [reason]",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("❌ Cancel", callback_data="cancel_input")]
+            ])
         )
 
-        await query.message.reply(f"✅ User `{uid}` banned.\nReason: {reason}")
-
-    # -------------------------------
-    # UNBAN USER
-    # -------------------------------
     elif data == "unban_user":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
+        user_states[user_id] = "unban_user"
 
-        text = await get_input(client, query.message, "Send user_id")
-        if text is None or not text.isdigit():
-            return
-
-        uid = int(text)
-
-        banned_users.update_one(
-            {"_id": uid},
-            {"$set": {"is_banned": False, "reason": ""}}
+        return await safe_edit(
+            query.message,
+            "Send user_id",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("❌ Cancel", callback_data="cancel_input")]
+            ])
         )
 
-        await query.message.reply(f"✅ User `{uid}` unbanned.")
-
-    # -------------------------------
-    # ADD ADMIN
-    # -------------------------------
     elif data == "add_admin":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
+        user_states[user_id] = "add_admin"
 
-        text = await get_input(client, query.message, "Send user_id to add admin")
-        if text is None or not text.isdigit():
-            return
-
-        uid = int(text)
-
-        admins_collection.update_one(
-            {"_id": uid},
-            {"$set": {"is_admin": True}},
-            upsert=True
+        return await safe_edit(
+            query.message,
+            "Send user_id to add admin",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("❌ Cancel", callback_data="cancel_input")]
+            ])
         )
 
-        await query.message.reply(f"✅ User `{uid}` added as admin.")
+    elif data == "remove_admin":
+        user_states[user_id] = "remove_admin"
+
+        return await safe_edit(
+            query.message,
+            "Send user_id to remove admin",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("❌ Cancel", callback_data="cancel_input")]
+            ])
+        )
 
     # -------------------------------
-    # REMOVE ADMIN
+    # BANNED LIST
     # -------------------------------
-    elif data == "remove_admin":
+    elif data == "banned_list":
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
-        text = await get_input(client, query.message, "Send user_id to remove admin")
-        if text is None or not text.isdigit():
-            return
+        banned = list(banned_users.find({"is_banned": True}))
 
-        uid = int(text)
+        if not banned:
+            return await query.message.edit_text(
+                "🚫 No banned users.",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]
+                ])
+            )
 
-        admins_collection.delete_one({"_id": uid})
+        text = "\n".join(
+            [f"• {u['_id']} - {u.get('reason', 'No reason')}" for u in banned]
+        )
 
-        await query.message.reply(f"✅ User `{uid}` removed from admin.")
+        await query.message.edit_text(
+            f"🚫 Banned Users:\n\n{text}",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]
+            ])
+        )
+
+    # -------------------------------
+    # ADMIN LIST
+    # -------------------------------
+    elif data == "admin_list":
+        if not admin_status:
+            return await query.answer("⚠️ Admins only!", show_alert=True)
+
+        admins = list(admins_collection.find({}))
+
+        if not admins:
+            return await query.message.edit_text(
+                "👨‍💻 No admins found.",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]
+                ])
+            )
+
+        text = "\n".join([f"• {admin['_id']}" for admin in admins])
+
+        await query.message.edit_text(
+            f"👨‍💻 Admin List:\n\n{text}",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]
+            ])
+        )
 
     # -------------------------------
     # CLOSE
