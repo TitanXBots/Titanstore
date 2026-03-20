@@ -7,6 +7,16 @@ from database.database import admins_collection, banned_users, is_admin
 import asyncio
 
 # -------------------------------
+# AUTO DELETE HELPER
+# -------------------------------
+async def auto_delete(msg, delay=5):
+    await asyncio.sleep(delay)
+    try:
+        await msg.delete()
+    except:
+        pass
+
+# -------------------------------
 # SAFE MESSAGE EDIT
 # -------------------------------
 async def safe_edit(message, text, buttons=None):
@@ -29,25 +39,44 @@ async def safe_edit(message, text, buttons=None):
             pass
 
 # -------------------------------
-# INPUT HELPER
+# INPUT HELPER (UPDATED)
 # -------------------------------
-async def get_input(client, message, prompt):
+async def get_input(client, message, prompt, back_data="start"):
     await message.edit_text(prompt)
+
     try:
         msg = await client.listen(message.chat.id, timeout=300)
 
         if not msg.text:
-            await msg.reply("❌ Invalid input!")
+            m = await msg.reply(
+                "❌ Invalid input!",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔙 Back", callback_data=back_data)]
+                ])
+            )
+            asyncio.create_task(auto_delete(m))
             return None
 
         if msg.text.lower() == "/cancel":
-            await msg.reply("❌ Cancelled!")
+            m = await msg.reply(
+                "❌ Cancelled!",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔙 Back", callback_data=back_data)]
+                ])
+            )
+            asyncio.create_task(auto_delete(m))
             return None
 
         return msg.text
 
     except asyncio.TimeoutError:
-        await message.reply("⌛ Timeout! Try again.")
+        m = await message.reply(
+            "⌛ Timeout! Try again.",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Back", callback_data=back_data)]
+            ])
+        )
+        asyncio.create_task(auto_delete(m))
         return None
 
 # -------------------------------
@@ -203,13 +232,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
-        text = await get_input(client, query.message, "Send user_id [reason]")
+        text = await get_input(client, query.message, "Send user_id [reason]", "ban_menu")
         if not text:
             return
 
         parts = text.split(maxsplit=1)
         if not parts[0].isdigit():
-            return await query.message.reply("❌ Invalid User ID!")
+            m = await query.message.reply("❌ Invalid User ID!")
+            asyncio.create_task(auto_delete(m))
+            return
 
         uid = int(parts[0])
         reason = parts[1] if len(parts) > 1 else "No reason"
@@ -229,7 +260,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
-        text = await get_input(client, query.message, "Send user_id")
+        text = await get_input(client, query.message, "Send user_id", "ban_menu")
         if not text or not text.isdigit():
             return
 
@@ -267,7 +298,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
-        text = await get_input(client, query.message, "Send user_id to add admin")
+        text = await get_input(client, query.message, "Send user_id to add admin", "admin_menu")
         if not text or not text.isdigit():
             return
 
@@ -288,7 +319,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
-        text = await get_input(client, query.message, "Send user_id to remove admin")
+        text = await get_input(client, query.message, "Send user_id to remove admin", "admin_menu")
         if not text or not text.isdigit():
             return
 
