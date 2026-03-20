@@ -7,9 +7,9 @@ from database.database import admins_collection, banned_users, is_admin
 import asyncio
 
 # -------------------------------
-# AUTO DELETE HELPER
+# AUTO DELETE (1 MINUTE)
 # -------------------------------
-async def auto_delete(msg, delay=5):
+async def auto_delete(msg, delay=60):
     await asyncio.sleep(delay)
     try:
         await msg.delete()
@@ -39,7 +39,7 @@ async def safe_edit(message, text, buttons=None):
             pass
 
 # -------------------------------
-# INPUT HELPER (UPDATED)
+# INPUT HELPER
 # -------------------------------
 async def get_input(client, message, prompt, back_data="start"):
     await message.edit_text(prompt)
@@ -116,17 +116,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # HELP
     # -------------------------------
     elif data == "help":
-        buttons = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🧑‍💻 Contact Owner", user_id=OWNER_ID),
-             InlineKeyboardButton("💬 Commands", callback_data="commands")],
-            [InlineKeyboardButton("⚓ Home", callback_data="start"),
-             InlineKeyboardButton("⚡ Close", callback_data="close")]
-        ])
-
         await safe_edit(
             query.message,
             HELP_TXT.format(first=query.from_user.first_name),
-            buttons
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("🧑‍💻 Contact Owner", user_id=OWNER_ID),
+                 InlineKeyboardButton("💬 Commands", callback_data="commands")],
+                [InlineKeyboardButton("⚓ Home", callback_data="start"),
+                 InlineKeyboardButton("⚡ Close", callback_data="close")]
+            ])
         )
 
     # -------------------------------
