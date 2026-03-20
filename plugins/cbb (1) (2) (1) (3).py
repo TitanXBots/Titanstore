@@ -1,17 +1,26 @@
+# -------------------------------
+# IMPORTS
+# -------------------------------
 from bot import Bot
 from config import *
 from Script import *
+
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import MessageNotModified
-from database.database import admins_collection, banned_users, is_admin
+
+from database.database import (
+    is_admin,
+    get_admins,
+    get_banned_users
+)
 
 # -------------------------------
-# USER STATE
+# USER STATE (SHARED)
 # -------------------------------
 user_states = {}
 
 # -------------------------------
-# SAFE MESSAGE EDIT
+# SAFE EDIT FUNCTION
 # -------------------------------
 async def safe_edit(message, text, buttons=None):
     try:
@@ -22,14 +31,14 @@ async def safe_edit(message, text, buttons=None):
         )
     except MessageNotModified:
         return
-    except Exception:
+    except:
         try:
             await message.reply_text(
                 text=text,
                 reply_markup=buttons,
                 disable_web_page_preview=True
             )
-        except Exception:
+        except:
             pass
 
 
@@ -50,14 +59,11 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data.strip()
     user_id = query.from_user.id
 
-    # Safe admin check
-    try:
-        admin_status = await is_admin(user_id)
-    except:
-        admin_status = False
+    # ADMIN CHECK
+    admin_status = await is_admin(user_id)
 
     # -------------------------------
-    # CANCEL INPUT
+    # CANCEL
     # -------------------------------
     if data == "cancel_input":
         user_states.pop(user_id, None)
@@ -75,8 +81,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # -------------------------------
     if data == "start":
         buttons = [
-            [InlineKeyboardButton("🧠 Help", callback_data="help"),
-             InlineKeyboardButton("🔰 About", callback_data="about")]
+            [
+                InlineKeyboardButton("🧠 Help", callback_data="help"),
+                InlineKeyboardButton("🔰 About", callback_data="about")
+            ]
         ]
 
         if admin_status:
@@ -220,19 +228,19 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
     # -------------------------------
-    # STATE SETTERS
+    # STATE SETTERS (IMPORTANT)
     # -------------------------------
-    if data in ["ban_user", "unban_user", "add_admin", "remove_admin"]:
+    if data in ["add_admin", "remove_admin", "ban_user", "unban_user"]:
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
         user_states[user_id] = data
 
         prompts = {
+            "add_admin": "Send user_id",
+            "remove_admin": "Send user_id",
             "ban_user": "Send user_id [reason]",
-            "unban_user": "Send user_id",
-            "add_admin": "Send user_id to add admin",
-            "remove_admin": "Send user_id to remove admin"
+            "unban_user": "Send user_id"
         }
 
         return await safe_edit(
@@ -247,59 +255,28 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     # ADMIN LIST
     # -------------------------------
     if data == "admin_list":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
+        admins = await get_admins()
 
-        admins = list(admins_collection.find({}, {"_id": 1}))
-
-        if not admins:
-            return await safe_edit(
-                query.message,
-                "👨‍💻 No admins found.",
-                InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]
-                ])
-            )
-
-        text = "\n".join([f"• {str(admin['_id'])}" for admin in admins])
+        text = "\n".join([f"• {a}" for a in admins]) if admins else "No admins."
 
         return await safe_edit(
             query.message,
-            f"👨‍💻 Admin List:\n\n{text}",
-            InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]
-            ])
+            f"👨‍💻 Admin List:\n\n{text}"
         )
 
     # -------------------------------
     # BANNED LIST
     # -------------------------------
     if data == "banned_list":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
+        banned = await get_banned_users()
 
-        banned = list(banned_users.find({"is_banned": True}))
-
-        if not banned:
-            return await safe_edit(
-                query.message,
-                "🚫 No banned users.",
-                InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]
-                ])
-            )
-
-        text = "\n".join([
-            f"• {str(u['_id'])} - {u.get('reason', 'No reason')}"
-            for u in banned
-        ])
+        text = "\n".join(
+            [f"• {u['_id']} - {u.get('reason', '')}" for u in banned]
+        ) if banned else "No banned users."
 
         return await safe_edit(
             query.message,
-            f"🚫 Banned Users:\n\n{text}",
-            InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]
-            ])
+            f"🚫 Banned Users:\n\n{text}"
         )
 
     # -------------------------------
