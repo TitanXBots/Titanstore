@@ -51,7 +51,7 @@ async def get_input(client, message, prompt):
         while True:
             msg = await client.listen(message.chat.id, timeout=300)
 
-            # Cancel button pressed
+            # ✅ If cancel pressed → stop immediately
             if cancel_states.get(user_id):
                 cancel_states[user_id] = False
                 return None
@@ -86,10 +86,17 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     admin_status = await is_admin(user_id)
 
     # -------------------------------
-    # CANCEL BUTTON HANDLER
+    # CANCEL BUTTON HANDLER (FIXED)
     # -------------------------------
     if data == "cancel_input":
         cancel_states[user_id] = True
+
+        # 🔥 IMPORTANT: stop listener
+        try:
+            await client.stop_listening(query.message.chat.id)
+        except:
+            pass
+
         return await safe_edit(
             query.message,
             "❌ Operation cancelled.",
@@ -239,7 +246,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
         text = await get_input(client, query.message, "Send user_id [reason]")
-        if not text:
+        if text is None:
             return
 
         parts = text.split(maxsplit=1)
@@ -265,7 +272,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
         text = await get_input(client, query.message, "Send user_id")
-        if not text or not text.isdigit():
+        if text is None or not text.isdigit():
             return
 
         uid = int(text)
@@ -278,34 +285,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await query.message.reply(f"✅ User `{uid}` unbanned.")
 
     # -------------------------------
-    # BANNED LIST
-    # -------------------------------
-    elif data == "banned_list":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
-
-        banned = list(banned_users.find({"is_banned": True}))
-
-        if not banned:
-            return await query.message.edit_text(
-                "🚫 No banned users.",
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]
-                ])
-            )
-
-        text = "\n".join(
-            [f"• {u['_id']} - {u.get('reason', 'No reason')}" for u in banned]
-        )
-
-        await query.message.edit_text(
-            f"🚫 Banned Users:\n\n{text}",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]
-            ])
-        )
-
-    # -------------------------------
     # ADD ADMIN
     # -------------------------------
     elif data == "add_admin":
@@ -313,7 +292,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
         text = await get_input(client, query.message, "Send user_id to add admin")
-        if not text or not text.isdigit():
+        if text is None or not text.isdigit():
             return
 
         uid = int(text)
@@ -334,7 +313,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
         text = await get_input(client, query.message, "Send user_id to remove admin")
-        if not text or not text.isdigit():
+        if text is None or not text.isdigit():
             return
 
         uid = int(text)
@@ -342,32 +321,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         admins_collection.delete_one({"_id": uid})
 
         await query.message.reply(f"✅ User `{uid}` removed from admin.")
-
-    # -------------------------------
-    # ADMIN LIST
-    # -------------------------------
-    elif data == "admin_list":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
-
-        admins = list(admins_collection.find({}))
-
-        if not admins:
-            return await query.message.edit_text(
-                "👨‍💻 No admins found.",
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]
-                ])
-            )
-
-        text = "\n".join([f"• {admin['_id']}" for admin in admins])
-
-        await query.message.edit_text(
-            f"👨‍💻 Admin List:\n\n{text}",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]
-            ])
-        )
 
     # -------------------------------
     # CLOSE
