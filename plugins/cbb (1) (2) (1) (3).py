@@ -6,6 +6,10 @@ from pyrogram.errors import MessageNotModified
 from database.database import admins_collection, banned_users, is_admin
 import asyncio
 
+# -------------------------------
+# CANCEL STATE
+# -------------------------------
+cancel_states = {}
 
 # -------------------------------
 # SAFE MESSAGE EDIT
@@ -31,22 +35,35 @@ async def safe_edit(message, text, buttons=None):
 
 
 # -------------------------------
-# INPUT HELPER
+# INPUT HELPER (WITH CANCEL BUTTON)
 # -------------------------------
 async def get_input(client, message, prompt):
-    await message.edit_text(prompt)
+    user_id = message.chat.id
+    cancel_states[user_id] = False
+
+    cancel_btn = InlineKeyboardMarkup([
+        [InlineKeyboardButton("❌ Cancel", callback_data="cancel_input")]
+    ])
+
+    await message.edit_text(prompt, reply_markup=cancel_btn)
+
     try:
-        msg = await client.listen(message.chat.id, timeout=300)
+        while True:
+            msg = await client.listen(message.chat.id, timeout=300)
 
-        if not msg.text:
-            await msg.reply("❌ Invalid input!")
-            return None
+            # Cancel button pressed
+            if cancel_states.get(user_id):
+                cancel_states[user_id] = False
+                return None
 
-        if msg.text.lower() == "/cancel":
-            await msg.reply("❌ Cancelled!")
-            return None
+            if not msg.text:
+                await msg.reply("❌ Invalid input!")
+                continue
 
-        return msg.text
+            if msg.text.lower() == "/cancel":
+                return None
+
+            return msg.text
 
     except asyncio.TimeoutError:
         await message.reply("⌛ Timeout! Try again.")
@@ -67,6 +84,19 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
     user_id = query.from_user.id
     admin_status = await is_admin(user_id)
+
+    # -------------------------------
+    # CANCEL BUTTON HANDLER
+    # -------------------------------
+    if data == "cancel_input":
+        cancel_states[user_id] = True
+        return await safe_edit(
+            query.message,
+            "❌ Operation cancelled.",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("⚓ Home", callback_data="start")]
+            ])
+        )
 
     # -------------------------------
     # START
@@ -248,7 +278,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await query.message.reply(f"✅ User `{uid}` unbanned.")
 
     # -------------------------------
-    # BANNED LIST (WITH BACK)
+    # BANNED LIST
     # -------------------------------
     elif data == "banned_list":
         if not admin_status:
@@ -314,7 +344,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await query.message.reply(f"✅ User `{uid}` removed from admin.")
 
     # -------------------------------
-    # ADMIN LIST (WITH BACK)
+    # ADMIN LIST
     # -------------------------------
     elif data == "admin_list":
         if not admin_status:
