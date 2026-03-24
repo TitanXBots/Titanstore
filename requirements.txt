@@ -2,9 +2,11 @@
 pyrogram
 TgCrypto
 Pyromod==1.5
+
 # --- For-Database ------------ #
-pymongo
+motor
 dnspython
+
 # --- For-Web-Response ------- #
 aiohttp
 humanize
