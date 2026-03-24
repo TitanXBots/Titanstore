@@ -39,43 +39,28 @@ async def safe_edit(message, text, buttons=None):
             pass
 
 # -------------------------------
-# INPUT HELPER
+# INPUT HELPER (NO BACK BUTTON ON CANCEL)
 # -------------------------------
-async def get_input(client, message, prompt, back_data="start"):
+async def get_input(client, message, prompt):
     await message.edit_text(prompt)
 
     try:
         msg = await client.listen(message.chat.id, timeout=300)
 
         if not msg.text:
-            m = await msg.reply(
-                "❌ Invalid input!",
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔙 Back", callback_data=back_data)]
-                ])
-            )
+            m = await msg.reply("❌ Invalid input!")
             asyncio.create_task(auto_delete(m))
             return None
 
         if msg.text.lower() == "/cancel":
-            m = await msg.reply(
-                "❌ Cancelled!",
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔙 Back", callback_data=back_data)]
-                ])
-            )
+            m = await msg.reply("❌ Cancelled!")
             asyncio.create_task(auto_delete(m))
             return None
 
         return msg.text
 
     except asyncio.TimeoutError:
-        m = await message.reply(
-            "⌛ Timeout! Try again.",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 Back", callback_data=back_data)]
-            ])
-        )
+        m = await message.reply("⌛ Timeout! Try again.")
         asyncio.create_task(auto_delete(m))
         return None
 
@@ -230,7 +215,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
-        text = await get_input(client, query.message, "Send user_id [reason]", "ban_menu")
+        text = await get_input(client, query.message, "Send user_id [reason]")
         if not text:
             return
 
@@ -258,7 +243,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
-        text = await get_input(client, query.message, "Send user_id", "ban_menu")
+        text = await get_input(client, query.message, "Send user_id")
         if not text or not text.isdigit():
             return
 
@@ -296,7 +281,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
-        text = await get_input(client, query.message, "Send user_id to add admin", "admin_menu")
+        text = await get_input(client, query.message, "Send user_id to add admin")
         if not text or not text.isdigit():
             return
 
@@ -317,7 +302,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
-        text = await get_input(client, query.message, "Send user_id to remove admin", "admin_menu")
+        text = await get_input(client, query.message, "Send user_id to remove admin")
         if not text or not text.isdigit():
             return
 
