@@ -41,7 +41,7 @@ async def add_user(user_id: int, first_name=None, username=None):
     await user_data.update_one(
         {"_id": user_id},
         {
-            "$set": update_data,  # only updates provided fields
+            "$set": update_data,
             "$setOnInsert": {
                 "_id": user_id,
                 "created_at": datetime.utcnow()
@@ -60,6 +60,10 @@ async def delete_user(user_id: int):
     if user_id == OWNER_ID:
         return
     await user_data.delete_one({"_id": user_id})
+
+
+async def get_user_count():
+    return await user_data.count_documents({})
 
 
 # -------------------------------
@@ -97,7 +101,6 @@ async def unban_user(user_id: int):
                 "is_banned": False,
                 "unbanned_at": datetime.utcnow()
             }
-            # ❌ DO NOT remove reason (keeps history safe)
         }
     )
 
