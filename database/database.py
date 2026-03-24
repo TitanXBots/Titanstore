@@ -11,7 +11,6 @@ from datetime import datetime
 client = AsyncIOMotorClient(DB_URI)
 database = client[DB_NAME]
 
-# Collections
 user_data = database['users']
 banned_users = database['banned_users']
 admins_collection = database['admins']
@@ -20,9 +19,9 @@ admins_collection = database['admins']
 # INIT (INDEXES)
 # -------------------------------
 async def init_db():
-    await user_data.create_index("_id")
-    await banned_users.create_index("is_banned")
-    await admins_collection.create_index("_id")
+    await user_data.create_index("_id", unique=True)
+    await banned_users.create_index([("is_banned", 1)])
+    await admins_collection.create_index("_id", unique=True)
 
 # -------------------------------
 # USER MANAGEMENT
@@ -32,16 +31,20 @@ async def is_user_present(user_id: int) -> bool:
 
 
 async def add_user(user_id: int, first_name=None, username=None):
+    update_data = {}
+
+    if first_name is not None:
+        update_data["first_name"] = first_name
+    if username is not None:
+        update_data["username"] = username
+
     await user_data.update_one(
-        {'_id': user_id},
+        {"_id": user_id},
         {
-            '$set': {
-                'first_name': first_name,
-                'username': username
-            },
-            '$setOnInsert': {
-                '_id': user_id,
-                'created_at': datetime.utcnow()
+            "$set": update_data,  # only updates provided fields
+            "$setOnInsert": {
+                "_id": user_id,
+                "created_at": datetime.utcnow()
             }
         },
         upsert=True
@@ -49,30 +52,39 @@ async def add_user(user_id: int, first_name=None, username=None):
 
 
 async def get_all_users():
-    return [user['_id'] async for user in user_data.find({}, {"_id": 1})]
+    async for user in user_data.find({}, {"_id": 1}):
+        yield user["_id"]
 
 
 async def delete_user(user_id: int):
-    await user_data.delete_one({'_id': user_id})
+    if user_id == OWNER_ID:
+        return
+    await user_data.delete_one({"_id": user_id})
 
 
 # -------------------------------
 # BAN SYSTEM
 # -------------------------------
 async def is_user_banned(user_id: int) -> bool:
-    data = await banned_users.find_one({'_id': user_id})
+    data = await banned_users.find_one({"_id": user_id})
     return data.get("is_banned", False) if data else False
 
 
 async def get_ban_reason(user_id: int) -> str:
-    data = await banned_users.find_one({'_id': user_id})
+    data = await banned_users.find_one({"_id": user_id})
     return data.get("reason", "No reason provided") if data else "No reason provided"
 
 
 async def ban_user(user_id: int, reason: str = "No reason"):
     await banned_users.update_one(
         {"_id": user_id},
-        {"$set": {"is_banned": True, "reason": reason}},
+        {
+            "$set": {
+                "is_banned": True,
+                "reason": reason,
+                "banned_at": datetime.utcnow()
+            }
+        },
         upsert=True
     )
 
@@ -80,12 +92,19 @@ async def ban_user(user_id: int, reason: str = "No reason"):
 async def unban_user(user_id: int):
     await banned_users.update_one(
         {"_id": user_id},
-        {"$set": {"is_banned": False, "reason": ""}}
+        {
+            "$set": {
+                "is_banned": False,
+                "unbanned_at": datetime.utcnow()
+            }
+            # ❌ DO NOT remove reason (keeps history safe)
+        }
     )
 
 
 async def get_banned_users():
-    return [user async for user in banned_users.find({"is_banned": True})]
+    async for user in banned_users.find({"is_banned": True}):
+        yield user
 
 
 # -------------------------------
@@ -94,17 +113,25 @@ async def get_banned_users():
 async def add_admin(user_id: int):
     await admins_collection.update_one(
         {"_id": user_id},
-        {"$set": {"is_admin": True}},
+        {
+            "$setOnInsert": {
+                "_id": user_id,
+                "added_at": datetime.utcnow()
+            }
+        },
         upsert=True
     )
 
 
 async def remove_admin(user_id: int):
+    if user_id == OWNER_ID:
+        return
     await admins_collection.delete_one({"_id": user_id})
 
 
 async def get_admins():
-    return [admin["_id"] async for admin in admins_collection.find({}, {"_id": 1})]
+    async for admin in admins_collection.find({}, {"_id": 1}):
+        yield admin["_id"]
 
 
 # -------------------------------
@@ -115,4 +142,6 @@ async def is_owner(user_id: int) -> bool:
 
 
 async def is_admin(user_id: int) -> bool:
-    return user_id == OWNER_ID or await admins_collection.find_one({"_id": user_id}) is not None
+    if user_id == OWNER_ID:
+        return True
+    return await admins_collection.find_one({"_id": user_id}) is not None
