@@ -1,7 +1,10 @@
-# TitanXBots - database.py (Motor Version)
+# TitanXBots - database.py (Motor Async Version)
 
+# -------------------------------
+# IMPORTS
+# -------------------------------
 from motor.motor_asyncio import AsyncIOMotorClient
-from config import DB_URI, DB_NAME, OWNER_ID
+from config import *
 
 # -------------------------------
 # DB CONNECTION
@@ -9,6 +12,7 @@ from config import DB_URI, DB_NAME, OWNER_ID
 client = AsyncIOMotorClient(DB_URI)
 database = client[DB_NAME]
 
+# Collections
 user_data = database['users']
 banned_users = database['banned_users']
 admins_collection = database['admins']
@@ -17,10 +21,12 @@ admins_collection = database['admins']
 # USER MANAGEMENT
 # -------------------------------
 async def is_user_present(user_id: int) -> bool:
+    """Check if user exists"""
     return await user_data.find_one({'_id': user_id}) is not None
 
 
 async def add_user(user_id: int, first_name=None, username=None):
+    """Add or update user"""
     await user_data.update_one(
         {'_id': user_id},
         {'$set': {
@@ -33,6 +39,7 @@ async def add_user(user_id: int, first_name=None, username=None):
 
 
 async def get_all_users():
+    """Get all user IDs"""
     users = []
     async for user in user_data.find():
         users.append(user['_id'])
@@ -40,23 +47,27 @@ async def get_all_users():
 
 
 async def delete_user(user_id: int):
+    """Delete user"""
     await user_data.delete_one({'_id': user_id})
 
 
 # -------------------------------
-# BAN SYSTEM (FIXED 🔥)
+# BAN SYSTEM
 # -------------------------------
 async def is_user_banned(user_id: int) -> bool:
+    """Check if user is banned"""
     data = await banned_users.find_one({'_id': user_id})
     return data.get("is_banned", False) if data else False
 
 
 async def get_ban_reason(user_id: int) -> str:
+    """Get ban reason"""
     data = await banned_users.find_one({'_id': user_id})
     return data.get("reason", "No reason provided") if data else "No reason provided"
 
 
 async def ban_user(user_id: int, reason: str = "No reason"):
+    """Ban user"""
     await banned_users.update_one(
         {"_id": user_id},
         {"$set": {"is_banned": True, "reason": reason}},
@@ -65,6 +76,7 @@ async def ban_user(user_id: int, reason: str = "No reason"):
 
 
 async def unban_user(user_id: int):
+    """Unban user"""
     await banned_users.update_one(
         {"_id": user_id},
         {"$set": {"is_banned": False, "reason": ""}}
@@ -72,6 +84,7 @@ async def unban_user(user_id: int):
 
 
 async def get_banned_users():
+    """Get all banned users"""
     users = []
     async for user in banned_users.find({"is_banned": True}):
         users.append(user)
@@ -82,6 +95,7 @@ async def get_banned_users():
 # ADMIN SYSTEM
 # -------------------------------
 async def add_admin(user_id: int):
+    """Add admin"""
     await admins_collection.update_one(
         {"_id": user_id},
         {"$set": {"is_admin": True}},
@@ -90,10 +104,12 @@ async def add_admin(user_id: int):
 
 
 async def remove_admin(user_id: int):
+    """Remove admin"""
     await admins_collection.delete_one({"_id": user_id})
 
 
 async def get_admins():
+    """Get all admins"""
     admins = []
     async for admin in admins_collection.find():
         admins.append(admin["_id"])
@@ -104,11 +120,12 @@ async def get_admins():
 # ROLE CHECKS
 # -------------------------------
 async def is_owner(user_id: int) -> bool:
+    """Check if owner"""
     return user_id == OWNER_ID
 
 
 async def is_admin(user_id: int) -> bool:
-    return (
-        user_id == OWNER_ID or
-        await admins_collection.find_one({"_id": user_id}) is not None
-    )
+    """Check if admin or owner"""
+    if user_id == OWNER_ID:
+        return True
+    return await admins_collection.find_one({"_id": user_id}) is not None
