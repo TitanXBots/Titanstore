@@ -2,7 +2,8 @@
 # IMPORTS
 # -------------------------------
 from motor.motor_asyncio import AsyncIOMotorClient
-from config import *
+from config import DB_URI, DB_NAME, OWNER_ID
+from datetime import datetime
 
 # -------------------------------
 # DB CONNECTION
@@ -16,6 +17,14 @@ banned_users = database['banned_users']
 admins_collection = database['admins']
 
 # -------------------------------
+# INIT (INDEXES)
+# -------------------------------
+async def init_db():
+    await user_data.create_index("_id")
+    await banned_users.create_index("is_banned")
+    await admins_collection.create_index("_id")
+
+# -------------------------------
 # USER MANAGEMENT
 # -------------------------------
 async def is_user_present(user_id: int) -> bool:
@@ -25,20 +34,22 @@ async def is_user_present(user_id: int) -> bool:
 async def add_user(user_id: int, first_name=None, username=None):
     await user_data.update_one(
         {'_id': user_id},
-        {'$set': {
-            '_id': user_id,
-            'first_name': first_name,
-            'username': username
-        }},
+        {
+            '$set': {
+                'first_name': first_name,
+                'username': username
+            },
+            '$setOnInsert': {
+                '_id': user_id,
+                'created_at': datetime.utcnow()
+            }
+        },
         upsert=True
     )
 
 
 async def get_all_users():
-    users = []
-    async for user in user_data.find():
-        users.append(user['_id'])
-    return users
+    return [user['_id'] async for user in user_data.find({}, {"_id": 1})]
 
 
 async def delete_user(user_id: int):
@@ -74,10 +85,7 @@ async def unban_user(user_id: int):
 
 
 async def get_banned_users():
-    banned = []
-    async for user in banned_users.find({"is_banned": True}):
-        banned.append(user)
-    return banned
+    return [user async for user in banned_users.find({"is_banned": True})]
 
 
 # -------------------------------
@@ -96,10 +104,7 @@ async def remove_admin(user_id: int):
 
 
 async def get_admins():
-    admins = []
-    async for admin in admins_collection.find():
-        admins.append(admin["_id"])
-    return admins
+    return [admin["_id"] async for admin in admins_collection.find({}, {"_id": 1})]
 
 
 # -------------------------------
@@ -110,6 +115,4 @@ async def is_owner(user_id: int) -> bool:
 
 
 async def is_admin(user_id: int) -> bool:
-    if user_id == OWNER_ID:
-        return True
-    return await admins_collection.find_one({"_id": user_id}) is not None
+    return user_id == OWNER_ID or await admins_collection.find_one({"_id": user_id}) is not None
