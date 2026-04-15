@@ -33,7 +33,7 @@ class Bot(Client):
         self.LOGGER = LOGGER
 
         # DB will be imported here (Motor async DB)
-        from database import (
+        from database.database import (
             is_user_banned,
             add_user,
             is_user_present,
