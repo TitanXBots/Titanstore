@@ -1,5 +1,4 @@
 #TitanXBots
-
 from aiohttp import web
 from plugins import web_server
 
@@ -8,20 +7,17 @@ from pyrogram import Client
 from pyrogram.enums import ParseMode
 import sys
 from datetime import datetime
-from config import API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN, TG_BOT_WORKERS, FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4, CHANNEL_ID, PORT
+
+from config import (
+    API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN,
+    TG_BOT_WORKERS,
+    FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2,
+    FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4,
+    CHANNEL_ID, PORT
+)
 
 import pyrogram.utils
-
 pyrogram.utils.MIN_CHANNEL_ID = -1009999999999
-
-name ="""
-████████╗██╗████████╗░█████╗░███╗░░██╗██╗░░██╗██████╗░░█████╗░████████╗░██████╗
-╚══██╔══╝██║╚══██╔══╝██╔══██╗████╗░██║╚██╗██╔╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
-░░░██║░░░██║░░░██║░░░███████║██╔██╗██║░╚███╔╝░██████╦╝██║░░██║░░░██║░░░╚█████╗░
-░░░██║░░░██║░░░██║░░░██╔══██║██║╚████║░██╔██╗░██╔══██╗██║░░██║░░░██║░░░░╚═══██╗
-░░░██║░░░██║░░░██║░░░██║░░██║██║░╚███║██╔╝╚██╗██████╦╝╚█████╔╝░░░██║░░░██████╔╝
-░░░╚═╝░░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝╚═════╝░░╚════╝░░░░╚═╝░░░╚═════╝░
-"""
 
 
 class Bot(Client):
@@ -30,99 +26,99 @@ class Bot(Client):
             name="Bot",
             api_hash=API_HASH,
             api_id=APP_ID,
-            plugins={
-                "root": "plugins"
-            },
+            plugins={"root": "plugins"},
             workers=TG_BOT_WORKERS,
             bot_token=TG_BOT_TOKEN
         )
         self.LOGGER = LOGGER
 
+        # DB will be imported here (Motor async DB)
+        from database import (
+            is_user_banned,
+            add_user,
+            is_user_present,
+            is_admin,
+            is_owner
+        )
+
+        self.db = {
+            "is_user_banned": is_user_banned,
+            "add_user": add_user,
+            "is_user_present": is_user_present,
+            "is_admin": is_admin,
+            "is_owner": is_owner
+        }
+
     async def start(self):
         await super().start()
-        usr_bot_me = await self.get_me()
-        self.uptime = datetime.now()
+        me = await self.get_me()
 
-        if FORCE_SUB_CHANNEL_1:
+        self.uptime = datetime.now()
+        self.username = me.username
+
+        # -------------------------------
+        # FORCE SUB CHANNEL HANDLING
+        # -------------------------------
+        self.invitelinks = {}
+
+        async def get_invite(channel_id, key_name):
+            if not channel_id:
+                return None
+
             try:
-                link = (await self.get_chat(FORCE_SUB_CHANNEL_1)).invite_link
+                chat = await self.get_chat(channel_id)
+
+                link = chat.invite_link
                 if not link:
-                    await self.export_chat_invite_link(FORCE_SUB_CHANNEL_1)
-                    link = (await self.get_chat(FORCE_SUB_CHANNEL_1)).invite_link
-                self.invitelink = link
-            except Exception as a:
-                self.LOGGER(__name__).warning(a)
-                self.LOGGER(__name__).warning("Bot can't Export Invite link from Force Sub Channel!")
-                self.LOGGER(__name__).warning(f"Please Double check the FORCE_SUB_CHANNEL_1 value and Make sure Bot is Admin in channel with Invite Users via Link Permission, Current Force Sub Channel Value: {FORCE_SUB_CHANNEL_1}")
-                self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/TitanMattersSupport for support")
+                    link = await self.export_chat_invite_link(channel_id)
+
+                self.invitelinks[key_name] = link
+
+            except Exception as e:
+                self.LOGGER(__name__).warning(e)
+                self.LOGGER(__name__).warning(
+                    f"Force sub setup failed for {channel_id}"
+                )
                 sys.exit()
-        if FORCE_SUB_CHANNEL_2:
-            try:
-                link = (await self.get_chat(FORCE_SUB_CHANNEL_2)).invite_link
-                if not link:
-                    await self.export_chat_invite_link(FORCE_SUB_CHANNEL_2)
-                    link = (await self.get_chat(FORCE_SUB_CHANNEL_2)).invite_link
-                self.invitelink2 = link
-            except Exception as a:
-                self.LOGGER(__name__).warning(a)
-                self.LOGGER(__name__).warning("Bot can't Export Invite link from Force Sub Channel!")
-                self.LOGGER(__name__).warning(f"Please Double check the FORCE_SUB_CHANNEL_2 value and Make sure Bot is Admin in channel with Invite Users via Link Permission, Current Force Sub Channel Value: {FORCE_SUB_CHANNEL_2}")
-                self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/TitanMattersSupport for support")
-                sys.exit()
-        if FORCE_SUB_CHANNEL_3:
-            try:
-                link = (await self.get_chat(FORCE_SUB_CHANNEL_3)).invite_link
-                if not link:
-                    await self.export_chat_invite_link(FORCE_SUB_CHANNEL_3)
-                    link = (await self.get_chat(FORCE_SUB_CHANNEL_3)).invite_link
-                self.invitelink3 = link
-            except Exception as a:
-                self.LOGGER(__name__).warning(a)
-                self.LOGGER(__name__).warning("Bot can't Export Invite link from Force Sub Channel!")
-                self.LOGGER(__name__).warning(f"Please Double check the FORCE_SUB_CHANNEL_3 value and Make sure Bot is Admin in channel with Invite Users via Link Permission, Current Force Sub Channel Value: {FORCE_SUB_CHANNEL_3}")
-                self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/TitanMattersSupport for support")
-                sys.exit()
-        if FORCE_SUB_CHANNEL_4:
-            try:
-                link = (await self.get_chat(FORCE_SUB_CHANNEL_4)).invite_link
-                if not link:
-                    await self.export_chat_invite_link(FORCE_SUB_CHANNEL_4)
-                    link = (await self.get_chat(FORCE_SUB_CHANNEL_4)).invite_link
-                self.invitelink4 = link
-            except Exception as a:
-                self.LOGGER(__name__).warning(a)
-                self.LOGGER(__name__).warning("Bot can't Export Invite link from Force Sub Channel!")
-                self.LOGGER(__name__).warning(f"Please Double check the FORCE_SUB_CHANNEL_4 value and Make sure Bot is Admin in channel with Invite Users via Link Permission, Current Force Sub Channel Value: {FORCE_SUB_CHANNEL_4}")
-                self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/TitanMattersSupport for support")
-                sys.exit()
+
+        await get_invite(FORCE_SUB_CHANNEL_1, "fs1")
+        await get_invite(FORCE_SUB_CHANNEL_2, "fs2")
+        await get_invite(FORCE_SUB_CHANNEL_3, "fs3")
+        await get_invite(FORCE_SUB_CHANNEL_4, "fs4")
+
+        # -------------------------------
+        # DATABASE CHANNEL CHECK
+        # -------------------------------
         try:
             db_channel = await self.get_chat(CHANNEL_ID)
             self.db_channel = db_channel
-            test = await self.send_message(chat_id = db_channel.id, text = "Test Message")
-            await test.delete()
+
+            msg = await self.send_message(db_channel.id, "Test Message")
+            await msg.delete()
+
         except Exception as e:
             self.LOGGER(__name__).warning(e)
-            self.LOGGER(__name__).warning(f"Make Sure bot is Admin in DB Channel, and Double check the CHANNEL_ID Value, Current Value {CHANNEL_ID}")
-            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/TitanMattersSupport for support")
+            self.LOGGER(__name__).warning(
+                f"Bot is not admin in DB channel or CHANNEL_ID is wrong: {CHANNEL_ID}"
+            )
             sys.exit()
 
-        self.set_parse_mode(ParseMode.HTML)
-        self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/TitanXBots")
-        self.LOGGER(__name__).info(f""" \n\n
-        
-████████╗██╗████████╗░█████╗░███╗░░██╗██╗░░██╗██████╗░░█████╗░████████╗░██████╗
-╚══██╔══╝██║╚══██╔══╝██╔══██╗████╗░██║╚██╗██╔╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
-░░░██║░░░██║░░░██║░░░███████║██╔██╗██║░╚███╔╝░██████╦╝██║░░██║░░░██║░░░╚█████╗░
-░░░██║░░░██║░░░██║░░░██╔══██║██║╚████║░██╔██╗░██╔══██╗██║░░██║░░░██║░░░░╚═══██╗
-░░░██║░░░██║░░░██║░░░██║░░██║██║░╚███║██╔╝╚██╗██████╦╝╚█████╔╝░░░██║░░░██████╔╝
-░░░╚═╝░░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝╚═════╝░░╚════╝░░░░╚═╝░░░╚═════╝░
-                                          """)
-        self.username = usr_bot_me.username
-        #web-response
+        # -------------------------------
+        # WEB SERVER START
+        # -------------------------------
         app = web.AppRunner(await web_server())
         await app.setup()
-        bind_address = "0.0.0.0"
-        await web.TCPSite(app, bind_address, PORT).start()
+
+        site = web.TCPSite(app, "0.0.0.0", PORT)
+        await site.start()
+
+        # -------------------------------
+        # FINAL LOGS
+        # -------------------------------
+        self.set_parse_mode(ParseMode.HTML)
+
+        self.LOGGER(__name__).info("Bot is running...")
+        self.LOGGER(__name__).info(f"Username: @{self.username}")
 
     async def stop(self, *args):
         await super().stop()
