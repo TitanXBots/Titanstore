@@ -1,67 +1,93 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from pymongo import MongoClient
-from config import DB_URI, DB_NAME
-from database.database import * # <- dynamic admin check from your DB
 
-client = MongoClient(DB_URI)
-db = client[DB_NAME]
-collection = db["TelegramFiles"]
+from database.database import collection  # OR telegram_files collection
+from database.database import is_admin
 
 
-async def convertmsg(msg: str) -> str:
+# -------------------------------
+# HELPERS
+# -------------------------------
+def convertmsg(msg: str) -> str:
     words = msg.lower().split()
-    if len(words) > 1:
-        return " ".join(words[1:])
-    else:
-        return ""
+    return " ".join(words[1:]) if len(words) > 1 else ""
 
 
-async def checkmsg(msg: str) -> bool:
-    if msg == 'on':
+def checkmsg(msg: str):
+    if msg == "on":
         return True
-    elif msg == 'off':
+    elif msg == "off":
         return False
-    else:
-        return None
+    return None
 
 
+# -------------------------------
+# MAINTENANCE COMMAND
+# -------------------------------
 @Client.on_message(filters.command("maintenance"))
 async def maintenance(client: Client, message: Message):
-    user_id = message.from_user.id
-    if not await is_admin(user_id):  # <-- dynamic admin check
-        return  # Ignore non-admins
 
-    if not message.text.split()[1:]:
-        await message.reply_text("Correct the command format. Usage: /maintenance [on/off]")
+    user_id = message.from_user.id
+
+    # ADMIN CHECK (MOTOR)
+    if not await is_admin(user_id):
         return
 
-    msg = await convertmsg(message.text)
-    status = await checkmsg(msg)
+    # VALIDATION
+    if len(message.text.split()) < 2:
+        return await message.reply_text(
+            "Correct usage:\n/maintenance on OR /maintenance off"
+        )
 
-    check_msg = collection.find_one({"admin_id": user_id})
+    msg = convertmsg(message.text)
+    status = checkmsg(msg)
 
+    if status is None:
+        return await message.reply_text("Invalid argument. Use on/off only.")
+
+    # -------------------------------
+    # DB FETCH (MOTOR FIXED)
+    # -------------------------------
+    data = await collection.find_one({"admin_id": user_id})
+
+    # -------------------------------
+    # TURN ON
+    # -------------------------------
     if status is True:
-        if check_msg:
-            if check_msg.get("maintenance") == "on":
-                await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴏɴ.")
-            else:
-                collection.update_one({"admin_id": user_id}, {"$set": {"maintenance": "on"}})
-                await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏɴ.")
-        else:
-            collection.insert_one({"admin_id": user_id, "maintenance": "on"})
-            await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏɴ (ɴᴇᴡ ᴇɴᴛʀʏ).")
 
-    elif status is False:
-        if check_msg:
-            if check_msg.get("maintenance") == "off":
-                await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴏꜰꜰ.")
+        if data:
+            if data.get("maintenance") == "on":
+                return await message.reply_text("⚠️ Already ON")
             else:
-                collection.update_one({"admin_id": user_id}, {"$set": {"maintenance": "off"}})
-                await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏꜰꜰ.")
-        else:
-            collection.insert_one({"admin_id": user_id, "maintenance": "off"})
-            await message.reply_text("ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴜʀɴᴇᴅ ᴏꜰꜰ (ɴᴇᴡ ᴇɴᴛʀʏ).")
+                await collection.update_one(
+                    {"admin_id": user_id},
+                    {"$set": {"maintenance": "on"}}
+                )
+                return await message.reply_text("✅ Maintenance ON")
 
+        else:
+            await collection.insert_one(
+                {"admin_id": user_id, "maintenance": "on"}
+            )
+            return await message.reply_text("✅ Maintenance ON (new entry)")
+
+    # -------------------------------
+    # TURN OFF
+    # -------------------------------
     else:
-        await message.reply_text("Invalid argument. Use /maintenance [on/off].")
+
+        if data:
+            if data.get("maintenance") == "off":
+                return await message.reply_text("⚠️ Already OFF")
+            else:
+                await collection.update_one(
+                    {"admin_id": user_id},
+                    {"$set": {"maintenance": "off"}}
+                )
+                return await message.reply_text("❌ Maintenance OFF")
+
+        else:
+            await collection.insert_one(
+                {"admin_id": user_id, "maintenance": "off"}
+            )
+            return await message.reply_text("❌ Maintenance OFF (new entry)")
