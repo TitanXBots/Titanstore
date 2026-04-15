@@ -1,6 +1,6 @@
 # TitanXBots
 from aiohttp import web
-from route import routes   # safer absolute import
+from .route import routes # safer absolute import
 
 
 async def web_server() -> web.Application:
