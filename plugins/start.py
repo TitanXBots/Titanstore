@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import humanize
+from datetime import datetime
 
 from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
@@ -9,36 +10,66 @@ from pyrogram.errors import FloodWait
 
 from bot import Bot
 from config import *
-from helper_fun import subscribed, encode, decode, get_messages
+from helper_func import subscribed, encode, decode, get_messages
 
+# -------------------------------
+# DATABASE (MOTOR)
+# -------------------------------
 from database.database import (
     user_data,
-    is_user_present,
-    add_user,
-    is_user_banned,
-    get_ban_reason,
-    is_maintenance,
+    banned_users,
+    telegram_files,
     is_admin
 )
 
 logging.basicConfig(level=logging.INFO)
 
 # -------------------------------
-# AUTO DELETE SYSTEM
+# AUTO DELETE SETUP
 # -------------------------------
 AUTO_DELETE_ENABLED = True
 file_auto_delete = humanize.naturaldelta(FILE_AUTO_DELETE)
 
 
-def set_auto_delete(state: bool):
-    global AUTO_DELETE_ENABLED
-    AUTO_DELETE_ENABLED = state
+# -------------------------------
+# USER FUNCTIONS (MOTOR FIXED)
+# -------------------------------
+async def is_user_present(user_id: int) -> bool:
+    return await user_data.find_one({"_id": user_id}) is not None
+
+
+async def add_user(user_id: int, first_name: str, username: str):
+    await user_data.update_one(
+        {"_id": user_id},
+        {"$set": {
+            "_id": user_id,
+            "first_name": first_name,
+            "username": username,
+            "joined_at": datetime.utcnow()
+        }},
+        upsert=True
+    )
 
 
 # -------------------------------
-# FORCE JOIN CHECK (HANDLED BY helper_fun subscribed)
+# BAN SYSTEM
 # -------------------------------
-# (No change needed here, already handled in helper_fun.py)
+async def is_user_banned(user_id: int) -> bool:
+    data = await banned_users.find_one({"_id": user_id})
+    return data.get("is_banned", False) if data else False
+
+
+async def get_ban_reason(user_id: int) -> str:
+    data = await banned_users.find_one({"_id": user_id})
+    return data.get("reason", "No reason provided") if data else "No reason provided"
+
+
+# -------------------------------
+# MAINTENANCE CHECK (MOTOR FIXED)
+# -------------------------------
+async def is_maintenance(user_id: int) -> bool:
+    data = await telegram_files.find_one({"maintenance": "on"})
+    return bool(data and user_id != OWNER_ID)
 
 
 # -------------------------------
@@ -48,7 +79,7 @@ def set_auto_delete(state: bool):
 async def start_command(client: Client, message: Message):
 
     user_id = message.from_user.id
-    text = message.text or ""
+    text = message.text
 
     # ---------------- FORCE SUB ----------------
     if not await subscribed(client, message):
@@ -91,21 +122,15 @@ async def start_command(client: Client, message: Message):
 
             await client.send_message(
                 LOG_CHANNEL_ID,
-                NEW_USER_TXT.format(
-                    message.from_user.mention,
-                    user_id,
-                    message.from_user.first_name or "Unknown"
-                )
+                f"New User: {message.from_user.mention} ({user_id})"
             )
 
         except Exception as e:
-            logging.error(f"User add error: {e}")
+            logging.error(e)
 
     # ---------------- MAINTENANCE ----------------
     if await is_maintenance(user_id):
-        return await message.reply_text(
-            "🛠 Bot is under maintenance.\nPlease try again later."
-        )
+        return await message.reply_text("🛠 Maintenance mode ON")
 
     # ---------------- FILE SYSTEM ----------------
     if len(text.split()) > 1:
@@ -126,31 +151,19 @@ async def start_command(client: Client, message: Message):
 
             elif len(argument) == 2:
                 ids = [int(int(argument[1]) / abs(client.db_channel.id))]
-
         except:
             return
 
-        temp = await message.reply_text("⏳ Please wait...")
+        temp = await message.reply_text("⏳ Processing...")
 
-        try:
-            messages = await get_messages(client, ids)
-        except:
-            return await message.reply_text("❌ Error retrieving file.")
+        messages = await get_messages(client, ids)
 
         await temp.delete()
 
         copied_msgs = []
 
         for msg in messages:
-            caption = ""
-
-            if CUSTOM_CAPTION and msg.document:
-                caption = CUSTOM_CAPTION.format(
-                    previouscaption="" if not msg.caption else msg.caption.html,
-                    filename=msg.document.file_name
-                )
-            elif msg.caption:
-                caption = msg.caption.html
+            caption = msg.caption.html if msg.caption else ""
 
             try:
                 copied = await msg.copy(
@@ -164,14 +177,13 @@ async def start_command(client: Client, message: Message):
             except FloodWait as e:
                 await asyncio.sleep(e.value)
 
-        # ---------------- AUTO DELETE MESSAGE ----------------
-        warn_msg = await client.send_message(
+        warn = await client.send_message(
             user_id,
-            f"⚠️ File will be deleted in {file_auto_delete}"
+            f"⚠️ Auto delete in {file_auto_delete}"
         )
 
-        asyncio.create_task(delete_files(copied_msgs, client, warn_msg, text.split(" ", 1)[1]))
-
+        asyncio.create_task(delete_files(copied_msgs, client, warn, base64_string))
+        return
 
     # ---------------- START MENU ----------------
     admin_status = await is_admin(user_id)
@@ -184,16 +196,14 @@ async def start_command(client: Client, message: Message):
     ]
 
     if admin_status:
-        buttons.append([
-            InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")
-        ])
+        buttons.append([InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")])
 
-    return await message.reply_photo(
+    await message.reply_photo(
         photo=START_PIC,
         caption=START_MSG.format(
             first=message.from_user.first_name,
             last=message.from_user.last_name,
-            username=f"@{message.from_user.username}" if message.from_user.username else "None",
+            username=message.from_user.username,
             mention=message.from_user.mention,
             id=user_id
         ),
@@ -201,7 +211,48 @@ async def start_command(client: Client, message: Message):
     )
 
 
-# ---------------- AUTO DELETE FUNCTION ----------------
+# -------------------------------
+# USERS COUNT
+# -------------------------------
+@Bot.on_message(filters.command("users") & filters.private)
+async def total_users(client, message):
+    if not await is_admin(message.from_user.id):
+        return await message.reply_text("Admins only")
+
+    total = await user_data.count_documents({})
+    await message.reply_text(f"Total Users: {total}")
+
+
+# -------------------------------
+# BROADCAST
+# -------------------------------
+@Bot.on_message(filters.command("broadcast") & filters.private)
+async def broadcast(client, message):
+
+    if not await is_admin(message.from_user.id):
+        return
+
+    if not message.reply_to_message:
+        return await message.reply_text("Reply to message")
+
+    users = user_data.find()
+
+    success, failed = 0, 0
+
+    for user in users:
+        try:
+            await message.reply_to_message.copy(user["_id"])
+            success += 1
+            await asyncio.sleep(0.05)
+        except:
+            failed += 1
+
+    await message.reply_text(f"Done\nSuccess:{success}\nFailed:{failed}")
+
+
+# -------------------------------
+# AUTO DELETE FUNCTION
+# -------------------------------
 async def delete_files(messages, client, main_message, payload=None):
 
     if not AUTO_DELETE_ENABLED:
@@ -216,59 +267,26 @@ async def delete_files(messages, client, main_message, payload=None):
             pass
 
     try:
-        await main_message.edit_text("✅ File deleted!")
+        await main_message.edit_text("File deleted!")
     except:
         pass
 
 
-# ---------------- AUTO DELETE ON ----------------
+# -------------------------------
+# AUTO DELETE TOGGLE
+# -------------------------------
+def set_auto_delete(state: bool):
+    global AUTO_DELETE_ENABLED
+    AUTO_DELETE_ENABLED = state
+
+
 @Client.on_message(filters.command("autodeleteon") & filters.user(OWNER_ID))
-async def autodelete_on(client, message):
+async def enable_autodelete(client, message):
     set_auto_delete(True)
-    await message.reply_text("✅ Auto Delete Enabled")
+    await message.reply_text("Auto delete ON")
 
 
-# ---------------- AUTO DELETE OFF ----------------
 @Client.on_message(filters.command("autodeleteoff") & filters.user(OWNER_ID))
-async def autodelete_off(client, message):
+async def disable_autodelete(client, message):
     set_auto_delete(False)
-    await message.reply_text("❌ Auto Delete Disabled")
-
-
-# ---------------- USERS COUNT ----------------
-@Bot.on_message(filters.command("users") & filters.private)
-async def total_users(client, message):
-    if not await is_admin(message.from_user.id):
-        return await message.reply_text("⚠️ Admins only!")
-
-    total = await user_data.count_documents({})
-    await message.reply_text(f"👥 Total Users: {total}")
-
-
-# ---------------- BROADCAST ----------------
-@Bot.on_message(filters.command("broadcast") & filters.private)
-async def broadcast_handler(client, message):
-
-    if not await is_admin(message.from_user.id):
-        return await message.reply_text("⚠️ Admins only!")
-
-    if not message.reply_to_message:
-        return await message.reply_text("Reply to a message to broadcast.")
-
-    users = await user_data.find({}).to_list(length=None)
-
-    success, failed = 0, 0
-
-    status = await message.reply_text("📢 Broadcasting...")
-
-    for user in users:
-        try:
-            await message.reply_to_message.copy(user["_id"])
-            success += 1
-            await asyncio.sleep(0.05)
-        except:
-            failed += 1
-
-    await status.edit_text(
-        f"📢 Done\n\n✅ Success: {success}\n❌ Failed: {failed}"
-    )
+    await message.reply_text("Auto delete OFF")
