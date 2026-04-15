@@ -17,7 +17,7 @@ from config import (
 )
 
 # Import ONLY collections (Motor async)
-from database import admins_collection, banned_users
+from database.database import admins_collection, banned_users
 
 
 # -------------------------------
