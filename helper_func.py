@@ -1,123 +1,167 @@
 # helper_fun.py
 # TitanXBots Helper Functions
-
 import base64
 import re
 import asyncio
+
 from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
-from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
-from pyrogram.errors import FloodWait
-from config import FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4, OWNER_ID
-from database.database import * # Your admin database collection
+from pyrogram.errors import UserNotParticipant, FloodWait
+
+from config import (
+    FORCE_SUB_CHANNEL_1,
+    FORCE_SUB_CHANNEL_2,
+    FORCE_SUB_CHANNEL_3,
+    FORCE_SUB_CHANNEL_4,
+    OWNER_ID
+)
+
+# Import ONLY collections (Motor async)
+from database import admins_collection, banned_users
+
 
 # -------------------------------
-# OWNER / ADMIN CHECKS
+# OWNER / ADMIN CHECKS (MOTOR FIXED)
 # -------------------------------
 async def is_owner(user_id: int) -> bool:
-    """Check if user is owner."""
     return user_id == OWNER_ID
 
+
 async def is_admin(user_id: int) -> bool:
-    """Check if user is admin or owner in the database."""
-    return user_id == OWNER_ID or admins_collection.find_one({"_id": user_id}) is not None
+    if user_id == OWNER_ID:
+        return True
+
+    data = await admins_collection.find_one({"_id": user_id})
+    return data is not None
+
 
 # -------------------------------
 # FORCE SUBSCRIBE CHECK
 # -------------------------------
 async def is_subscribed(filter, client, update):
-    """Check if user is subscribed to all required channels."""
     user_id = update.from_user.id
 
+    # bypass for admin/owner
     if await is_admin(user_id):
-        return True  # Admins/Owner bypass force sub
+        return True
 
-    force_channels = [FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4]
-    
-    for channel in force_channels:
+    channels = [
+        FORCE_SUB_CHANNEL_1,
+        FORCE_SUB_CHANNEL_2,
+        FORCE_SUB_CHANNEL_3,
+        FORCE_SUB_CHANNEL_4
+    ]
+
+    for channel in channels:
         if not channel:
             continue
+
         try:
-            member = await client.get_chat_member(chat_id=channel, user_id=user_id)
-            if member.status not in [ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER]:
+            member = await client.get_chat_member(channel, user_id)
+
+            if member.status not in [
+                ChatMemberStatus.OWNER,
+                ChatMemberStatus.ADMINISTRATOR,
+                ChatMemberStatus.MEMBER
+            ]:
                 return False
+
         except UserNotParticipant:
             return False
+
         except Exception:
             return False
 
     return True
 
+
 subscribed = filters.create(is_subscribed)
+
 
 # -------------------------------
 # BASE64 ENCODE / DECODE
 # -------------------------------
 async def encode(string: str) -> str:
-    string_bytes = string.encode("ascii")
-    base64_bytes = base64.urlsafe_b64encode(string_bytes)
-    base64_string = base64_bytes.decode("ascii").strip("=")
-    return base64_string
+    return base64.urlsafe_b64encode(string.encode()).decode().rstrip("=")
+
 
 async def decode(base64_string: str) -> str:
     base64_string = base64_string.strip("=")
-    base64_bytes = (base64_string + "=" * (-len(base64_string) % 4)).encode("ascii")
-    string_bytes = base64.urlsafe_b64decode(base64_bytes)
-    string = string_bytes.decode("ascii")
-    return string
+    padded = base64_string + "=" * (-len(base64_string) % 4)
+    return base64.urlsafe_b64decode(padded.encode()).decode()
+
 
 # -------------------------------
 # GET MULTIPLE MESSAGES
 # -------------------------------
 async def get_messages(client, message_ids):
     messages = []
-    total_messages = 0
-    while total_messages != len(message_ids):
-        batch_ids = message_ids[total_messages:total_messages + 200]
+    total = 0
+
+    while total != len(message_ids):
+        batch = message_ids[total:total + 200]
+
         try:
-            msgs = await client.get_messages(chat_id=client.db_channel.id, message_ids=batch_ids)
+            msgs = await client.get_messages(
+                chat_id=client.db_channel.id,
+                message_ids=batch
+            )
+
         except FloodWait as e:
-            await asyncio.sleep(e.x)
-            msgs = await client.get_messages(chat_id=client.db_channel.id, message_ids=batch_ids)
-        except:
+            await asyncio.sleep(e.value)
+            msgs = await client.get_messages(
+                chat_id=client.db_channel.id,
+                message_ids=batch
+            )
+
+        except Exception:
             msgs = []
-        total_messages += len(batch_ids)
+
         messages.extend(msgs)
+        total += len(batch)
+
     return messages
 
+
 # -------------------------------
-# GET MESSAGE ID FROM LINK / FORWARD
+# MESSAGE ID EXTRACTOR
 # -------------------------------
 async def get_message_id(client, message):
     if message.forward_from_chat:
         if message.forward_from_chat.id == client.db_channel.id:
             return message.forward_from_message_id
         return 0
-    elif message.forward_sender_name:
+
+    if message.forward_sender_name:
         return 0
-    elif message.text:
+
+    if message.text:
         pattern = r"https://t.me/(?:c/)?(.*)/(\d+)"
-        matches = re.match(pattern, message.text)
-        if not matches:
+        match = re.match(pattern, message.text)
+
+        if not match:
             return 0
-        channel_id = matches.group(1)
-        msg_id = int(matches.group(2))
-        if channel_id.isdigit():
-            if f"-100{channel_id}" == str(client.db_channel.id):
+
+        chat = match.group(1)
+        msg_id = int(match.group(2))
+
+        if chat.isdigit():
+            if f"-100{chat}" == str(client.db_channel.id):
                 return msg_id
         else:
-            if channel_id == client.db_channel.username:
+            if chat == client.db_channel.username:
                 return msg_id
+
     return 0
+
 
 # -------------------------------
 # READABLE UPTIME
 # -------------------------------
 def get_readable_time(seconds: int) -> str:
     count = 0
-    up_time = ""
     time_list = []
-    time_suffix_list = ["s", "m", "h", "days"]
+    suffix = ["s", "m", "h", "days"]
 
     while count < 4:
         count += 1
@@ -125,18 +169,18 @@ def get_readable_time(seconds: int) -> str:
             remainder, result = divmod(seconds, 60)
         else:
             remainder, result = divmod(seconds, 24)
+
         if seconds == 0 and remainder == 0:
             break
+
         time_list.append(int(result))
         seconds = int(remainder)
 
-    hmm = len(time_list)
-    for x in range(hmm):
-        time_list[x] = str(time_list[x]) + time_suffix_list[x]
+    for i in range(len(time_list)):
+        time_list[i] = f"{time_list[i]}{suffix[i]}"
 
     if len(time_list) == 4:
-        up_time += f"{time_list.pop()}, "
+        time_list.pop()
 
     time_list.reverse()
-    up_time += ":".join(time_list)
-    return up_time
+    return ":".join(time_list)
