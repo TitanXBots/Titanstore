@@ -1,12 +1,11 @@
-# helper_fun.py
-# TitanXBots Helper Functions
+# helper_func.py
 import base64
 import re
 import asyncio
 
 from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
-from pyrogram.errors import UserNotParticipant, FloodWait
+from pyrogram.errors import UserNotParticipant, FloodWait, MessageNotModified
 
 from config import (
     FORCE_SUB_CHANNEL_1,
@@ -16,12 +15,72 @@ from config import (
     OWNER_ID
 )
 
-# Import ONLY collections (Motor async)
 from database.database import admins_collection, banned_users
 
 
 # -------------------------------
-# OWNER / ADMIN CHECKS (MOTOR FIXED)
+# AUTO DELETE
+# -------------------------------
+async def auto_delete(msg, delay=60):
+    await asyncio.sleep(delay)
+    try:
+        await msg.delete()
+    except:
+        pass
+
+
+# -------------------------------
+# SAFE EDIT
+# -------------------------------
+async def safe_edit(message, text, buttons=None):
+    try:
+        await message.edit_text(
+            text=text,
+            reply_markup=buttons,
+            disable_web_page_preview=True
+        )
+    except MessageNotModified:
+        pass
+    except:
+        try:
+            await message.reply_text(
+                text=text,
+                reply_markup=buttons,
+                disable_web_page_preview=True
+            )
+        except:
+            pass
+
+
+# -------------------------------
+# INPUT HELPER
+# -------------------------------
+async def get_input(client, message, prompt):
+    await message.edit_text(f"{prompt}\n\nSend /cancel to stop.")
+
+    try:
+        msg = await client.listen(message.chat.id, timeout=300)
+
+        if not msg.text:
+            m = await msg.reply("❌ Invalid input!")
+            asyncio.create_task(auto_delete(m))
+            return None
+
+        if msg.text.lower() == "/cancel":
+            m = await msg.reply("❌ Cancelled!")
+            asyncio.create_task(auto_delete(m))
+            return None
+
+        return msg.text
+
+    except asyncio.TimeoutError:
+        m = await message.reply("⌛ Timeout!")
+        asyncio.create_task(auto_delete(m))
+        return None
+
+
+# -------------------------------
+# OWNER / ADMIN CHECK
 # -------------------------------
 async def is_owner(user_id: int) -> bool:
     return user_id == OWNER_ID
@@ -36,12 +95,11 @@ async def is_admin(user_id: int) -> bool:
 
 
 # -------------------------------
-# FORCE SUBSCRIBE CHECK
+# FORCE SUB
 # -------------------------------
 async def is_subscribed(filter, client, update):
     user_id = update.from_user.id
 
-    # bypass for admin/owner
     if await is_admin(user_id):
         return True
 
@@ -69,7 +127,7 @@ async def is_subscribed(filter, client, update):
         except UserNotParticipant:
             return False
 
-        except Exception:
+        except:
             return False
 
     return True
@@ -79,7 +137,7 @@ subscribed = filters.create(is_subscribed)
 
 
 # -------------------------------
-# BASE64 ENCODE / DECODE
+# BASE64
 # -------------------------------
 async def encode(string: str) -> str:
     return base64.urlsafe_b64encode(string.encode()).decode().rstrip("=")
@@ -92,7 +150,7 @@ async def decode(base64_string: str) -> str:
 
 
 # -------------------------------
-# GET MULTIPLE MESSAGES
+# GET MESSAGES
 # -------------------------------
 async def get_messages(client, message_ids):
     messages = []
@@ -114,7 +172,7 @@ async def get_messages(client, message_ids):
                 message_ids=batch
             )
 
-        except Exception:
+        except:
             msgs = []
 
         messages.extend(msgs)
@@ -136,7 +194,7 @@ async def get_message_id(client, message):
         return 0
 
     if message.text:
-        pattern = r"https://t.me/(?:c/)?(.*)/(\d+)"
+        pattern = r"https://t.me/(?:c/)?(.*)/(\\d+)"
         match = re.match(pattern, message.text)
 
         if not match:
@@ -153,34 +211,3 @@ async def get_message_id(client, message):
                 return msg_id
 
     return 0
-
-
-# -------------------------------
-# READABLE UPTIME
-# -------------------------------
-def get_readable_time(seconds: int) -> str:
-    count = 0
-    time_list = []
-    suffix = ["s", "m", "h", "days"]
-
-    while count < 4:
-        count += 1
-        if count < 3:
-            remainder, result = divmod(seconds, 60)
-        else:
-            remainder, result = divmod(seconds, 24)
-
-        if seconds == 0 and remainder == 0:
-            break
-
-        time_list.append(int(result))
-        seconds = int(remainder)
-
-    for i in range(len(time_list)):
-        time_list[i] = f"{time_list[i]}{suffix[i]}"
-
-    if len(time_list) == 4:
-        time_list.pop()
-
-    time_list.reverse()
-    return ":".join(time_list)
