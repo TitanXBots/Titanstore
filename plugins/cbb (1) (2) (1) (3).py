@@ -1,13 +1,12 @@
 import asyncio
-from pyrogram import filters, Client
+from pyrogram import Client
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from pyrogram.errors import MessageNotModified
 
 from bot import Bot
 from config import *
 from Script import *
 
-from helper_func import safe_edit, get_input, auto_delete
+from helper_func import safe_edit, get_input
 from database.database import (
     admins_collection,
     banned_users,
@@ -28,7 +27,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     data = query.data
     user_id = query.from_user.id
-
     admin_status = await is_admin(user_id)
 
     # ---------------- START ----------------
@@ -182,8 +180,9 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return
 
         parts = text.split(maxsplit=1)
+
         if not parts[0].isdigit():
-            return await query.message.reply("❌ Invalid User ID")
+            return await safe_edit(query.message, "❌ Invalid User ID")
 
         uid = int(parts[0])
         reason = parts[1] if len(parts) > 1 else "No reason"
@@ -194,7 +193,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             upsert=True
         )
 
-        return await query.message.reply(f"✅ User {uid} banned")
+        await query.message.reply(f"✅ User {uid} banned")
 
     # ---------------- UNBAN USER ----------------
     elif data == "unban_user":
@@ -203,7 +202,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         text = await get_input(client, query.message, "Send user_id")
         if not text or not text.isdigit():
-            return
+            return await safe_edit(query.message, "❌ Invalid User ID")
 
         uid = int(text)
 
@@ -212,7 +211,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             {"$set": {"is_banned": False, "reason": ""}}
         )
 
-        return await query.message.reply(f"✅ User {uid} unbanned")
+        await query.message.reply(f"✅ User {uid} unbanned")
 
     # ---------------- BANNED LIST ----------------
     elif data == "banned_list":
@@ -235,40 +234,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             f"🚫 Banned Users:\n\n{text}",
             InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]])
         )
-
-    # ---------------- ADD ADMIN ----------------
-    elif data == "add_admin":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
-
-        text = await get_input(client, query.message, "Send user_id")
-        if not text or not text.isdigit():
-            return
-
-        uid = int(text)
-
-        await admins_collection.update_one(
-            {"_id": uid},
-            {"$set": {"is_admin": True}},
-            upsert=True
-        )
-
-        return await query.message.reply(f"✅ Admin added: {uid}")
-
-    # ---------------- REMOVE ADMIN ----------------
-    elif data == "remove_admin":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
-
-        text = await get_input(client, query.message, "Send user_id")
-        if not text or not text.isdigit():
-            return
-
-        uid = int(text)
-
-        await admins_collection.delete_one({"_id": uid})
-
-        return await query.message.reply(f"❌ Admin removed: {uid}")
 
     # ---------------- ADMIN LIST ----------------
     elif data == "admin_list":
