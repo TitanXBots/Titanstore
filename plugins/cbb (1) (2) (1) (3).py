@@ -96,8 +96,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 ]
             ])
         )
-        
-    # ---------------- COMMANDS ----------------
+
+    # ---------------- DISCLAIMER ----------------
     elif data == "disclaimer":
         return await safe_edit(
             query.message,
@@ -110,6 +110,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 ]
             ])
         )
+
     # ---------------- SETTINGS ----------------
     elif data == "settings":
         if not admin_status:
@@ -124,6 +125,50 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                     InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")
                 ],
                 [InlineKeyboardButton("🔙 Back", callback_data="start")]
+            ])
+        )
+
+    # ---------------- ADMIN MENU ----------------
+    elif data == "admin_menu":
+        if not admin_status:
+            return await query.answer("⚠️ Admins only!", show_alert=True)
+
+        return await safe_edit(
+            query.message,
+            "👨‍💻 Admin Management",
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("➕ Add Admin", callback_data="add_admin"),
+                    InlineKeyboardButton("➖ Remove Admin", callback_data="remove_admin")
+                ],
+                [
+                    InlineKeyboardButton("📋 Admin List", callback_data="admin_list")
+                ],
+                [
+                    InlineKeyboardButton("🔙 Back", callback_data="settings")
+                ]
+            ])
+        )
+
+    # ---------------- BAN MENU ----------------
+    elif data == "ban_menu":
+        if not admin_status:
+            return await query.answer("⚠️ Admins only!", show_alert=True)
+
+        return await safe_edit(
+            query.message,
+            "🚫 Ban Management",
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("🚫 Ban User", callback_data="ban_user"),
+                    InlineKeyboardButton("✅ Unban User", callback_data="unban_user")
+                ],
+                [
+                    InlineKeyboardButton("📄 Banned List", callback_data="banned_list")
+                ],
+                [
+                    InlineKeyboardButton("🔙 Back", callback_data="settings")
+                ]
             ])
         )
 
