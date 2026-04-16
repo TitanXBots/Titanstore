@@ -2,7 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 from bot import Bot
-from helper_fun import encode, get_message_id
+from helper_func import encode, get_message_id   # ✅ FIXED
 from database.database import is_admin
 
 
