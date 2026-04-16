@@ -15,6 +15,10 @@ admins_collection = database["admins"]
 maintenance_collection = database["maintenance"]
 collection = maintenance_collection
 
+# -------------------------------
+# FILE STORAGE COLLECTION
+# -------------------------------
+telegram_files = database["telegram_files"]
 
 # -------------------------------
 # USER MANAGEMENT
