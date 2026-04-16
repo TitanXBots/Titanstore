@@ -11,6 +11,11 @@ user_data = database["users"]
 banned_users = database["banned_users"]
 admins_collection = database["admins"]
 
+# ✅ ADD THIS
+maintenance_collection = database["maintenance"]
+collection = maintenance_collection
+
+
 # -------------------------------
 # USER MANAGEMENT
 # -------------------------------
