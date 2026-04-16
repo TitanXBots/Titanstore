@@ -4,7 +4,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQ
 from pyrogram.errors import MessageNotModified
 
 from bot import Bot
-from config import OWNER_ID
+from config import *
 from Script import *
 
 from helper_func import safe_edit, get_input, auto_delete
