@@ -96,7 +96,20 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 ]
             ])
         )
-
+        
+    # ---------------- COMMANDS ----------------
+    elif data == "disclaimer":
+        return await safe_edit(
+            query.message,
+            DISCLAIMER_TXT,
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Back", callback_data="about")],
+                [
+                    InlineKeyboardButton("⚓ Home", callback_data="start"),
+                    InlineKeyboardButton("⚡ Close", callback_data="close")
+                ]
+            ])
+        )
     # ---------------- SETTINGS ----------------
     elif data == "settings":
         if not admin_status:
