@@ -13,7 +13,6 @@ from database.database import (
     is_admin
 )
 
-
 # -------------------------------
 # CALLBACK HANDLER
 # -------------------------------
@@ -148,6 +147,70 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
+    # ---------------- ADD ADMIN ----------------
+    elif data == "add_admin":
+        if not admin_status:
+            return await query.answer("⚠️ Admins only!", show_alert=True)
+
+        text = await get_input(client, query.message, "Send user_id to add as admin")
+        if not text or not text.isdigit():
+            return await safe_edit(query.message, "❌ Invalid User ID")
+
+        uid = int(text)
+
+        # prevent adding owner again
+        if uid == OWNER_ID:
+            return await query.message.reply("⚠️ Owner is already admin")
+
+        await admins_collection.update_one(
+            {"_id": uid},
+            {"$set": {"is_admin": True}},
+            upsert=True
+        )
+
+        await query.message.reply(f"✅ User {uid} added as admin")
+
+    # ---------------- REMOVE ADMIN ----------------
+    elif data == "remove_admin":
+        if not admin_status:
+            return await query.answer("⚠️ Admins only!", show_alert=True)
+
+        text = await get_input(client, query.message, "Send user_id to remove from admin")
+        if not text or not text.isdigit():
+            return await safe_edit(query.message, "❌ Invalid User ID")
+
+        uid = int(text)
+
+        # prevent removing owner
+        if uid == OWNER_ID:
+            return await query.message.reply("❌ Cannot remove owner")
+
+        await admins_collection.delete_one({"_id": uid})
+
+        await query.message.reply(f"✅ User {uid} removed from admin")
+
+    # ---------------- ADMIN LIST ----------------
+    elif data == "admin_list":
+        if not admin_status:
+            return await query.answer("⚠️ Admins only!", show_alert=True)
+
+        admins = await admins_collection.find({}).to_list(length=None)
+
+        if not admins:
+            return await safe_edit(
+                query.message,
+                "No admins found.",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]])
+            )
+
+        text = "\n".join([f"• {a['_id']}" for a in admins])
+
+        return await safe_edit(
+            query.message,
+            f"👨‍💻 Admin List:\n\n{text}",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]])
+        )
+
     # ---------------- BAN MENU ----------------
     elif data == "ban_menu":
         if not admin_status:
@@ -233,28 +296,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             query.message,
             f"🚫 Banned Users:\n\n{text}",
             InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]])
-        )
-
-    # ---------------- ADMIN LIST ----------------
-    elif data == "admin_list":
-        if not admin_status:
-            return await query.answer("⚠️ Admins only!", show_alert=True)
-
-        admins = await admins_collection.find({}).to_list(length=None)
-
-        if not admins:
-            return await safe_edit(
-                query.message,
-                "No admins found.",
-                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]])
-            )
-
-        text = "\n".join([f"• {a['_id']}" for a in admins])
-
-        return await safe_edit(
-            query.message,
-            f"👨‍💻 Admin List:\n\n{text}",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]])
         )
 
     # ---------------- CLOSE ----------------
