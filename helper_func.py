@@ -34,11 +34,12 @@ async def auto_delete(msg, delay=60):
 # -------------------------------
 async def safe_edit(message, text, buttons=None):
     try:
-        await message.edit_text(
-            text=text,
-            reply_markup=buttons,
-            disable_web_page_preview=True
-        )
+        if message.text != text:
+            await message.edit_text(
+                text=text,
+                reply_markup=buttons,
+                disable_web_page_preview=True
+            )
     except MessageNotModified:
         pass
     except:
@@ -53,10 +54,17 @@ async def safe_edit(message, text, buttons=None):
 
 
 # -------------------------------
-# INPUT HELPER
+# INPUT HELPER (FIXED)
 # -------------------------------
 async def get_input(client, message, prompt):
-    await message.edit_text(f"{prompt}\n\nSend /cancel to stop.")
+    new_text = f"{prompt}\n\nSend /cancel to stop."
+
+    # ✅ Prevent MESSAGE_NOT_MODIFIED
+    try:
+        if message.text != new_text:
+            await message.edit_text(new_text)
+    except MessageNotModified:
+        pass
 
     try:
         msg = await client.listen(message.chat.id, timeout=300)
