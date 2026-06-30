@@ -228,15 +228,27 @@ async def total_users(client, message):
 @Bot.on_message(filters.command("broadcast") & filters.private)
 async def broadcast(client, message: Message):
 
+    # Admin check
     if not await is_admin(message.from_user.id):
+        return await message.reply_text(
+            "❌ You are not authorized to use this command."
+        )
+
+    # Must reply to a message
+    if not message.reply_to_message:
+        msg = await message.reply_text(
+            "❌ Reply to a message to broadcast."
+        )
+        await asyncio.sleep(8)
+
+        try:
+            await msg.delete()
+            await message.delete()
+        except:
+            pass
         return
 
-    if not message.reply_to_message:
-        msg = await message.reply_text("❌ Reply to a message to broadcast.")
-        await asyncio.sleep(8)
-        return await msg.delete()
-
-    pls_wait = await message.reply_text("📢 Broadcasting... Please wait.")
+    pls_wait = await message.reply_text("📢 Broadcasting... Please wait...")
 
     total = await user_data.count_documents({})
 
@@ -254,6 +266,7 @@ async def broadcast(client, message: Message):
 
         except FloodWait as e:
             await asyncio.sleep(e.value)
+
             try:
                 await message.reply_to_message.copy(user["_id"])
                 successful += 1
@@ -270,7 +283,8 @@ async def broadcast(client, message: Message):
             else:
                 unsuccessful += 1
 
-    status = f"""<b>📢 Broadcast Completed</b>
+    status = f"""
+<b>📢 Broadcast Completed</b>
 
 <b>Total Users:</b> <code>{total}</code>
 <b>Successful:</b> <code>{successful}</code>
@@ -284,7 +298,7 @@ async def broadcast(client, message: Message):
         parse_mode=ParseMode.HTML
     )
 
-    # Auto-delete the broadcast report after 15 seconds
+    # Delete the report after 15 seconds
     await asyncio.sleep(15)
 
     try:
@@ -292,7 +306,7 @@ async def broadcast(client, message: Message):
     except:
         pass
 
-    # Optional: Delete the /broadcast command message
+    # Delete the command message
     try:
         await message.delete()
     except:
