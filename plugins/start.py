@@ -177,10 +177,17 @@ async def start_command(client: Client, message: Message):
                 await asyncio.sleep(e.value)
 
         warn = await client.send_message(
-            user_id,
-            f"⚠️ Auto delete in {file_auto_delete}"
+    chat_id=user_id,
+    text=(
+        f"<b>❗️ <u>IMPORTANT</u> ❗️</b>\n\n"
+        f"This Video / File Will Be Deleted In <b>{file_auto_delete}</b> "
+        f"(Due To Copyright Issues).\n\n"
+        f"📌 Please Forward This Video / File To Somewhere Else "
+        f"And Start Downloading There."
+    ),
+    parse_mode=ParseMode.HTML
         )
-
+        
         asyncio.create_task(delete_files(copied_msgs, client, warn, base64_string))
         return
 
