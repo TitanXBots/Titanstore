@@ -229,38 +229,75 @@ async def total_users(client, message):
 async def broadcast(client, message: Message):
 
     if not await is_admin(message.from_user.id):
-        return await message.reply_text("❌ Admins only.")
+        return
 
     if not message.reply_to_message:
-        return await message.reply_text("Reply to a message to broadcast.")
+        msg = await message.reply_text("❌ Reply to a message to broadcast.")
+        await asyncio.sleep(8)
+        return await msg.delete()
 
-    success = 0
-    failed = 0
+    pls_wait = await message.reply_text("📢 Broadcasting... Please wait.")
 
-    status = await message.reply_text("📢 Broadcasting...")
+    total = await user_data.count_documents({})
+
+    successful = 0
+    blocked = 0
+    deleted = 0
+    unsuccessful = 0
 
     async for user in user_data.find({}, {"_id": 1}):
+
         try:
             await message.reply_to_message.copy(user["_id"])
-            success += 1
+            successful += 1
             await asyncio.sleep(0.05)
 
         except FloodWait as e:
             await asyncio.sleep(e.value)
             try:
                 await message.reply_to_message.copy(user["_id"])
-                success += 1
+                successful += 1
             except:
-                failed += 1
+                unsuccessful += 1
 
-        except Exception:
-            failed += 1
+        except Exception as e:
+            error = str(e).lower()
 
-    await status.edit_text(
-        f"✅ Broadcast Completed\n\n"
-        f"✔️ Success: {success}\n"
-        f"❌ Failed: {failed}"
+            if "blocked" in error:
+                blocked += 1
+            elif "deactivated" in error or "deleted" in error:
+                deleted += 1
+            else:
+                unsuccessful += 1
+
+    status = f"""<b>📢 Broadcast Completed</b>
+
+<b>Total Users:</b> <code>{total}</code>
+<b>Successful:</b> <code>{successful}</code>
+<b>Blocked Users:</b> <code>{blocked}</code>
+<b>Deleted Accounts:</b> <code>{deleted}</code>
+<b>Unsuccessful:</b> <code>{unsuccessful}</code>
+"""
+
+    await pls_wait.edit_text(
+        status,
+        parse_mode=ParseMode.HTML
     )
+
+    # Auto-delete the broadcast report after 15 seconds
+    await asyncio.sleep(15)
+
+    try:
+        await pls_wait.delete()
+    except:
+        pass
+
+    # Optional: Delete the /broadcast command message
+    try:
+        await message.delete()
+    except:
+        pass
+
 
 # -------------------------------
 # AUTO DELETE FUNCTION
