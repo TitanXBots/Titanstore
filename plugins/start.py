@@ -15,12 +15,7 @@ from helper_func import subscribed, encode, decode, get_messages
 # -------------------------------
 # DATABASE (MOTOR)
 # -------------------------------
-from database.database import (
-    user_data,
-    banned_users,
-    telegram_files,
-    is_admin
-)
+from database.database import (user_data, banned_users, telegram_files, is_admin, maintenance_collection)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -68,8 +63,12 @@ async def get_ban_reason(user_id: int) -> str:
 # MAINTENANCE CHECK (MOTOR FIXED)
 # -------------------------------
 async def is_maintenance(user_id: int) -> bool:
-    data = await telegram_files.find_one({"maintenance": "on"})
-    return bool(data and user_id != OWNER_ID)
+    # Owner can always use the bot
+    if user_id == OWNER_ID:
+        return False
+
+    data = await maintenance_collection.find_one({"_id": "maintenance"})
+    return data is not None and data.get("maintenance") == "on"
 
 
 # -------------------------------
