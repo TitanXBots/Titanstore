@@ -226,28 +226,41 @@ async def total_users(client, message):
 # BROADCAST
 # -------------------------------
 @Bot.on_message(filters.command("broadcast") & filters.private)
-async def broadcast(client, message):
+async def broadcast(client, message: Message):
 
     if not await is_admin(message.from_user.id):
-        return
+        return await message.reply_text("❌ Admins only.")
 
     if not message.reply_to_message:
-        return await message.reply_text("Reply to message")
+        return await message.reply_text("Reply to a message to broadcast.")
 
-    users = user_data.find()
+    success = 0
+    failed = 0
 
-    success, failed = 0, 0
+    status = await message.reply_text("📢 Broadcasting...")
 
-    for user in users:
+    async for user in user_data.find({}, {"_id": 1}):
         try:
             await message.reply_to_message.copy(user["_id"])
             success += 1
             await asyncio.sleep(0.05)
-        except:
+
+        except FloodWait as e:
+            await asyncio.sleep(e.value)
+            try:
+                await message.reply_to_message.copy(user["_id"])
+                success += 1
+            except:
+                failed += 1
+
+        except Exception:
             failed += 1
 
-    await message.reply_text(f"Done\nSuccess:{success}\nFailed:{failed}")
-
+    await status.edit_text(
+        f"✅ Broadcast Completed\n\n"
+        f"✔️ Success: {success}\n"
+        f"❌ Failed: {failed}"
+    )
 
 # -------------------------------
 # AUTO DELETE FUNCTION
