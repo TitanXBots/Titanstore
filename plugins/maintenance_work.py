@@ -4,19 +4,6 @@ from pyrogram.types import Message
 from database.database import maintenance_collection, is_admin
 
 
-def convertmsg(msg: str) -> str:
-    words = msg.lower().split()
-    return " ".join(words[1:]) if len(words) > 1 else ""
-
-
-def checkmsg(msg: str):
-    if msg == "on":
-        return True
-    elif msg == "off":
-        return False
-    return None
-
-
 @Client.on_message(filters.command("maintenance"))
 async def maintenance(client: Client, message: Message):
 
@@ -25,37 +12,23 @@ async def maintenance(client: Client, message: Message):
     if not await is_admin(user_id):
         return
 
-    if len(message.text.split()) < 2:
+    if len(message.command) != 2:
         return await message.reply_text(
-            "Correct usage:\n/maintenance on OR /maintenance off"
+            "Usage:\n/maintenance on\n/maintenance off"
         )
 
-    msg = convertmsg(message.text)
-    status = checkmsg(msg)
+    arg = message.command[1].lower()
 
-    if status is None:
-        return await message.reply_text("Invalid argument. Use on/off only.")
+    if arg not in ("on", "off"):
+        return await message.reply_text("❌ Invalid argument. Use only `on` or `off`.")
 
-    data = await maintenance_collection.find_one({"admin_id": user_id})
+    await maintenance_collection.update_one(
+        {"_id": "maintenance"},
+        {"$set": {"maintenance": arg}},
+        upsert=True
+    )
 
-    if status is True:
-        if data and data.get("maintenance") == "on":
-            return await message.reply_text("⚠️ Already ON")
-
-        await maintenance_collection.update_one(
-            {"admin_id": user_id},
-            {"$set": {"maintenance": "on"}},
-            upsert=True
-        )
-        return await message.reply_text("✅ Maintenance ON")
-
+    if arg == "on":
+        await message.reply_text("✅ Maintenance mode enabled.")
     else:
-        if data and data.get("maintenance") == "off":
-            return await message.reply_text("⚠️ Already OFF")
-
-        await maintenance_collection.update_one(
-            {"admin_id": user_id},
-            {"$set": {"maintenance": "off"}},
-            upsert=True
-        )
-        return await message.reply_text("❌ Maintenance OFF")
+        await message.reply_text("❌ Maintenance mode disabled.")
