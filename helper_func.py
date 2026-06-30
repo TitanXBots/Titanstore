@@ -202,7 +202,7 @@ async def get_message_id(client, message):
         return 0
 
     if message.text:
-        pattern = r"https://t.me/(?:c/)?(.*)/(\\d+)"
+        pattern = r"https://t.me/(?:c/)?(.*)/(\d+)"
         match = re.match(pattern, message.text)
 
         if not match:
@@ -219,3 +219,25 @@ async def get_message_id(client, message):
                 return msg_id
 
     return 0
+
+
+# -------------------------------
+# READABLE UPTIME
+# -------------------------------
+def get_readable_time(seconds: int) -> str:
+    days, seconds = divmod(seconds, 86400)
+    hours, seconds = divmod(seconds, 3600)
+    minutes, seconds = divmod(seconds, 60)
+
+    result = []
+
+    if days:
+        result.append(f"{days}d")
+    if hours:
+        result.append(f"{hours}h")
+    if minutes:
+        result.append(f"{minutes}m")
+    if seconds or not result:
+        result.append(f"{seconds}s")
+
+    return " ".join(result)
