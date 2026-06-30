@@ -323,17 +323,42 @@ async def delete_files(messages, client, main_message, payload=None):
 
     await asyncio.sleep(FILE_AUTO_DELETE)
 
+    # Delete all copied files
     for msg in messages:
         try:
-            await client.delete_messages(msg.chat.id, msg.id)
+            await client.delete_messages(
+                chat_id=msg.chat.id,
+                message_ids=msg.id
+            )
         except:
             pass
 
+    # Create Get File Again button
+    keyboard = None
+    if payload:
+        keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        "♻️ Get File Again",
+                        url=f"https://t.me/{client.username}?start={payload}"
+                    )
+                ]
+            ]
+        )
+
+    # Edit warning message
     try:
-        await main_message.edit_text("File deleted!")
+        await main_message.edit_text(
+            text=(
+                "✅ <b>Your Video / File Has Been Deleted.</b>\n\n"
+                "👇 Click the button below to get your file again."
+            ),
+            parse_mode=ParseMode.HTML,
+            reply_markup=keyboard
+        )
     except:
         pass
-
 
 # -------------------------------
 # AUTO DELETE TOGGLE
