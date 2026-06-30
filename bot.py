@@ -86,6 +86,12 @@ class Bot(Client):
         await get_invite(FORCE_SUB_CHANNEL_3, "fs3")
         await get_invite(FORCE_SUB_CHANNEL_4, "fs4")
 
+        # Backward compatibility with plugins
+        self.invitelink = self.invitelinks.get("fs1")
+        self.invitelink2 = self.invitelinks.get("fs2")
+        self.invitelink3 = self.invitelinks.get("fs3")
+        self.invitelink4 = self.invitelinks.get("fs4")
+
         # -------------------------------
         # DATABASE CHANNEL CHECK
         # -------------------------------
