@@ -1,10 +1,11 @@
 # --- For-Bot-Working --------- #
 pyrogram
 TgCrypto
-Pyromod==1.5
+pyromod>=2.0.0
 
 # --- For-Database ------------ #
 motor
+pymongo[srv]
 dnspython
 
 # --- For-Web-Response ------- #
