@@ -1,26 +1,16 @@
-# helper_func.py
 import base64
-import re
 import asyncio
+import re
 
 from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import UserNotParticipant, FloodWait, MessageNotModified
 
-from config import (
-    FORCE_SUB_CHANNEL_1,
-    FORCE_SUB_CHANNEL_2,
-    FORCE_SUB_CHANNEL_3,
-    FORCE_SUB_CHANNEL_4,
-    OWNER_ID
-)
-
-from database.database import admins_collection, banned_users
+from config import FORCE_CHANNELS, OWNER_ID
+from database.database import is_admin
 
 
-# -------------------------------
-# AUTO DELETE
-# -------------------------------
+# ---------------- AUTO DELETE ----------------
 async def auto_delete(msg, delay=60):
     await asyncio.sleep(delay)
     try:
@@ -29,99 +19,49 @@ async def auto_delete(msg, delay=60):
         pass
 
 
-# -------------------------------
-# SAFE EDIT
-# -------------------------------
+# ---------------- SAFE EDIT ----------------
 async def safe_edit(message, text, buttons=None):
+
     try:
         if message.text != text:
-            await message.edit_text(
+            return await message.edit_text(
                 text=text,
                 reply_markup=buttons,
                 disable_web_page_preview=True
             )
+
     except MessageNotModified:
-        pass
+        return
+
     except:
         try:
-            await message.reply_text(
+            return await message.reply_text(
                 text=text,
                 reply_markup=buttons,
                 disable_web_page_preview=True
             )
         except:
-            pass
+            return
 
 
-# -------------------------------
-# INPUT HELPER (FIXED)
-# -------------------------------
-async def get_input(client, message, prompt):
-    new_text = f"{prompt}\n\nSend /cancel to stop."
-
-    # ✅ Prevent MESSAGE_NOT_MODIFIED
-    try:
-        if message.text != new_text:
-            await message.edit_text(new_text)
-    except MessageNotModified:
-        pass
-
-    try:
-        msg = await client.listen(message.chat.id, timeout=300)
-
-        if not msg.text:
-            m = await msg.reply("❌ Invalid input!")
-            asyncio.create_task(auto_delete(m))
-            return None
-
-        if msg.text.lower() == "/cancel":
-            m = await msg.reply("❌ Cancelled!")
-            asyncio.create_task(auto_delete(m))
-            return None
-
-        return msg.text
-
-    except asyncio.TimeoutError:
-        m = await message.reply("⌛ Timeout!")
-        asyncio.create_task(auto_delete(m))
-        return None
+# ---------------- BASE64 ----------------
+async def encode(text: str) -> str:
+    return base64.urlsafe_b64encode(text.encode()).decode().rstrip("=")
 
 
-# -------------------------------
-# OWNER / ADMIN CHECK
-# -------------------------------
-async def is_owner(user_id: int) -> bool:
-    return user_id == OWNER_ID
+async def decode(text: str) -> str:
+    text = text.strip("=")
+    padded = text + "=" * (-len(text) % 4)
+    return base64.urlsafe_b64decode(padded.encode()).decode()
 
 
-async def is_admin(user_id: int) -> bool:
-    if user_id == OWNER_ID:
+# ---------------- SUBSCRIPTION CHECK ----------------
+async def check_subscription(client, user_id: int) -> bool:
+
+    if await is_admin(user_id) or user_id == OWNER_ID:
         return True
 
-    data = await admins_collection.find_one({"_id": user_id})
-    return data is not None
-
-
-# -------------------------------
-# FORCE SUB
-# -------------------------------
-async def is_subscribed(filter, client, update):
-    user_id = update.from_user.id
-
-    if await is_admin(user_id):
-        return True
-
-    channels = [
-        FORCE_SUB_CHANNEL_1,
-        FORCE_SUB_CHANNEL_2,
-        FORCE_SUB_CHANNEL_3,
-        FORCE_SUB_CHANNEL_4
-    ]
-
-    for channel in channels:
-        if not channel:
-            continue
-
+    for channel in FORCE_CHANNELS:
         try:
             member = await client.get_chat_member(channel, user_id)
 
@@ -141,31 +81,18 @@ async def is_subscribed(filter, client, update):
     return True
 
 
-subscribed = filters.create(is_subscribed)
+subscribed = filters.create(check_subscription)
 
 
-# -------------------------------
-# BASE64
-# -------------------------------
-async def encode(string: str) -> str:
-    return base64.urlsafe_b64encode(string.encode()).decode().rstrip("=")
-
-
-async def decode(base64_string: str) -> str:
-    base64_string = base64_string.strip("=")
-    padded = base64_string + "=" * (-len(base64_string) % 4)
-    return base64.urlsafe_b64decode(padded.encode()).decode()
-
-
-# -------------------------------
-# GET MESSAGES
-# -------------------------------
+# ---------------- MESSAGE FETCH ----------------
 async def get_messages(client, message_ids):
-    messages = []
-    total = 0
 
-    while total != len(message_ids):
-        batch = message_ids[total:total + 200]
+    messages = []
+    batch_size = 200
+
+    for i in range(0, len(message_ids), batch_size):
+
+        batch = message_ids[i:i + batch_size]
 
         try:
             msgs = await client.get_messages(
@@ -184,47 +111,31 @@ async def get_messages(client, message_ids):
             msgs = []
 
         messages.extend(msgs)
-        total += len(batch)
 
     return messages
 
 
-# -------------------------------
-# MESSAGE ID EXTRACTOR
-# -------------------------------
+# ---------------- MESSAGE ID EXTRACTOR (FIXED) ----------------
 async def get_message_id(client, message):
+
     if message.forward_from_chat:
         if message.forward_from_chat.id == client.db_channel.id:
             return message.forward_from_message_id
         return 0
 
-    if message.forward_sender_name:
-        return 0
-
     if message.text:
-        pattern = r"https://t.me/(?:c/)?(.*)/(\d+)"
-        match = re.match(pattern, message.text)
+        pattern = r"https://t.me/(?:c/)?(\d+|[a-zA-Z0-9_]+)/(\d+)"
+        match = re.search(pattern, message.text)
 
-        if not match:
-            return 0
-
-        chat = match.group(1)
-        msg_id = int(match.group(2))
-
-        if chat.isdigit():
-            if f"-100{chat}" == str(client.db_channel.id):
-                return msg_id
-        else:
-            if chat == client.db_channel.username:
-                return msg_id
+        if match:
+            return int(match.group(2))
 
     return 0
 
 
-# -------------------------------
-# READABLE UPTIME
-# -------------------------------
+# ---------------- TIME FORMAT ----------------
 def get_readable_time(seconds: int) -> str:
+
     days, seconds = divmod(seconds, 86400)
     hours, seconds = divmod(seconds, 3600)
     minutes, seconds = divmod(seconds, 60)
