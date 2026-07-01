@@ -1,70 +1,123 @@
 import motor.motor_asyncio
+from datetime import datetime
 from config import DB_URI, DB_NAME, OWNER_ID
 
-client = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
-db = client[DB_NAME]
+# -------------------------------
+# DB CONNECTION (MOTOR)
+# -------------------------------
+dbclient = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
+database = dbclient[DB_NAME]
 
-users = db["users"]
-admins = db["admins"]
-banned = db["banned"]
-files = db["files"]
-settings = db["settings"]
+user_data = database["users"]
+banned_users = database["banned_users"]
+admins_collection = database["admins"]
+maintenance_collection = database["maintenance"]
+telegram_files = database["telegram_files"]
 
-# USERS
-async def add_user(uid, name, username):
-    await users.update_one({"_id": uid}, {"$set": {
-        "_id": uid,
-        "name": name,
-        "username": username
-    }}, upsert=True)
+# -------------------------------
+# USER MANAGEMENT
+# -------------------------------
+async def is_user_present(user_id: int) -> bool:
+    return await user_data.find_one({"_id": user_id}) is not None
 
-async def is_user(uid):
-    return bool(await users.find_one({"_id": uid}))
 
-# ADMINS
-async def is_admin(uid):
-    if uid == OWNER_ID:
-        return True
-    return bool(await admins.find_one({"_id": uid}))
+async def add_user(user_id: int, first_name=None, username=None):
+    await user_data.update_one(
+        {"_id": user_id},
+        {"$set": {
+            "first_name": first_name,
+            "username": username,
+            "joined_at": datetime.now()
+        }},
+        upsert=True
+    )
 
-async def add_admin(uid):
-    await admins.update_one({"_id": uid}, {"$set": {"is_admin": True}}, upsert=True)
 
-async def remove_admin(uid):
-    await admins.delete_one({"_id": uid})
+async def get_all_users():
+    cursor = user_data.find({}, {"_id": 1})
+    users = await cursor.to_list(length=None)
+    return [user["_id"] for user in users]
+
+
+async def delete_user(user_id: int):
+    await user_data.delete_one({"_id": user_id})
+
+
+# -------------------------------
+# BAN SYSTEM
+# -------------------------------
+async def is_user_banned(user_id: int) -> bool:
+    data = await banned_users.find_one({"_id": user_id})
+    return data.get("is_banned", False) if data else False
+
+
+async def get_ban_reason(user_id: int) -> str:
+    data = await banned_users.find_one({"_id": user_id})
+    return data.get("reason", "No reason provided") if data else "No reason provided"
+
+
+async def ban_user(user_id: int, reason: str = "No reason"):
+    await banned_users.update_one(
+        {"_id": user_id},
+        {"$set": {"is_banned": True, "reason": reason}},
+        upsert=True
+    )
+
+
+async def unban_user(user_id: int):
+    await banned_users.update_one(
+        {"_id": user_id},
+        {"$set": {"is_banned": False, "reason": ""}},
+        upsert=True
+    )
+
+
+async def get_banned_users():
+    cursor = banned_users.find({"is_banned": True})
+    return await cursor.to_list(length=None)
+
+
+# -------------------------------
+# ADMIN SYSTEM
+# -------------------------------
+async def add_admin(user_id: int):
+    await admins_collection.update_one(
+        {"_id": user_id},
+        {"$set": {"is_admin": True}},
+        upsert=True
+    )
+
+
+async def remove_admin(user_id: int):
+    await admins_collection.delete_one({"_id": user_id})
+
 
 async def get_admins():
-    return await admins.find({}, {"_id": 1}).to_list(None)
+    cursor = admins_collection.find({}, {"_id": 1})
+    admins = await cursor.to_list(length=None)
+    return [admin["_id"] for admin in admins]
 
-# BAN
-async def ban_user(uid, reason="No reason"):
-    await banned.update_one({"_id": uid}, {"$set": {"banned": True, "reason": reason}}, upsert=True)
 
-async def unban_user(uid):
-    await banned.update_one({"_id": uid}, {"$set": {"banned": False}}, upsert=True)
+# -------------------------------
+# ROLE CHECKS
+# -------------------------------
+async def is_owner(user_id: int) -> bool:
+    return user_id == OWNER_ID
 
-async def is_banned(uid):
-    d = await banned.find_one({"_id": uid})
-    return bool(d and d.get("banned"))
 
-async def ban_reason(uid):
-    d = await banned.find_one({"_id": uid})
-    return d.get("reason", "")
+async def is_admin(user_id: int) -> bool:
+    if user_id == OWNER_ID:
+        return True
+    data = await admins_collection.find_one({"_id": user_id})
+    return data is not None and data.get("is_admin", False)
 
-# FILE SYSTEM (SAFE)
-async def save_file(message_id):
-    import uuid
-    fid = str(uuid.uuid4())
-    await files.insert_one({"_id": fid, "msg_id": message_id})
-    return fid
 
-async def get_file(fid):
-    return await files.find_one({"_id": fid})
-
-# SETTINGS
-async def set_maintenance(state: bool):
-    await settings.update_one({"_id": "maintenance"}, {"$set": {"state": state}}, upsert=True)
-
-async def is_maintenance():
-    d = await settings.find_one({"_id": "maintenance"})
-    return bool(d and d.get("state"))
+# -------------------------------
+# MAINTENANCE SYSTEM
+# -------------------------------
+async def is_maintenance(user_id: int) -> bool:
+    if user_id == OWNER_ID:
+        return False
+    data = await maintenance_collection.find_one({"_id": "maintenance"})
+    return data is not None and data.get("maintenance") == "on"
+    
