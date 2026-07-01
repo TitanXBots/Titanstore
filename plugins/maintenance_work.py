@@ -1,12 +1,11 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
+from bot import Bot
 from database.database import maintenance_collection, is_admin
 
-
-@Client.on_message(filters.command("maintenance"))
-async def maintenance(client: Client, message: Message):
-
+@Bot.on_message(filters.command("maintenance") & filters.private)
+async def maintenance_toggle_command(client: Bot, message: Message):
     user_id = message.from_user.id
 
     if not await is_admin(user_id):
@@ -14,7 +13,7 @@ async def maintenance(client: Client, message: Message):
 
     if len(message.command) != 2:
         return await message.reply_text(
-            "Usage:\n/maintenance on\n/maintenance off"
+            "<b>Usage:</b>\n`/maintenance on`\n`/maintenance off`"
         )
 
     arg = message.command[1].lower()
@@ -29,6 +28,7 @@ async def maintenance(client: Client, message: Message):
     )
 
     if arg == "on":
-        await message.reply_text("✅ Maintenance mode enabled.")
+        await message.reply_text("✅ Maintenance mode enabled. Non-admin users are locked out.")
     else:
-        await message.reply_text("❌ Maintenance mode disabled.")
+        await message.reply_text("⚙️ Maintenance mode disabled. Normal operations resumed.")
+        
