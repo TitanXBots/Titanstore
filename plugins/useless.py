@@ -19,13 +19,11 @@ async def stats(bot: Bot, message: Message):
     delta = now - bot.uptime
     uptime = get_readable_time(delta.seconds)
 
-    await message.reply_text(
-        BOT_STATS_TEXT.format(uptime=uptime)
-    )
+    await message.reply(BOT_STATS_TEXT.format(uptime=uptime))
 
 
 @Bot.on_message(filters.private & filters.incoming & ~filters.command(["stats"]))
 async def useless(_, message: Message):
 
     if USER_REPLY_TEXT:
-        await message.reply_text(USER_REPLY_TEXT)
+        await message.reply(USER_REPLY_TEXT)
