@@ -1,32 +1,30 @@
 import asyncio
-from pyrogram import Client
+from pyrogram import filters, Client
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
 from bot import Bot
 from config import *
-from Script import *
-
 from helper_func import safe_edit, get_input
 from database.database import (
-    admins_collection,
-    banned_users,
-    is_admin
+    is_admin,
+    add_admin,
+    remove_admin,
+    get_admins,
+    ban_user,
+    unban_user,
+    get_banned_users
 )
 
-# -------------------------------
-# CALLBACK HANDLER
-# -------------------------------
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
-
     await query.answer()
-
     if not query.message:
         return
 
     data = query.data
     user_id = query.from_user.id
     admin_status = await is_admin(user_id)
+    first_name = query.from_user.first_name or "User"
 
     # ---------------- START ----------------
     if data == "start":
@@ -36,13 +34,12 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 InlineKeyboardButton("🔰 About", callback_data="about")
             ]
         ]
-
         if admin_status:
             buttons.append([InlineKeyboardButton("⚙️ Settings", callback_data="settings")])
 
         return await safe_edit(
             query.message,
-            START_MSG.format(first=query.from_user.first_name),
+            START_MSG.format(first=first_name),
             InlineKeyboardMarkup(buttons)
         )
 
@@ -50,7 +47,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     elif data == "help":
         return await safe_edit(
             query.message,
-            HELP_TXT.format(first=query.from_user.first_name),
+            HELP_TXT.format(first=first_name),
             InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton("🧑‍💻 Contact Owner", url=f"tg://user?id={OWNER_ID}"),
@@ -81,7 +78,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     elif data == "about":
         return await safe_edit(
             query.message,
-            ABOUT_TXT.format(first=query.from_user.first_name),
+            ABOUT_TXT.format(first=first_name),
             InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton("📜 Disclaimer", callback_data="disclaimer"),
@@ -138,12 +135,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                     InlineKeyboardButton("➕ Add Admin", callback_data="add_admin"),
                     InlineKeyboardButton("➖ Remove Admin", callback_data="remove_admin")
                 ],
-                [
-                    InlineKeyboardButton("📋 Admin List", callback_data="admin_list")
-                ],
-                [
-                    InlineKeyboardButton("🔙 Back", callback_data="settings")
-                ]
+                [InlineKeyboardButton("📋 Admin List", callback_data="admin_list")],
+                [InlineKeyboardButton("🔙 Back", callback_data="settings")]
             ])
         )
 
@@ -157,17 +150,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return await safe_edit(query.message, "❌ Invalid User ID")
 
         uid = int(text)
-
-        # prevent adding owner again
         if uid == OWNER_ID:
             return await query.message.reply("⚠️ Owner is already admin")
 
-        await admins_collection.update_one(
-            {"_id": uid},
-            {"$set": {"is_admin": True}},
-            upsert=True
-        )
-
+        await add_admin(uid)
         await query.message.reply(f"✅ User {uid} added as admin")
 
     # ---------------- REMOVE ADMIN ----------------
@@ -180,13 +166,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return await safe_edit(query.message, "❌ Invalid User ID")
 
         uid = int(text)
-
-        # prevent removing owner
         if uid == OWNER_ID:
             return await query.message.reply("❌ Cannot remove owner")
 
-        await admins_collection.delete_one({"_id": uid})
-
+        await remove_admin(uid)
         await query.message.reply(f"✅ User {uid} removed from admin")
 
     # ---------------- ADMIN LIST ----------------
@@ -194,8 +177,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
-        admins = await admins_collection.find({}).to_list(length=None)
-
+        admins = await get_admins()
         if not admins:
             return await safe_edit(
                 query.message,
@@ -203,8 +185,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]])
             )
 
-        text = "\n".join([f"• {a['_id']}" for a in admins])
-
+        text = "\n".join([f"• {a}" for a in admins])
         return await safe_edit(
             query.message,
             f"👨‍💻 Admin List:\n\n{text}",
@@ -224,12 +205,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                     InlineKeyboardButton("🚫 Ban User", callback_data="ban_user"),
                     InlineKeyboardButton("✅ Unban User", callback_data="unban_user")
                 ],
-                [
-                    InlineKeyboardButton("📄 Banned List", callback_data="banned_list")
-                ],
-                [
-                    InlineKeyboardButton("🔙 Back", callback_data="settings")
-                ]
+                [InlineKeyboardButton("📄 Banned List", callback_data="banned_list")],
+                [InlineKeyboardButton("🔙 Back", callback_data="settings")]
             ])
         )
 
@@ -243,19 +220,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return
 
         parts = text.split(maxsplit=1)
-
         if not parts[0].isdigit():
             return await safe_edit(query.message, "❌ Invalid User ID")
 
         uid = int(parts[0])
         reason = parts[1] if len(parts) > 1 else "No reason"
 
-        await banned_users.update_one(
-            {"_id": uid},
-            {"$set": {"is_banned": True, "reason": reason}},
-            upsert=True
-        )
-
+        await ban_user(uid, reason)
         await query.message.reply(f"✅ User {uid} banned")
 
     # ---------------- UNBAN USER ----------------
@@ -268,12 +239,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             return await safe_edit(query.message, "❌ Invalid User ID")
 
         uid = int(text)
-
-        await banned_users.update_one(
-            {"_id": uid},
-            {"$set": {"is_banned": False, "reason": ""}}
-        )
-
+        await unban_user(uid)
         await query.message.reply(f"✅ User {uid} unbanned")
 
     # ---------------- BANNED LIST ----------------
@@ -281,8 +247,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
 
-        banned = await banned_users.find({"is_banned": True}).to_list(length=None)
-
+        banned = await get_banned_users()
         if not banned:
             return await safe_edit(
                 query.message,
@@ -291,7 +256,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
 
         text = "\n".join([f"• {u['_id']} - {u.get('reason','No reason')}" for u in banned])
-
         return await safe_edit(
             query.message,
             f"🚫 Banned Users:\n\n{text}",
@@ -304,3 +268,4 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             await query.message.delete()
         except:
             pass
+            
