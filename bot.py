@@ -42,31 +42,44 @@ class Bot(Client):
         # -------------------------------
         self.invitelinks = {}
 
-        async def get_invite(channel_id, key_name, label):
-            if not channel_id or str(channel_id) == "0":
+        async def get_invite(channel_input, key_name, label):
+            # Skip if empty or set to 0
+            if not channel_input or str(channel_input) in ["0", "", "None"]:
                 self.invitelinks[key_name] = None
                 return
 
             try:
-                chat = await self.get_chat(channel_id)
+                # CRITICAL FIX: Explicitly convert to Integer if it is a Telegram ID
+                if str(channel_input).startswith("-100") or str(channel_input).isdigit():
+                    chat_id = int(channel_input)
+                else:
+                    chat_id = channel_input # Treat as public username string (e.g., @MyChannel)
+
+                # Fetch chat and invite link
+                chat = await self.get_chat(chat_id)
                 link = chat.invite_link
+                
+                # Create a link if one doesn't exist
                 if not link:
-                    link = await self.export_chat_invite_link(channel_id)
+                    link = await self.export_chat_invite_link(chat_id)
                 
                 self.invitelinks[key_name] = link
-                self.LOGGER(__name__).info(f"✅ Force Sub Link generated for {label} ({channel_id})")
+                self.LOGGER(__name__).info(f"✅ Force Sub Link generated for {label} ({chat_id})")
+                
             except Exception as e:
                 self.LOGGER(__name__).error(
-                    f"❌ FORCE SUB CRITICAL: Failed to get/generate link for {label} ({channel_id}). "
-                    f"Ensure the bot is an Admin. Error: {e}"
+                    f"❌ FORCE SUB CRITICAL: Failed to get/generate link for {label} ({channel_input}). "
+                    f"Ensure the bot is an Admin with 'Invite Users via Link' permissions. Error: {e}"
                 )
                 self.invitelinks[key_name] = None
 
+        # Fetch invite links asynchronously
         await get_invite(FORCE_SUB_CHANNEL_1, "fs1", "Channel 1")
         await get_invite(FORCE_SUB_CHANNEL_2, "fs2", "Channel 2")
         await get_invite(FORCE_SUB_CHANNEL_3, "fs3", "Channel 3")
         await get_invite(FORCE_SUB_CHANNEL_4, "fs4", "Channel 4")
 
+        # Expose properties to the client wrapper object
         self.invitelink = self.invitelinks.get("fs1")
         self.invitelink2 = self.invitelinks.get("fs2")
         self.invitelink3 = self.invitelinks.get("fs3")
