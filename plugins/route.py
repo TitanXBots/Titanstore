@@ -1,5 +1,3 @@
-# TitanXBots
-# File Path: plugins/route.py
 from aiohttp import web
 
 routes = web.RouteTableDef()
