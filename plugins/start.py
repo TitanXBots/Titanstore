@@ -27,6 +27,7 @@ async def start_command(client: Client, message: Message):
     last_name = message.from_user.last_name or ""
     username = message.from_user.username or ""
 
+    # ---------------- FORCE SUB ----------------
     if not await subscribed(client, message):
         buttons = []
         if client.invitelink:
@@ -40,7 +41,19 @@ async def start_command(client: Client, message: Message):
         if client.invitelink4:
             row2.append(InlineKeyboardButton("Join Channel 4", url=client.invitelink4))
             
-        keyboard = [buttons, row2] if row2 else [buttons]
+        # Safely build the keyboard only with rows that actually have buttons
+        keyboard = []
+        if buttons:
+            keyboard.append(buttons)
+        if row2:
+            keyboard.append(row2)
+
+        # Fallback if ALL links failed to generate so the bot doesn't crash
+        if not keyboard:
+            return await message.reply_text(
+                "⚠️ <b>System Error:</b> Force Sub is enabled, but the bot failed to generate invite links. "
+                "If you are the admin, please check your server logs or ensure the bot has met the force sub channels."
+            )
 
         return await message.reply_photo(
             photo=FORCE_PIC,
@@ -54,10 +67,12 @@ async def start_command(client: Client, message: Message):
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
+    # ---------------- BAN CHECK ----------------
     if await is_user_banned(user_id):
         reason = await get_ban_reason(user_id)
         return await message.reply_text(f"🚫 You are banned.\nReason: {reason}")
 
+    # ---------------- ADD USER ----------------
     if not await is_user_present(user_id):
         try:
             await add_user(user_id, first_name, username)
@@ -68,9 +83,11 @@ async def start_command(client: Client, message: Message):
         except Exception as e:
             logging.error(e)
 
+    # ---------------- MAINTENANCE ----------------
     if await is_maintenance(user_id):
         return await message.reply_text("🛠 Maintenance mode ON")
 
+    # ---------------- FILE SYSTEM ----------------
     if len(text.split()) > 1:
         try:
             base64_string = text.split(" ", 1)[1]
@@ -131,6 +148,7 @@ async def start_command(client: Client, message: Message):
         asyncio.create_task(delete_files(copied_msgs, client, warn, base64_string))
         return
 
+    # ---------------- START MENU ----------------
     admin_status = await is_admin(user_id)
     buttons = [
         [
