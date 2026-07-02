@@ -1,12 +1,15 @@
 # TitanXBots
+import sys
+from datetime import datetime
 from aiohttp import web
 from plugins import web_server
 
 import pyromod.listen
 from pyrogram import Client
 from pyrogram.enums import ParseMode
-import sys
-from datetime import datetime
+
+import pyrogram.utils
+pyrogram.utils.MIN_CHANNEL_ID = -1009999999999
 
 from config import (
     API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN,
@@ -16,9 +19,6 @@ from config import (
     CHANNEL_ID, PORT
 )
 
-import pyrogram.utils
-pyrogram.utils.MIN_CHANNEL_ID = -1009999999999
-
 name = """
 ████████╗██╗████████╗░█████╗░███╗░░██╗██╗░░██╗██████╗░░█████╗░████████╗░██████╗
 ╚══██╔══╝██║╚══██╔══╝██╔══██╗████╗░██║╚██╗██╔╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
@@ -27,7 +27,6 @@ name = """
 ░░░██║░░░██║░░░██║░░░██║░░██║██║░╚███║██╔╝╚██╗██████╦╝╚█████╔╝░░░██║░░░██████╔╝
 ░░░╚═╝░░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝╚═════╝░░╚════╝░░░░╚═╝░░░╚═════╝░
 """
-
 
 class Bot(Client):
     def __init__(self):
@@ -53,26 +52,36 @@ class Bot(Client):
         # -------------------------------
         self.invitelinks = {}
 
-        async def get_invite(channel_id, key_name):
+        async def get_invite(channel_id, key_name, label):
             if not channel_id:
                 self.invitelinks[key_name] = None
                 return
 
             try:
+                # Resolve target chat information
                 chat = await self.get_chat(channel_id)
                 link = chat.invite_link
+                
+                # If there's no pre-existing link, attempt creation
                 if not link:
                     link = await self.export_chat_invite_link(channel_id)
+                
                 self.invitelinks[key_name] = link
+                self.LOGGER(__name__).info(f"✅ Force Sub Link generated for {label} ({channel_id})")
             except Exception as e:
-                self.LOGGER(__name__).warning(f"Force sub setup warning for {channel_id}: {e}")
+                self.LOGGER(__name__).error(
+                    f"❌ FORCE SUB CRITICAL: Failed to get/generate link for {label} ({channel_id}). "
+                    f"Ensure the bot is an Admin with 'Invite Users via Link' permission. Error: {e}"
+                )
                 self.invitelinks[key_name] = None
 
-        await get_invite(FORCE_SUB_CHANNEL_1, "fs1")
-        await get_invite(FORCE_SUB_CHANNEL_2, "fs2")
-        await get_invite(FORCE_SUB_CHANNEL_3, "fs3")
-        await get_invite(FORCE_SUB_CHANNEL_4, "fs4")
+        # Fetch invite links asynchronously
+        await get_invite(FORCE_SUB_CHANNEL_1, "fs1", "Channel 1")
+        await get_invite(FORCE_SUB_CHANNEL_2, "fs2", "Channel 2")
+        await get_invite(FORCE_SUB_CHANNEL_3, "fs3", "Channel 3")
+        await get_invite(FORCE_SUB_CHANNEL_4, "fs4", "Channel 4")
 
+        # Expose properties to the client wrapper object
         self.invitelink = self.invitelinks.get("fs1")
         self.invitelink2 = self.invitelinks.get("fs2")
         self.invitelink3 = self.invitelinks.get("fs3")
@@ -86,33 +95,27 @@ class Bot(Client):
             self.db_channel = db_channel
             msg = await self.send_message(db_channel.id, "Test Message")
             await msg.delete()
+            self.LOGGER(__name__).info("✅ Database Channel verified successfully.")
         except Exception as e:
-            self.LOGGER(__name__).error(e)
-            self.LOGGER(__name__).error(f"Bot is not admin in DB channel or CHANNEL_ID is wrong: {CHANNEL_ID}")
+            self.LOGGER(__name__).error(f"❌ CRITICAL: Bot is not admin in DB channel or CHANNEL_ID is wrong: {CHANNEL_ID}. Error: {e}")
             sys.exit()
 
         # -------------------------------
         # WEB SERVER START
         # -------------------------------
-        app = web.AppRunner(await web_server())
-        await app.setup()
-        site = web.TCPSite(app, "0.0.0.0", PORT)
-        await site.start()
+        try:
+            app = web.AppRunner(await web_server())
+            await app.setup()
+            site = web.TCPSite(app, "0.0.0.0", PORT)
+            await site.start()
+            self.LOGGER(__name__).info(f"✅ Web Server started successfully on port {PORT}")
+        except Exception as e:
+            self.LOGGER(__name__).warning(f"⚠️ Web Server failed to initialize: {e}")
 
         # -------------------------------
         # FINAL LOGS
         # -------------------------------
         self.set_parse_mode(ParseMode.HTML)
-        self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/TitanXBots")
-        self.LOGGER(__name__).info(f""" \n\n
-        
-████████╗██╗████████╗░█████╗░███╗░░██╗██╗░░██╗██████╗░░█████╗░████████╗░██████╗
-╚══██╔══╝██║╚══██╔══╝██╔══██╗████╗░██║╚██╗██╔╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
-░░░██║░░░██║░░░██║░░░███████║██╔██╗██║░╚███╔╝░██████╦╝██║░░██║░░░██║░░░╚█████╗░
-░░░██║░░░██║░░░██║░░░██╔══██║██║╚████║░██╔██╗░██╔══██╗██║░░██║░░░██║░░░░╚═══██╗
-░░░██║░░░██║░░░██║░░░██║░░██║██║░╚███║██╔╝╚██╗██████╦╝╚█████╔╝░░░██║░░░██████╔╝
-░░░╚═╝░░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝╚═════╝░░╚════╝░░░░╚═╝░░░╚═════╝░
-                                          """)
         self.LOGGER(__name__).info("Bot is running...")
         self.LOGGER(__name__).info(f"Username: @{self.username}")
 
