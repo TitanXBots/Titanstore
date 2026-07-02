@@ -7,19 +7,11 @@ from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import UserNotParticipant, FloodWait, MessageNotModified
 
-from config import (
-    FORCE_SUB_CHANNEL_1,
-    FORCE_SUB_CHANNEL_2,
-    FORCE_SUB_CHANNEL_3,
-    FORCE_SUB_CHANNEL_4
-)
+from config import FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4
 from database.database import is_admin, is_owner
 
 logger = logging.getLogger(__name__)
 
-# -------------------------------
-# AUTO DELETE
-# -------------------------------
 async def auto_delete(msg, delay=60):
     await asyncio.sleep(delay)
     try:
@@ -27,9 +19,6 @@ async def auto_delete(msg, delay=60):
     except:
         pass
 
-# -------------------------------
-# SAFE EDIT
-# -------------------------------
 async def safe_edit(message, text, buttons=None):
     try:
         if message.text != text:
@@ -50,15 +39,11 @@ async def safe_edit(message, text, buttons=None):
         except:
             pass
 
-# -------------------------------
-# INPUT HELPER
-# -------------------------------
 async def get_input(client, message, prompt):
     new_text = f"{prompt}\n\nSend /cancel to stop."
     try:
-        if message.text != new_text:
-            await message.edit_text(new_text)
-    except MessageNotModified:
+        await message.reply_text(new_text)
+    except:
         pass
 
     try:
@@ -77,50 +62,28 @@ async def get_input(client, message, prompt):
         asyncio.create_task(auto_delete(m))
         return None
 
-# -------------------------------
-# FORCE SUB CHECK FUNCTION
-# -------------------------------
 async def subscribed(client, message) -> bool:
-    """
-    Checks if a user is subscribed to all configured force sub channels.
-    Returns True if subscribed or if user is an admin/owner.
-    Returns False if they are missing from any channel.
-    """
     if not message.from_user:
         return True
         
     user_id = message.from_user.id
     
-    # Admins and Owners bypass Force Subscribe automatically
     if await is_admin(user_id) or await is_owner(user_id):
         return True
 
-    channels = [
-        FORCE_SUB_CHANNEL_1,
-        FORCE_SUB_CHANNEL_2,
-        FORCE_SUB_CHANNEL_3,
-        FORCE_SUB_CHANNEL_4
-    ]
+    channels = [FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4]
 
     for channel in channels:
-        if not channel:
+        if not channel or str(channel) == "0":
             continue
             
         try:
-            # Safely handle string vs integer channel IDs
             chat_id = int(channel) if str(channel).startswith("-100") or str(channel).isdigit() else channel
-            
             member = await client.get_chat_member(chat_id, user_id)
-            if member.status not in [
-                ChatMemberStatus.OWNER,
-                ChatMemberStatus.ADMINISTRATOR,
-                ChatMemberStatus.MEMBER
-            ]:
+            if member.status not in [ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER]:
                 return False
-                
         except UserNotParticipant:
             return False
-            
         except FloodWait as e:
             await asyncio.sleep(e.value)
             try:
@@ -129,29 +92,20 @@ async def subscribed(client, message) -> bool:
                     return False
             except:
                 return False
-                
         except Exception as e:
             logger.error(f"Error checking force sub for channel {channel}: {e}")
-            # Continue to next channel if it's a configuration issue, preventing a bot lockout
             continue
             
     return True
 
-# -------------------------------
-# BASE64
-# -------------------------------
 async def encode(string: str) -> str:
     return base64.urlsafe_b64encode(string.encode()).decode().rstrip("=")
-
 
 async def decode(base64_string: str) -> str:
     base64_string = base64_string.strip("=")
     padded = base64_string + "=" * (-len(base64_string) % 4)
     return base64.urlsafe_b64decode(padded.encode()).decode()
 
-# -------------------------------
-# GET MESSAGES
-# -------------------------------
 async def get_messages(client, message_ids):
     messages = []
     total = 0
@@ -174,9 +128,6 @@ async def get_messages(client, message_ids):
         total += len(batch)
     return messages
 
-# -------------------------------
-# MESSAGE ID EXTRACTOR
-# -------------------------------
 async def get_message_id(client, message):
     if message.forward_from_chat:
         if message.forward_from_chat.id == client.db_channel.id:
@@ -204,9 +155,6 @@ async def get_message_id(client, message):
                 return msg_id
     return 0
 
-# -------------------------------
-# READABLE UPTIME
-# -------------------------------
 def get_readable_time(seconds: int) -> str:
     days, seconds = divmod(seconds, 86400)
     hours, seconds = divmod(seconds, 3600)
