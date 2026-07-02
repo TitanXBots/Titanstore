@@ -1,11 +1,9 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
-
-from bot import Bot
 from database.database import maintenance_collection, is_admin
 
-@Bot.on_message(filters.command("maintenance") & filters.private)
-async def maintenance_toggle_command(client: Bot, message: Message):
+@Client.on_message(filters.command("maintenance") & filters.private)
+async def maintenance_toggle_command(client: Client, message: Message):
     user_id = message.from_user.id
 
     if not await is_admin(user_id):
