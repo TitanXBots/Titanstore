@@ -35,10 +35,10 @@ DB_URI = os.environ.get(
 DB_NAME = os.environ.get("DATABASE_NAME", "TitanBot")
 
 # force sub channel id - Safe evaluations fallback
-FORCE_SUB_CHANNEL_1 = int(os.environ.get("FORCE_SUB_CHANNEL_1", "-1002071945738")) if os.environ.get("FORCE_SUB_CHANNEL_1") else None
-FORCE_SUB_CHANNEL_2 = int(os.environ.get("FORCE_SUB_CHANNEL_2", "-1001972961497")) if os.environ.get("FORCE_SUB_CHANNEL_2") else None
-FORCE_SUB_CHANNEL_3 = int(os.environ.get("FORCE_SUB_CHANNEL_3", "-1001987271131")) if os.environ.get("FORCE_SUB_CHANNEL_3") else None
-FORCE_SUB_CHANNEL_4 = int(os.environ.get("FORCE_SUB_CHANNEL_4", "-1002038066716")) if os.environ.get("FORCE_SUB_CHANNEL_4") else None
+FORCE_SUB_CHANNEL_1 = int(os.environ.get("FORCE_SUB_CHANNEL_1", "-1002071945738"))
+FORCE_SUB_CHANNEL_2 = int(os.environ.get("FORCE_SUB_CHANNEL_2", "-1001972961497"))
+FORCE_SUB_CHANNEL_3 = int(os.environ.get("FORCE_SUB_CHANNEL_3", "-1001987271131"))
+FORCE_SUB_CHANNEL_4 = int(os.environ.get("FORCE_SUB_CHANNEL_4", "-1002038066716"))
 
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "2"))
 
