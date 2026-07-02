@@ -8,31 +8,25 @@ from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait
 
-from bot import Bot
 from config import *
-from helper_func import subscribed, encode, decode, get_messages
+from helper_func import subscribed, decode, get_messages
 from database.database import (
-    is_user_present, 
-    add_user, 
-    is_user_banned, 
-    get_ban_reason, 
-    is_maintenance, 
-    is_admin
+    user_data, is_user_present, add_user, is_user_banned, 
+    get_ban_reason, is_maintenance, is_admin
 )
 
 logging.basicConfig(level=logging.INFO)
 AUTO_DELETE_ENABLED = True
 file_auto_delete = humanize.naturaldelta(FILE_AUTO_DELETE)
 
-@Bot.on_message(filters.command("start") & filters.private)
-async def start_command(client: Bot, message: Message):
+@Client.on_message(filters.command("start") & filters.private)
+async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
     text = message.text
     first_name = message.from_user.first_name or "User"
     last_name = message.from_user.last_name or ""
     username = message.from_user.username or ""
 
-    # ---------------- FORCE SUB ----------------
     if not await subscribed(client, message):
         buttons = []
         if client.invitelink:
@@ -60,12 +54,10 @@ async def start_command(client: Bot, message: Message):
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
-    # ---------------- BAN CHECK ----------------
     if await is_user_banned(user_id):
         reason = await get_ban_reason(user_id)
         return await message.reply_text(f"🚫 You are banned.\nReason: {reason}")
 
-    # ---------------- ADD USER ----------------
     if not await is_user_present(user_id):
         try:
             await add_user(user_id, first_name, username)
@@ -76,11 +68,9 @@ async def start_command(client: Bot, message: Message):
         except Exception as e:
             logging.error(e)
 
-    # ---------------- MAINTENANCE ----------------
     if await is_maintenance(user_id):
         return await message.reply_text("🛠 Maintenance mode ON")
 
-    # ---------------- FILE SYSTEM ----------------
     if len(text.split()) > 1:
         try:
             base64_string = text.split(" ", 1)[1]
@@ -141,7 +131,6 @@ async def start_command(client: Bot, message: Message):
         asyncio.create_task(delete_files(copied_msgs, client, warn, base64_string))
         return
 
-    # ---------------- START MENU ----------------
     admin_status = await is_admin(user_id)
     buttons = [
         [
@@ -164,16 +153,16 @@ async def start_command(client: Bot, message: Message):
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
-@Bot.on_message(filters.command("users") & filters.private)
-async def total_users(client: Bot, message: Message):
+@Client.on_message(filters.command("users") & filters.private)
+async def total_users(client: Client, message: Message):
     if not await is_admin(message.from_user.id):
         return await message.reply_text("Admins only")
-    from database.database import user_data
+    
     total = await user_data.count_documents({})
     await message.reply_text(f"Total Users: {total}")
 
-@Bot.on_message(filters.command("broadcast") & filters.private)
-async def broadcast(client: Bot, message: Message):
+@Client.on_message(filters.command("broadcast") & filters.private)
+async def broadcast(client: Client, message: Message):
     if not await is_admin(message.from_user.id):
         return await message.reply_text("❌ You are not authorized to use this command.")
 
@@ -188,7 +177,7 @@ async def broadcast(client: Bot, message: Message):
         return
 
     pls_wait = await message.reply_text("📢 Broadcasting... Please wait...")
-    from database.database import user_data
+    
     total = await user_data.count_documents({})
     successful, blocked, deleted, unsuccessful = 0, 0, 0, 0
 
@@ -257,13 +246,13 @@ def set_auto_delete(state: bool):
     global AUTO_DELETE_ENABLED
     AUTO_DELETE_ENABLED = state
 
-@Bot.on_message(filters.command("autodeleteon") & filters.user(OWNER_ID))
-async def enable_autodelete(client: Bot, message: Message):
+@Client.on_message(filters.command("autodeleteon") & filters.user(OWNER_ID))
+async def enable_autodelete(client: Client, message: Message):
     set_auto_delete(True)
     await message.reply_text("Auto delete ON")
 
-@Bot.on_message(filters.command("autodeleteoff") & filters.user(OWNER_ID))
-async def disable_autodelete(client: Bot, message: Message):
+@Client.on_message(filters.command("autodeleteoff") & filters.user(OWNER_ID))
+async def disable_autodelete(client: Client, message: Message):
     set_auto_delete(False)
     await message.reply_text("Auto delete OFF")
     
