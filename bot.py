@@ -1,4 +1,3 @@
-# TitanXBots
 import sys
 from datetime import datetime
 from aiohttp import web
@@ -13,20 +12,10 @@ pyrogram.utils.MIN_CHANNEL_ID = -1009999999999
 
 from config import (
     API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN,
-    TG_BOT_WORKERS,
-    FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2,
+    TG_BOT_WORKERS, FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2,
     FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4,
     CHANNEL_ID, PORT
 )
-
-name = """
-████████╗██╗████████╗░█████╗░███╗░░██╗██╗░░██╗██████╗░░█████╗░████████╗░██████╗
-╚══██╔══╝██║╚══██╔══╝██╔══██╗████╗░██║╚██╗██╔╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
-░░░██║░░░██║░░░██║░░░███████║██╔██╗██║░╚███╔╝░██████╦╝██║░░██║░░░██║░░░╚█████╗░
-░░░██║░░░██║░░░██║░░░██╔══██║██║╚████║░██╔██╗░██╔══██╗██║░░██║░░░██║░░░░╚═══██╗
-░░░██║░░░██║░░░██║░░░██║░░██║██║░╚███║██╔╝╚██╗██████╦╝╚█████╔╝░░░██║░░░██████╔╝
-░░░╚═╝░░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝╚═════╝░░╚════╝░░░░╚═╝░░░╚═════╝░
-"""
 
 class Bot(Client):
     def __init__(self):
@@ -36,7 +25,8 @@ class Bot(Client):
             api_id=APP_ID,
             plugins={"root": "plugins"},
             workers=TG_BOT_WORKERS,
-            bot_token=TG_BOT_TOKEN
+            bot_token=TG_BOT_TOKEN,
+            parse_mode=ParseMode.HTML
         )
         self.LOGGER = LOGGER
 
@@ -53,16 +43,13 @@ class Bot(Client):
         self.invitelinks = {}
 
         async def get_invite(channel_id, key_name, label):
-            if not channel_id:
+            if not channel_id or str(channel_id) == "0":
                 self.invitelinks[key_name] = None
                 return
 
             try:
-                # Resolve target chat information
                 chat = await self.get_chat(channel_id)
                 link = chat.invite_link
-                
-                # If there's no pre-existing link, attempt creation
                 if not link:
                     link = await self.export_chat_invite_link(channel_id)
                 
@@ -71,17 +58,15 @@ class Bot(Client):
             except Exception as e:
                 self.LOGGER(__name__).error(
                     f"❌ FORCE SUB CRITICAL: Failed to get/generate link for {label} ({channel_id}). "
-                    f"Ensure the bot is an Admin with 'Invite Users via Link' permission. Error: {e}"
+                    f"Ensure the bot is an Admin. Error: {e}"
                 )
                 self.invitelinks[key_name] = None
 
-        # Fetch invite links asynchronously
         await get_invite(FORCE_SUB_CHANNEL_1, "fs1", "Channel 1")
         await get_invite(FORCE_SUB_CHANNEL_2, "fs2", "Channel 2")
         await get_invite(FORCE_SUB_CHANNEL_3, "fs3", "Channel 3")
         await get_invite(FORCE_SUB_CHANNEL_4, "fs4", "Channel 4")
 
-        # Expose properties to the client wrapper object
         self.invitelink = self.invitelinks.get("fs1")
         self.invitelink2 = self.invitelinks.get("fs2")
         self.invitelink3 = self.invitelinks.get("fs3")
@@ -115,23 +100,13 @@ class Bot(Client):
         # -------------------------------
         # FINAL LOGS
         # -------------------------------
-        self.set_parse_mode(ParseMode.HTML)
-        self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/TitanXBots")
-        
-        # BOTTOM LOGO
-        self.LOGGER(__name__).info(f""" \n\n
-        
-████████╗██╗████████╗░█████╗░███╗░░██╗██╗░░██╗██████╗░░█████╗░████████╗░██████╗
-╚══██╔══╝██║╚══██╔══╝██╔══██╗████╗░██║╚██╗██╔╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
-░░░██║░░░██║░░░██║░░░███████║██╔██╗██║░╚███╔╝░██████╦╝██║░░██║░░░██║░░░╚█████╗░
-░░░██║░░░██║░░░██║░░░██╔══██║██║╚████║░██╔██╗░██╔══██╗██║░░██║░░░██║░░░░╚═══██╗
-░░░██║░░░██║░░░██║░░░██║░░██║██║░╚███║██╔╝╚██╗██████╦╝╚█████╔╝░░░██║░░░██████╔╝
-░░░╚═╝░░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝╚═════╝░░╚════╝░░░░╚═╝░░░╚═════╝░
-                                          """)
-        self.LOGGER(__name__).info("Bot is running...")
+        self.LOGGER(__name__).info("Bot Running..!\nCreated by https://t.me/TitanXBots")
         self.LOGGER(__name__).info(f"Username: @{self.username}")
 
     async def stop(self, *args):
         await super().stop()
         self.LOGGER(__name__).info("Bot stopped.")
-        
+
+if __name__ == "__main__":
+    Bot().run()
+    
