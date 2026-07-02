@@ -1,11 +1,7 @@
 {
   "name": "TG File Store/Sharing Bot",
   "description": "file sharing bot store posts and it can access by special links",
-  "keywords": [
-    "telegram",
-    "file",
-    "sharing"
-  ],
+  "keywords": ["telegram", "file", "sharing"],
   "repository": "https://github.com/TitanXBots/FileStore",
   "logo": "https://envs.sh/SP_.jpg",
   "env": {
@@ -54,13 +50,8 @@
       "value": "0"
     },
     "FORCE_SUB_MESSAGE": {
-      "description": "Optional: Force Sub message of bot, use HTML parsemode format",
+      "description": "Optional: Force Sub message of bot",
       "value": "Hello {first}\n\n<b>You need to join in my Channel/Group to use me\n\nKindly Please join Channel</b>"
-    },
-    "ADMINS": {
-      "description": "A space separated list of user_ids of Admins, they can only create links",
-      "value": "",
-      "required": false
     },
     "PROTECT_CONTENT": {
       "description": "Protect contents from getting forwarded",
@@ -79,7 +70,7 @@
     }
   ],
   "formation": {
-    "worker": {
+    "web": {
       "quantity": 1,
       "size": "free"
     }
