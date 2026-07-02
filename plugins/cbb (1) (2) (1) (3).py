@@ -2,21 +2,15 @@ import asyncio
 from pyrogram import filters, Client
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
-from bot import Bot
 from config import *
 from helper_func import safe_edit, get_input
 from database.database import (
-    is_admin,
-    add_admin,
-    remove_admin,
-    get_admins,
-    ban_user,
-    unban_user,
-    get_banned_users
+    is_admin, add_admin, remove_admin, get_admins,
+    ban_user, unban_user, get_banned_users
 )
 
-@Bot.on_callback_query()
-async def cb_handler(client: Bot, query: CallbackQuery):
+@Client.on_callback_query()
+async def cb_handler(client: Client, query: CallbackQuery):
     await query.answer()
     if not query.message:
         return
@@ -26,7 +20,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     admin_status = await is_admin(user_id)
     first_name = query.from_user.first_name or "User"
 
-    # ---------------- START ----------------
     if data == "start":
         buttons = [
             [
@@ -43,7 +36,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             InlineKeyboardMarkup(buttons)
         )
 
-    # ---------------- HELP ----------------
     elif data == "help":
         return await safe_edit(
             query.message,
@@ -60,7 +52,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # ---------------- COMMANDS ----------------
     elif data == "commands":
         return await safe_edit(
             query.message,
@@ -74,7 +65,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # ---------------- ABOUT ----------------
     elif data == "about":
         return await safe_edit(
             query.message,
@@ -91,7 +81,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # ---------------- DISCLAIMER ----------------
     elif data == "disclaimer":
         return await safe_edit(
             query.message,
@@ -105,7 +94,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # ---------------- SETTINGS ----------------
     elif data == "settings":
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
@@ -122,7 +110,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # ---------------- ADMIN MENU ----------------
     elif data == "admin_menu":
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
@@ -140,7 +127,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # ---------------- ADD ADMIN ----------------
     elif data == "add_admin":
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
@@ -156,7 +142,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await add_admin(uid)
         await query.message.reply(f"✅ User {uid} added as admin")
 
-    # ---------------- REMOVE ADMIN ----------------
     elif data == "remove_admin":
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
@@ -172,7 +157,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await remove_admin(uid)
         await query.message.reply(f"✅ User {uid} removed from admin")
 
-    # ---------------- ADMIN LIST ----------------
     elif data == "admin_list":
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
@@ -192,7 +176,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]])
         )
 
-    # ---------------- BAN MENU ----------------
     elif data == "ban_menu":
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
@@ -210,7 +193,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # ---------------- BAN USER ----------------
     elif data == "ban_user":
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
@@ -229,7 +211,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await ban_user(uid, reason)
         await query.message.reply(f"✅ User {uid} banned")
 
-    # ---------------- UNBAN USER ----------------
     elif data == "unban_user":
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
@@ -242,7 +223,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await unban_user(uid)
         await query.message.reply(f"✅ User {uid} unbanned")
 
-    # ---------------- BANNED LIST ----------------
     elif data == "banned_list":
         if not admin_status:
             return await query.answer("⚠️ Admins only!", show_alert=True)
@@ -262,7 +242,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]])
         )
 
-    # ---------------- CLOSE ----------------
     elif data == "close":
         try:
             await query.message.delete()
