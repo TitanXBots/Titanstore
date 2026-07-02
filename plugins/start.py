@@ -34,31 +34,59 @@ async def start_command(client: Bot, message: Message):
 
     # ---------------- FORCE SUB ----------------
     if not await subscribed(client, message):
-        buttons = []
-        if client.invitelink:
-            buttons.append(InlineKeyboardButton("Join Channel 1", url=client.invitelink))
-        if client.invitelink2:
-            buttons.append(InlineKeyboardButton("Join Channel 2", url=client.invitelink2))
+        keyboard = []
+        row1 = []
+        
+        # Safely fetch invite links (prevents AttributeError if missing)
+        if getattr(client, "invitelink", None):
+            row1.append(InlineKeyboardButton("📢 Join Channel 1", url=client.invitelink))
+        if getattr(client, "invitelink2", None):
+            row1.append(InlineKeyboardButton("📢 Join Channel 2", url=client.invitelink2))
+        if row1:
+            keyboard.append(row1)
         
         row2 = []
-        if client.invitelink3:
-            row2.append(InlineKeyboardButton("Join Channel 3", url=client.invitelink3))
-        if client.invitelink4:
-            row2.append(InlineKeyboardButton("Join Channel 4", url=client.invitelink4))
-            
-        keyboard = [buttons, row2] if row2 else [buttons]
+        if getattr(client, "invitelink3", None):
+            row2.append(InlineKeyboardButton("📢 Join Channel 3", url=client.invitelink3))
+        if getattr(client, "invitelink4", None):
+            row2.append(InlineKeyboardButton("📢 Join Channel 4", url=client.invitelink4))
+        if row2:
+            keyboard.append(row2)
 
-        return await message.reply_photo(
-            photo=FORCE_PIC,
-            caption=FORCE_MSG.format(
-                first=first_name,
-                last=last_name,
-                username=username,
-                mention=message.from_user.mention,
-                id=user_id
-            ),
-            reply_markup=InlineKeyboardMarkup(keyboard)
+        # 🔄 If they clicked a file link, give them a "Try Again" button to resume
+        if len(text.split()) > 1:
+            payload = text.split()[1]
+            keyboard.append([InlineKeyboardButton("🔄 Try Again", url=f"https://t.me/{client.username}?start={payload}")])
+
+        force_msg_text = FORCE_MSG.format(
+            first=first_name,
+            last=last_name,
+            username=username,
+            mention=message.from_user.mention,
+            id=user_id
         )
+
+        # Safely attempt to send photo, fallback to text if FORCE_PIC is invalid/empty
+        try:
+            if getattr(config, "FORCE_PIC", None) or 'FORCE_PIC' in globals() and FORCE_PIC:
+                return await message.reply_photo(
+                    photo=FORCE_PIC,
+                    caption=force_msg_text,
+                    reply_markup=InlineKeyboardMarkup(keyboard)
+                )
+            else:
+                return await message.reply_text(
+                    text=force_msg_text,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    disable_web_page_preview=True
+                )
+        except Exception as e:
+            logging.error(f"Force Sub Image Error: {e}")
+            return await message.reply_text(
+                text=force_msg_text,
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                disable_web_page_preview=True
+            )
 
     # ---------------- BAN CHECK ----------------
     if await is_user_banned(user_id):
