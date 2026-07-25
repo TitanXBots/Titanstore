@@ -25,7 +25,7 @@ async def broadcast_command(client: Client, message: Message):
         try:
             await message.reply_to_message.copy(user_id)
             successful += 1
-            await asyncio.sleep(0.1)  # Stagger to prevent Telegram API limits
+            await asyncio.sleep(0.1)
             
         except FloodWait as e:
             await asyncio.sleep(e.value)
@@ -48,7 +48,6 @@ async def broadcast_command(client: Client, message: Message):
         except Exception:
             unsuccessful += 1
             
-    # The new formatted status message
     status = f"""
 <b>📢 Broadcast Completed</b>
 
@@ -58,6 +57,5 @@ async def broadcast_command(client: Client, message: Message):
 <b>Deleted Accounts:</b> <code>{deleted}</code>
 <b>Unsuccessful:</b> <code>{unsuccessful}</code>
 """
-    
     await b_msg.edit_text(status)
     
