@@ -5,13 +5,11 @@ from database.database import is_admin, get_protect_status, set_protect_status
 
 @Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off)$"))
 async def settings_cb(client: Client, query: CallbackQuery):
-    # 🔒 STRICT LOCK: Admins Only for everything in this file
     if not await is_admin(query.from_user.id): 
         return await query.answer("⚠️ Access Denied: Settings are for Admins only!", show_alert=True)
         
     data = query.data
 
-    # --- Main Settings Menu ---
     if data == "settings":
         return await safe_edit(query.message, "⚙️ Admin Settings Panel", InlineKeyboardMarkup([
             [InlineKeyboardButton("👨‍💻 Admin Menu", callback_data="admin_menu"), InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
@@ -20,7 +18,6 @@ async def settings_cb(client: Client, query: CallbackQuery):
             [InlineKeyboardButton("🔙 Back", callback_data="start")]
         ]))
 
-    # --- Protect Content Menu ---
     elif data == "protect_menu":
         is_on = await get_protect_status()
         status = "ON ✅" if is_on else "OFF ❌"
