@@ -8,7 +8,6 @@ from database.database import is_admin, is_maintenance
 async def generic_cb_handler(client: Client, query: CallbackQuery):
     user_id = query.from_user.id
     
-    # Freeze buttons for normal users during maintenance
     if await is_maintenance(user_id):
         return await query.answer("🛠 Maintenance mode ON. Normal operations are temporarily paused.", show_alert=True)
         
