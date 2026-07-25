@@ -5,7 +5,6 @@ from helper_func import safe_edit, get_input, get_readable_time
 from database.database import is_admin, get_auto_delete_status, set_auto_delete_status, get_auto_delete_time, set_auto_delete_time
 
 def parse_time(time_str: str) -> int:
-    """Converts user input like '1h' or '15m' into total seconds."""
     time_str = time_str.lower().strip()
     if time_str.endswith('h') and time_str[:-1].isdigit(): 
         return int(time_str[:-1]) * 3600
@@ -58,11 +57,9 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
         back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="autodelete_menu")]])
         prompt_text = "<b>SEND ME A TIME IN LIKE THIS - 1h OR 15m\n\n/cancel - CANCEL THIS PROCESS.</b>"
         
-        # 1. Ask the user in chat
         text = await get_input(client, query.message, prompt_text, back_keyboard)
         if not text: return 
         
-        # 2. Convert input to seconds
         time_in_seconds = parse_time(text)
         if time_in_seconds < 10: 
             return await query.message.reply_photo(
@@ -71,10 +68,8 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
                 reply_markup=back_keyboard
             )
             
-        # 3. Save to database
         await set_auto_delete_time(time_in_seconds)
         
-        # 4. Confirm success with Image and Back button
         await query.message.reply_photo(
             photo=START_PIC,
             caption=f"✅ Auto-delete timer successfully set to **{get_readable_time(time_in_seconds)}**.", 
