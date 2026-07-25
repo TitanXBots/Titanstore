@@ -11,7 +11,8 @@ def get_env_int(env_key, default_value):
             return default_value
     return default_value
 
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8879094453:AAF3akfIR6UO9eMxriVnlKq8LbK2a6TkQ3s")
+# SECURITY FIX: Always pull the token from environment variables, never hardcode it!
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "") 
 APP_ID = get_env_int("APP_ID", 12293838)
 API_HASH = os.environ.get("API_HASH", "cf8c7db0d609148786e7ca5c706909bd")
 
@@ -19,7 +20,6 @@ CHANNEL_ID = get_env_int("CHANNEL_ID", -1002096962621)
 LOG_CHANNEL_ID = get_env_int("LOG_CHANNEL_ID", -1002313688533)
 OWNER_ID = get_env_int("OWNER_ID", 5356695781)
 PORT = get_env_int("PORT", 8080)
-FILE_AUTO_DELETE = get_env_int("FILE_AUTO_DELETE", 60)
 
 # Load additional admins from environment variable (comma separated)
 ADMINS_STR = os.environ.get("ADMINS", "")
@@ -46,7 +46,6 @@ START_MSG = os.environ.get("START_MESSAGE", "ʜᴇʟʟᴏ {first}\n\nɪ ᴄᴀɴ
 FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", "ʜᴇʟʟᴏ {first}\n\n<b>ʏᴏᴜ ɴᴇᴇᴅ ᴛᴏ ᴊᴏɪɴ ɪɴ ᴍʏ ᴄʜᴀɴɴᴇʟ/ɢʀᴏᴜᴘ ᴛᴏ ᴜꜱᴇ ᴍᴇ\n\nᴋɪɴᴅʟʏ ᴘʟᴇᴀꜱᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ</b>")
 
 CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", None)
-PROTECT_CONTENT = os.environ.get('PROTECT_CONTENT', "False").lower() == "true"
 
 BOT_STATS_TEXT = "<b>BOT UPTIME</b>\n{uptime}"
 USER_REPLY_TEXT = "👋 ʜᴇʏ ꜰʀɪᴇɴᴅ, 🚫 ᴅᴏɴ'ᴛ ꜱᴇɴᴅ ᴀɴʏ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ ᴍᴇ ᴅɪʀᴇᴄᴛʟʏ ɪ'ᴍ ᴏɴʟʏ ꜰɪʟᴇ ꜱᴛᴏʀᴇ ʙᴏᴛ!"
