@@ -107,8 +107,7 @@ The fastest way to deploy the application is to click the **Deploy to Koyeb** bu
   
 ### Credits
 
-- Thanks To [Yᴀꜱʜ](https://telegram.me/TitanContactBot) For Creating This Amazing Repository
-- Thanks To Dan For His Awesome [Library](https://github.com/pyrogram/pyrogram)
+- ᴛʜᴀɴᴋꜱ ᴛᴏ [Yᴀꜱʜ](https://telegram.me/TitanContactBot) ꜰᴏʀ ᴄʀᴇᴀᴛɪɴɢ ᴛʜɪꜱ ᴀᴍᴀᴢɪɴɢ ʀᴇᴘᴏꜱɪᴛᴏʀʏ.
 - ᴏᴜʀ ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ ᴍᴇᴍʙᴇʀꜱ ᴀɴᴅ ᴀʟʟ ᴛʜᴇ [ᴄᴏɴᴛʀɪʙᴜᴛᴏʀs](https://github.com/TitanXBots) ᴡʜᴏ ʜᴇʟᴩᴇᴅ ɪɴ ᴍᴀᴋɪɴɢ ꜰɪʟᴇꜱᴛᴏʀᴇ ʙᴏᴛ ᴜsᴇꜰᴜʟ & ᴩᴏᴡᴇʀꜰᴜʟ.
 
 ### Licence
