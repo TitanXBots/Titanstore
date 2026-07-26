@@ -107,14 +107,9 @@ The fastest way to deploy the application is to click the **Deploy to Koyeb** bu
   
 ### Credits
 
-- <b>[ᴛɪᴛᴀɴx ʙᴏᴛꜱ](https://t.me/TitanXBots)   ➣   [ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ](https://t.me/TitanMattersSupport) </b>
-- <b>[Yᴀsʜ](https://github.com/TitanXBots)   ➢   [ʙᴀꜱᴇ ᴄᴏᴅᴇ](https://t.me/TitanXBots) </b>
-
 - Thanks To [Yᴀꜱʜ](https://telegram.me/TitanContactBot) For Creating This Amazing Repository
 - Thanks To Dan For His Awesome [Library](https://github.com/pyrogram/pyrogram)
-- ᴏᴜʀ ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ ᴍᴇᴍʙᴇʀꜱ
- 
-<b>ᴀɴᴅ ᴀʟʟ ᴛʜᴇ [ᴄᴏɴᴛʀɪʙᴜᴛᴏʀs](https://github.com/TitanXBots) ᴡʜᴏ ʜᴇʟᴩᴇᴅ ɪɴ ᴍᴀᴋɪɴɢ ꜰɪʟᴇꜱᴛᴏʀᴇ ʙᴏᴛ ᴜsᴇꜰᴜʟ & ᴩᴏᴡᴇʀꜰᴜʟ </b>
+- ᴏᴜʀ ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ ᴍᴇᴍʙᴇʀꜱ ᴀɴᴅ ᴀʟʟ ᴛʜᴇ [ᴄᴏɴᴛʀɪʙᴜᴛᴏʀs](https://github.com/TitanXBots) ᴡʜᴏ ʜᴇʟᴩᴇᴅ ɪɴ ᴍᴀᴋɪɴɢ ꜰɪʟᴇꜱᴛᴏʀᴇ ʙᴏᴛ ᴜsᴇꜰᴜʟ & ᴩᴏᴡᴇʀꜰᴜʟ.
 
 ### Licence
 [![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl-3.0.en.html)  
