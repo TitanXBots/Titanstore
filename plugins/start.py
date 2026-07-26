@@ -25,23 +25,18 @@ async def start_command(client: Client, message: Message):
     first_name = message.from_user.first_name or "User"
     username = message.from_user.username or ""
 
-
-        # Force Subscription Check
+    # Force Subscription Check (Now with 2-column grid layout)
     if not await subscribed(client, message):
         buttons = []
         row = []
         for i, key in enumerate(["fs1", "fs2", "fs3", "fs4"], start=1):
             link = client.invitelinks.get(key)
             if link:
-                # Add the button to our temporary row
                 row.append(InlineKeyboardButton(f"Join Channel {i}", url=link))
-                
-                # Once the row has 2 buttons, push it to the main layout and start a new row
                 if len(row) == 2:
                     buttons.append(row)
                     row = []
-                    
-        # If there's an odd number of links (e.g., only 3 channels active), add the leftover button centered at the bottom
+        # Append any leftover buttons if you have an odd number of channels
         if row:
             buttons.append(row)
             
@@ -50,7 +45,7 @@ async def start_command(client: Client, message: Message):
             caption=FORCE_MSG.format(first=first_name), 
             reply_markup=InlineKeyboardMarkup(buttons)
         )
-        
+
     # Ban Check
     if await is_user_banned(user_id):
         return await message.reply_text(f"🚫 You are banned.\nReason: {await get_ban_reason(user_id)}")
