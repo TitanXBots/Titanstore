@@ -13,11 +13,11 @@
 [ᴏᴡɴᴇʀ] You Can Contact Me Here
 
 <p align="center">
-<a href="https://telegram.me/TitanContactBot"><img alt="replit" src="https://img.shields.io/badge/-Telegram-blue?style=for-the-badge&logo=telegram&logoColor=white"/></a>
-
-  <a href="https://t.me/TitanXBots">
+  <a href="https://t.me/TitanContactBot">
     <img src="https://img.shields.io/badge/Contact_Owner-Telegram-4CAF50?style=for-the-badge&logo=telegram&logoColor=white" />
   </a>
+  </p>
+  
   
 Telegram Bot to store Posts and Documents and it can Access by Special Links.
 I Guess This Will Be Usefull For Many People.....😇. 
