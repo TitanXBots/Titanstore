@@ -69,7 +69,7 @@ The fastest way to deploy the application is to click the **Deploy to Koyeb** bu
 
 /stats - checking your bot uptime
 
-/maintenance on - Bot maintenance Mode
+/Maintenance on - Bot maintenance Mode
 
 /Maintenance off - Bot Maintenance Mode
 ```
