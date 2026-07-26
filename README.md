@@ -8,6 +8,10 @@
 ![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=𝑾𝒆𝒍𝒄𝒐𝒎𝒆+𝑻𝒐+𝑻𝒊𝒕𝒂𝒏-𝑭𝒊𝒍𝒆𝑺𝒕𝒐𝒓𝒆!;𝑪𝒓𝒆𝒂𝒕𝒆𝒅+𝑩𝒚+𝒀𝒂𝒔𝒉!;𝑨+𝑺𝒊𝒎𝒑𝒍𝒆+𝒂𝒏𝒅+𝑷𝒐𝒘𝒆𝒓𝒇𝒖𝒍+𝑭𝒊𝒍𝒆𝑺𝒕𝒐𝒓𝒆𝑩𝒐𝒕!;𝑨+𝑩𝒐𝒕+𝑾𝒊𝒕𝒉+𝑭𝒐𝒖𝒓+𝑭𝒐𝒓𝒄𝒆𝑺𝒖𝒃+𝑪𝒉𝒂𝒏𝒏𝒆𝒍𝒔!)
 </p>
 
+<p align="center">
+  <a href="http://t.me/TitanXStoreBot"><img src="https://img.shields.io/badge/Try%20Bot-@LinkShareBot-blue?style=for-the-badge&logo=telegram"/></a>
+</p>
+
 ### Contact Me
 
 [ᴏᴡɴᴇʀ] You Can Contact Me Here
