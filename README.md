@@ -84,22 +84,6 @@ The fastest way to deploy the application is to click the **Deploy to Koyeb** bu
 * `FORCE_SUB_CHANNEL` Optional: ForceSub Channel ID, leave 0 if you want disable force sub
 * `PROTECT_CONTENT` Optional: True if you need to prevent files from forwarding
 
-### Support   
-Join Our [Telegram Group](https://www.telegram.dog/TitanMattersSupport) For Support/Assistance And Our [Channel](https://www.telegram.dog/TitanXBots) For Updates.   
-   
-Report Bugs,Give Feature Requests There... 
-
-### Credits
-
-- <b>[ᴛɪᴛᴀɴx ʙᴏᴛꜱ](https://t.me/TitanXBots)   ➣   [ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ](https://t.me/TitanMattersSupport) </b>
-- <b>[Yᴀsʜ](https://github.com/TitanXBots)   ➢   [ʙᴀꜱᴇ ᴄᴏᴅᴇ](https://t.me/TitanXBots) </b>
-
-- Thanks To [Yᴀꜱʜ](https://telegram.me/TitanContactBot) For Creating This Amazing Repository
-- Thanks To Dan For His Awesome [Library](https://github.com/pyrogram/pyrogram)
-- Our Support Group Members 
- 
-<b>ᴀɴᴅ ᴀʟʟ ᴛʜᴇ [ᴄᴏɴᴛʀɪʙᴜᴛᴏʀs](https://github.com/TitanXBots) ᴡʜᴏ ʜᴇʟᴩᴇᴅ ɪɴ ᴍᴀᴋɪɴɢ ꜰɪʟᴇꜱᴛᴏʀᴇ ʙᴏᴛ ᴜsᴇꜰᴜʟ & ᴩᴏᴡᴇʀꜰᴜʟ </b>
-
 
 ### Community & Support
 
@@ -116,17 +100,20 @@ Report Bugs,Give Feature Requests There...
   <a href="mailto:proyato.com">
     <img src="https://img.shields.io/badge/Contact-Email-0078D4?style=for-the-badge&logo=gmail&logoColor=white" />
   </a>
+  <a href="https://www.youtube.com/@TitanTechMatters"><img alt="replit" src="https://img.shields.io/badge/-youtube-red?style=for-the-badge&logo=youtube&logoColor=white"/>
+  </a>
 </p>
+  
+### Credits
 
-## 
+- <b>[ᴛɪᴛᴀɴx ʙᴏᴛꜱ](https://t.me/TitanXBots)   ➣   [ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ](https://t.me/TitanMattersSupport) </b>
+- <b>[Yᴀsʜ](https://github.com/TitanXBots)   ➢   [ʙᴀꜱᴇ ᴄᴏᴅᴇ](https://t.me/TitanXBots) </b>
 
-### Follow Me On
-
-</p>
-<p align="center">
-<a href="https://telegram.me/TitanXBots"><img alt="replit" src="https://img.shields.io/badge/-Telegram-blue?style=for-the-badge&logo=telegram&logoColor=white"/></a>
-<a href="https://www.youtube.com/@TitanTechMatters"><img alt="replit" src="https://img.shields.io/badge/-youtube-red?style=for-the-badge&logo=youtube&logoColor=white"/></a>
-</p>
+- Thanks To [Yᴀꜱʜ](https://telegram.me/TitanContactBot) For Creating This Amazing Repository
+- Thanks To Dan For His Awesome [Library](https://github.com/pyrogram/pyrogram)
+- Our Support Group Members 
+ 
+<b>ᴀɴᴅ ᴀʟʟ ᴛʜᴇ [ᴄᴏɴᴛʀɪʙᴜᴛᴏʀs](https://github.com/TitanXBots) ᴡʜᴏ ʜᴇʟᴩᴇᴅ ɪɴ ᴍᴀᴋɪɴɢ ꜰɪʟᴇꜱᴛᴏʀᴇ ʙᴏᴛ ᴜsᴇꜰᴜʟ & ᴩᴏᴡᴇʀꜰᴜʟ </b>
 
 ### Licence
 [![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl-3.0.en.html)  
