@@ -28,6 +28,7 @@ I Guess This Will Be Usefull For Many People.....😇.
 - Start Pic, Force Pic
 - More than one Posts in One Link.
 - 4 ForceSub Channels.
+- Premium Membership 
 
 ### Setup
 
