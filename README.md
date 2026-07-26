@@ -59,6 +59,10 @@ The fastest way to deploy the application is to click the **Deploy to Koyeb** bu
 /broadcast - broadcast any messages to bot users
 
 /stats - checking your bot uptime
+
+/maintenance on - Bot maintenance Mode
+
+/Maintenance off - Bot Maintenance Mode
 ```
 
 ### Variables
