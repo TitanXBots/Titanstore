@@ -42,7 +42,7 @@ I Guess This Will Be Usefull For Many People.....😇.
 ##
 ### Installation
 #### Deploy on Heroku
-**Before You Deploy On Heroku, You Should Fork The Repo And Make changes in {procfile - (web to worker)} . In app.json {Size - (free to eco)}.**<br>
+**Before You Deploy On Heroku, You Should Fork The Repo And Make changes in {procfile - (web to worker)} . In app.json {Size - (free to eco)}.**
 <a href="http://dashboard.heroku.com/new?template=https://github.com/codeflix-bots/LinkShareBot"><img src="https://img.shields.io/badge/Deploy%20to-Heroku-purple?style=for-the-badge&logo=heroku"/></a> 
 
 
