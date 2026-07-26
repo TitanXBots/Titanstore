@@ -4,9 +4,6 @@
 <h1 align="center">
   𝑻𝑰𝑻𝑨𝑵-𝑭𝑰𝑳𝑬𝑺𝑻𝑶𝑹𝑬
 </h1>
-  <a href="https://t.me/proyato">
-    <img src="https://img.shields.io/badge/Contact_Owner-Telegram-4CAF50?style=for-the-badge&logo=telegram&logoColor=white" />
-  </a>
 
 ![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=𝑾𝒆𝒍𝒄𝒐𝒎𝒆+𝑻𝒐+𝑻𝒊𝒕𝒂𝒏-𝑭𝒊𝒍𝒆𝑺𝒕𝒐𝒓𝒆!;𝑪𝒓𝒆𝒂𝒕𝒆𝒅+𝑩𝒚+𝒀𝒂𝒔𝒉!;𝑨+𝑺𝒊𝒎𝒑𝒍𝒆+𝒂𝒏𝒅+𝑷𝒐𝒘𝒆𝒓𝒇𝒖𝒍+𝑭𝒊𝒍𝒆𝑺𝒕𝒐𝒓𝒆𝑩𝒐𝒕!;𝑨+𝑩𝒐𝒕+𝑾𝒊𝒕𝒉+𝑭𝒐𝒖𝒓+𝑭𝒐𝒓𝒄𝒆𝑺𝒖𝒃+𝑪𝒉𝒂𝒏𝒏𝒆𝒍𝒔!)
 </p>
@@ -18,6 +15,10 @@
 <p align="center">
 <a href="https://telegram.me/TitanContactBot"><img alt="replit" src="https://img.shields.io/badge/-Telegram-blue?style=for-the-badge&logo=telegram&logoColor=white"/></a>
 
+  <a href="https://t.me/TitanXBots">
+    <img src="https://img.shields.io/badge/Contact_Owner-Telegram-4CAF50?style=for-the-badge&logo=telegram&logoColor=white" />
+  </a>
+  
 Telegram Bot to store Posts and Documents and it can Access by Special Links.
 I Guess This Will Be Usefull For Many People.....😇. 
 
