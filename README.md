@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="http://t.me/TitanXStoreBot"><img src="https://img.shields.io/badge/Try%20Bot-@LinkShareBot-blue?style=for-the-badge&logo=telegram"/></a>
+  <a href="http://t.me/TitanXStoreBot"><img src="https://img.shields.io/badge/Try%20Bot-FileShareBot-blue?style=for-the-badge&logo=telegram"/></a>
 </p>
 
 ### Contact Me
