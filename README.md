@@ -101,7 +101,7 @@ Report Bugs,Give Feature Requests There...
 <b>ᴀɴᴅ ᴀʟʟ ᴛʜᴇ [ᴄᴏɴᴛʀɪʙᴜᴛᴏʀs](https://github.com/TitanXBots) ᴡʜᴏ ʜᴇʟᴩᴇᴅ ɪɴ ᴍᴀᴋɪɴɢ ꜰɪʟᴇꜱᴛᴏʀᴇ ʙᴏᴛ ᴜsᴇꜰᴜʟ & ᴩᴏᴡᴇʀꜰᴜʟ </b>
 
 
-## 💬 Community & Support
+### Community & Support
 
 <p align="center">
   <a href="https://t.me/codeflixsupport">
