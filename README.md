@@ -101,7 +101,7 @@ The fastest way to deploy the application is to click the **Deploy to Koyeb** bu
   <a href="https://t.me/TitanXBots">
     <img src="https://img.shields.io/badge/Contact-Email-0078D4?style=for-the-badge&logo=gmail&logoColor=white" />
   </a>
-  <a href="https://www.youtube.com/@TitanTechMatters"><img alt="replit" src="https://img.shields.io/badge/-youtube-red?style=for-the-badge&logo=youtube&logoColor=white"/>
+  <a href="https://www.youtube.com/@TitanTechMatters"><img alt="replit" src="https://img.shields.io/badge/YouTube_Channel-youtube-red?style=for-the-badge&logo=youtube&logoColor=white"/>
   </a>
 </p>
   
