@@ -1,4 +1,4 @@
-From pyrogram import Client, filters
+from pyrogram import Client, filters
 from pyrogram.types import Message
 from database.database import maintenance_collection, is_admin
 
