@@ -7,10 +7,10 @@ from database.database import is_admin, get_all_users
 @Client.on_message(filters.command("broadcast") & filters.private)
 async def broadcast_command(client: Client, message: Message):
     if not await is_admin(message.from_user.id):
-        return await message.reply_text("⚠️ Access Denied: Admins only!")
+        return await message.reply_text("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!")
         
     if not message.reply_to_message:
-        return await message.reply_text("Please reply to a message to broadcast it.")
+        return await message.reply_text("ᴘʟᴇᴀꜱᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ ʙʀᴏᴀᴅᴄᴀꜱᴛ ɪᴛ.")
         
     users = await get_all_users()
     b_msg = await message.reply_text(f"📡 Broadcasting message to {len(users)} users. Please wait...")
