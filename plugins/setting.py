@@ -9,40 +9,51 @@ async def settings_cb(client: Client, query: CallbackQuery):
         return await query.answer("⚠️ Access Denied: Settings are for Admins only!", show_alert=True)
         
     data = query.data
+    
+    protect_keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✅ Enable", callback_data="protect_on"), 
+            InlineKeyboardButton("❌ Disable", callback_data="protect_off")
+        ],
+        [
+            InlineKeyboardButton("🔙 Back", callback_data="settings")
+        ]
+    ])
 
     if data == "settings":
         return await safe_edit(query.message, "⚙️ Admin Settings Panel", InlineKeyboardMarkup([
-            [InlineKeyboardButton("👨‍💻 Admin Menu", callback_data="admin_menu"), InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")],
-            [InlineKeyboardButton("💎 Premium Menu", callback_data="premium_menu"), InlineKeyboardButton("🗑 Auto Delete", callback_data="autodelete_menu")],
-            [InlineKeyboardButton("🔒 Protect Content", callback_data="protect_menu")],
-            [InlineKeyboardButton("🔙 Back", callback_data="start")]
+            [
+                InlineKeyboardButton("👨‍💻 Admin Menu", callback_data="admin_menu"), 
+                InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")
+            ],
+            [
+                InlineKeyboardButton("💎 Premium Menu", callback_data="premium_menu"), 
+                InlineKeyboardButton("🗑 Auto Delete", callback_data="autodelete_menu")
+            ],
+            [
+                InlineKeyboardButton("🔒 Protect Content", callback_data="protect_menu")
+            ],
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="start")
+            ]
         ]))
 
     elif data == "protect_menu":
         is_on = await get_protect_status()
         status = "ON ✅" if is_on else "OFF ❌"
-        return await safe_edit(query.message, f"🔒 **Protect Content Management**\n\nPrevents users from forwarding, saving, or copying files.\n\nCurrent Status: **{status}**", InlineKeyboardMarkup([
-            [InlineKeyboardButton("✅ Enable", callback_data="protect_on"), InlineKeyboardButton("❌ Disable", callback_data="protect_off")],
-            [InlineKeyboardButton("🔙 Back", callback_data="settings")]
-        ]))
+        return await safe_edit(query.message, f"🔒 **Protect Content Management**\n\nPrevents users from forwarding, saving, or copying files.\n\nCurrent Status: **{status}**", protect_keyboard)
 
     elif data == "protect_on":
         if await get_protect_status():
             return await query.answer("⚠️ Protect Content is already ON!", show_alert=True)
         await set_protect_status(True)
         await query.answer("✅ Protect Content Enabled!", show_alert=True)
-        return await safe_edit(query.message, "🔒 **Protect Content Management**\n\nPrevents users from forwarding, saving, or copying files.\n\nCurrent Status: **ON ✅**", InlineKeyboardMarkup([
-            [InlineKeyboardButton("✅ Enable", callback_data="protect_on"), InlineKeyboardButton("❌ Disable", callback_data="protect_off")],
-            [InlineKeyboardButton("🔙 Back", callback_data="settings")]
-        ]))
+        return await safe_edit(query.message, "🔒 **Protect Content Management**\n\nPrevents users from forwarding, saving, or copying files.\n\nCurrent Status: **ON ✅**", protect_keyboard)
 
     elif data == "protect_off":
         if not await get_protect_status():
             return await query.answer("⚠️ Protect Content is already OFF!", show_alert=True)
         await set_protect_status(False)
         await query.answer("❌ Protect Content Disabled!", show_alert=True)
-        return await safe_edit(query.message, "🔒 **Protect Content Management**\n\nPrevents users from forwarding, saving, or copying files.\n\nCurrent Status: **OFF ❌**", InlineKeyboardMarkup([
-            [InlineKeyboardButton("✅ Enable", callback_data="protect_on"), InlineKeyboardButton("❌ Disable", callback_data="protect_off")],
-            [InlineKeyboardButton("🔙 Back", callback_data="settings")]
-        ]))
+        return await safe_edit(query.message, "🔒 **Protect Content Management**\n\nPrevents users from forwarding, saving, or copying files.\n\nCurrent Status: **OFF ❌**", protect_keyboard)
         
