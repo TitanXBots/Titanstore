@@ -50,12 +50,22 @@ async def start_command(client: Client, message: Message):
     if await is_user_banned(user_id):
         return await message.reply_text(f"🚫 You are banned.\nReason: {await get_ban_reason(user_id)}")
 
-    # New User Registration
+    # New User Registration with Custom Log Format
     if not await is_user_present(user_id):
         await add_user(user_id, first_name, username)
+        
+        NEW_USER_TXT = """#New_User {}
+
+≈ ɪᴅ:- <code>{}</code>
+≈ ɴᴀᴍᴇ:- {}"""
+        
         try: 
-            await client.send_message(LOG_CHANNEL_ID, f"#New_User\nID: <code>{user_id}</code>\nName: {first_name}")
-        except: pass
+            await client.send_message(
+                LOG_CHANNEL_ID, 
+                NEW_USER_TXT.format(message.from_user.mention, user_id, first_name)
+            )
+        except: 
+            pass
 
     # Maintenance Check
     if await is_maintenance(user_id):
