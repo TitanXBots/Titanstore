@@ -49,13 +49,13 @@ async def broadcast_command(client: Client, message: Message):
             unsuccessful += 1
             
     status = f"""
-<b>📢 𝙱𝚁𝙾𝙰𝙳𝙲𝙰𝚂𝚃 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴𝙳</b>
+<b>📢 ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</b>
 
-<b>𝚃𝙾𝚃𝙰𝙻 𝚄𝚂𝙴𝚁𝚂:</b> <code>{total}</code>
-<b>𝚂𝚄𝙲𝙲𝙴𝚂𝚂𝙵𝚄𝙻:</b> <code>{successful}</code>
-<b>𝙱𝙻𝙾𝙲𝙺𝙴𝙳 𝚄𝚂𝙴𝚁𝚂:</b> <code>{blocked}</code>
-<b>𝙳𝙴𝙻𝙴𝚃𝙴𝙳 𝙰𝙲𝙲𝙾𝚄𝙽𝚃𝚂:</b> <code>{deleted}</code>
-<b>𝚄𝙽𝚂𝚄𝙲𝙲𝙴𝚂𝚂𝙵𝚄𝙻:</b> <code>{unsuccessful}</code>
+<b>ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ:</b> <code>{total}</code>
+<b>ꜱᴜᴄᴄᴇꜱꜰᴜʟ:</b> <code>{successful}</code>
+<b>ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ:</b> <code>{blocked}</code>
+<b>ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ:</b> <code>{deleted}</code>
+<b>ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ:</b> <code>{unsuccessful}</code>
 """
     # Edit the message to show the final status
     await b_msg.edit_text(status)
