@@ -13,7 +13,7 @@ async def broadcast_command(client: Client, message: Message):
         return await message.reply_text("ᴘʟᴇᴀꜱᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ ʙʀᴏᴀᴅᴄᴀꜱᴛ ɪᴛ.")
         
     users = await get_all_users()
-    b_msg = await message.reply_text(f"📡 Broadcasting message to {len(users)} users. Please wait...")
+    b_msg = await message.reply_text(f"📡 ʙʀᴏᴀᴅᴄᴀꜱᴛɪɴɢ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ {len(users)} ᴜꜱᴇʀꜱ. ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ...")
     
     total = len(users)
     successful = 0
@@ -49,13 +49,13 @@ async def broadcast_command(client: Client, message: Message):
             unsuccessful += 1
             
     status = f"""
-<b>📢 Broadcast Completed</b>
+<b>📢 𝙱𝚁𝙾𝙰𝙳𝙲𝙰𝚂𝚃 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴𝙳</b>
 
-<b>Total Users:</b> <code>{total}</code>
-<b>Successful:</b> <code>{successful}</code>
-<b>Blocked Users:</b> <code>{blocked}</code>
-<b>Deleted Accounts:</b> <code>{deleted}</code>
-<b>Unsuccessful:</b> <code>{unsuccessful}</code>
+<b>𝚃𝙾𝚃𝙰𝙻 𝚄𝚂𝙴𝚁𝚂:</b> <code>{total}</code>
+<b>𝚂𝚄𝙲𝙲𝙴𝚂𝚂𝙵𝚄𝙻:</b> <code>{successful}</code>
+<b>𝙱𝙻𝙾𝙲𝙺𝙴𝙳 𝚄𝚂𝙴𝚁𝚂:</b> <code>{blocked}</code>
+<b>𝙳𝙴𝙻𝙴𝚃𝙴𝙳 𝙰𝙲𝙲𝙾𝚄𝙽𝚃𝚂:</b> <code>{deleted}</code>
+<b>𝚄𝙽𝚂𝚄𝙲𝙲𝙴𝚂𝚂𝙵𝚄𝙻:</b> <code>{unsuccessful}</code>
 """
     await b_msg.edit_text(status)
     
