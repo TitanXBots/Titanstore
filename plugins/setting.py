@@ -1,4 +1,4 @@
-from pyrogram import Client, filters
+From pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from helper_func import safe_edit
 from database.database import is_admin, get_protect_status, set_protect_status
