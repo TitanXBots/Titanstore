@@ -1,4 +1,4 @@
-import base64
+Import base64
 import re
 import asyncio
 from pyrogram.enums import ChatMemberStatus
@@ -110,4 +110,3 @@ def get_readable_time(seconds: int) -> str:
     if minutes: res.append(f"{minutes}m")
     if seconds or not res: res.append(f"{seconds}s")
     return " ".join(res)
-    
