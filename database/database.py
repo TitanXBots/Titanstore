@@ -1,4 +1,4 @@
-Import motor.motor_asyncio
+import motor.motor_asyncio
 from datetime import datetime, timedelta, timezone
 from config import DB_URI, DB_NAME, OWNER_ID, ADMINS
 
