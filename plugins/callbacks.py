@@ -1,5 +1,4 @@
-import asyncio
-from pyrogram import Client, filters
+From pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from config import START_MSG, HELP_TXT, COMMANDS_TXT, ABOUT_TXT, DISCLAIMER_TXT, OWNER_ID
 from helper_func import safe_edit
