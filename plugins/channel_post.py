@@ -35,11 +35,7 @@ async def private_message_handler(client: Client, message: Message):
         link = f"https://t.me/{client.username}?start={base64_string}"
 
         share_url = urllib.parse.quote(link)
-        keyboard = InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🔁 Share URL", url=f"https://telegram.me/share/url?url={share_url}")
-            ]
-        ])
+        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f"https://telegram.me/share/url?url={share_url}")]])
         await reply_text.edit_text(f"<b>Here is your link</b>\n\n{link}", reply_markup=keyboard, disable_web_page_preview=True)
         try: await post_message.edit_reply_markup(keyboard)
         except: pass
@@ -55,11 +51,7 @@ async def new_post(client: Client, message: Message):
     link = f"https://t.me/{client.username}?start={base64_string}"
 
     share_url = urllib.parse.quote(link)
-    keyboard = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("🔁 Share URL", url=f"https://telegram.me/share/url?url={share_url}")
-        ]
-    ])
+    keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f"https://telegram.me/share/url?url={share_url}")]])
     try: await message.edit_reply_markup(keyboard)
     except: pass
         
