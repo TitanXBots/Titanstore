@@ -25,20 +25,18 @@ async def start_command(client: Client, message: Message):
     first_name = message.from_user.first_name or "User"
     username = message.from_user.username or ""
 
-    # Force Subscription Check (Now with 2-column grid layout)
+    # Force Subscription Check using exactly the requested 2x2 grid structure
     if not await subscribed(client, message):
-        buttons = []
-        row = []
-        for i, key in enumerate(["fs1", "fs2", "fs3", "fs4"], start=1):
-            link = client.invitelinks.get(key)
-            if link:
-                row.append(InlineKeyboardButton(f"Join Channel {i}", url=link))
-                if len(row) == 2:
-                    buttons.append(row)
-                    row = []
-        # Append any leftover buttons if you have an odd number of channels
-        if row:
-            buttons.append(row)
+        buttons = [
+            [
+                InlineKeyboardButton("Join Channel", url=client.invitelink),
+                InlineKeyboardButton("Join Channel", url=client.invitelink2)
+            ],
+            [
+                InlineKeyboardButton("Join Channel", url=client.invitelink3),
+                InlineKeyboardButton("Join Channel", url=client.invitelink4)
+            ]
+        ]
             
         return await message.reply_photo(
             photo=FORCE_PIC, 
@@ -122,10 +120,17 @@ async def start_command(client: Client, message: Message):
         return
 
     # Standard Start Menu
-    btn = [[InlineKeyboardButton("🧠 HELP", callback_data="help"), InlineKeyboardButton("🔰 ABOUT", callback_data="about")]]
+    btn = [
+        [
+            InlineKeyboardButton("🧠 HELP", callback_data="help"), 
+            InlineKeyboardButton("🔰 ABOUT", callback_data="about")
+        ]
+    ]
     
     if await is_admin(user_id): 
-        btn.append([InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")])
+        btn.append([
+            InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")
+        ])
         
     await message.reply_photo(photo=START_PIC, caption=START_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(btn))
 
@@ -140,7 +145,11 @@ async def delete_files(messages, client, main_message, payload, timer):
     try: 
         await main_message.edit_text(
             text="✅ <b>Your File Has Been Deleted.</b>\n👇 Click below to get it again.", 
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("♻️ Get File Again", url=f"https://t.me/{client.username}?start={payload}")]])
+            reply_markup=InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("♻️ Get File Again", url=f"https://t.me/{client.username}?start={payload}")
+                ]
+            ])
         )
     except Exception: 
         pass
