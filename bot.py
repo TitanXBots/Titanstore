@@ -90,12 +90,6 @@ class Bot(Client):
         await get_invite(FORCE_SUB_CHANNEL_3, "fs3", "Channel 3")
         await get_invite(FORCE_SUB_CHANNEL_4, "fs4", "Channel 4")
 
-        # Set specific variables for the 2x2 grid layout in start.py
-        self.invitelink = self.invitelinks.get("fs1") or "https://t.me/"
-        self.invitelink2 = self.invitelinks.get("fs2") or "https://t.me/"
-        self.invitelink3 = self.invitelinks.get("fs3") or "https://t.me/"
-        self.invitelink4 = self.invitelinks.get("fs4") or "https://t.me/"
-
         try:
             db_channel = await self.get_chat(CHANNEL_ID)
             self.db_channel = db_channel
