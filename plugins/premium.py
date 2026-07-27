@@ -1,4 +1,4 @@
-from pyrogram import Client, filters
+From pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from config import START_PIC
 from helper_func import safe_edit, get_input
