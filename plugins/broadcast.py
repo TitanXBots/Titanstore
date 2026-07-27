@@ -57,5 +57,13 @@ async def broadcast_command(client: Client, message: Message):
 <b>𝙳𝙴𝙻𝙴𝚃𝙴𝙳 𝙰𝙲𝙲𝙾𝚄𝙽𝚃𝚂:</b> <code>{deleted}</code>
 <b>𝚄𝙽𝚂𝚄𝙲𝙲𝙴𝚂𝚂𝙵𝚄𝙻:</b> <code>{unsuccessful}</code>
 """
+    # Edit the message to show the final status
     await b_msg.edit_text(status)
     
+    # Wait for 30 seconds, then delete the status message to avoid chat clutter
+    await asyncio.sleep(30)
+    try:
+        await b_msg.delete()
+    except Exception:
+        pass
+        
