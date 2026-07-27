@@ -13,13 +13,24 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
 
     if data == "admin_menu":
         return await safe_edit(query.message, "👨‍💻 Admin Management", InlineKeyboardMarkup([
-            [InlineKeyboardButton("➕ Add Admin", callback_data="admin_add"), InlineKeyboardButton("➖ Remove Admin", callback_data="admin_remove")],
-            [InlineKeyboardButton("📋 Admin List", callback_data="admin_list")],
-            [InlineKeyboardButton("🔙 Back", callback_data="settings")]
+            [
+                InlineKeyboardButton("➕ Add Admin", callback_data="admin_add"), 
+                InlineKeyboardButton("➖ Remove Admin", callback_data="admin_remove")
+            ],
+            [
+                InlineKeyboardButton("📋 Admin List", callback_data="admin_list")
+            ],
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="settings")
+            ]
         ]))
 
     elif data == "admin_add":
-        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]])
+        keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="admin_menu")
+            ]
+        ])
         text = await get_input(client, query.message, "Send user_id to add as admin", keyboard)
         if not text: return 
         if not text.isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ Invalid ID", reply_markup=keyboard)
@@ -29,7 +40,11 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
         await query.message.reply_photo(photo=START_PIC, caption=f"✅ User {uid} added as admin", reply_markup=keyboard)
 
     elif data == "admin_remove":
-        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]])
+        keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="admin_menu")
+            ]
+        ])
         text = await get_input(client, query.message, "Send user_id to remove from admin", keyboard)
         if not text: return 
         if not text.isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ Invalid ID", reply_markup=keyboard)
@@ -40,7 +55,12 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
 
     elif data == "admin_list":
         admins = await get_admins()
-        if not admins: return await safe_edit(query.message, "No admins found.", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]]))
+        keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="admin_menu")
+            ]
+        ])
+        if not admins: return await safe_edit(query.message, "No admins found.", keyboard)
         text = "\n".join([f"• {a}" for a in admins[:100]])
-        return await safe_edit(query.message, f"👨‍💻 Admin List:\n\n{text}", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]]))
+        return await safe_edit(query.message, f"👨‍💻 Admin List:\n\n{text}", keyboard)
         
