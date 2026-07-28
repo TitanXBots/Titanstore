@@ -35,8 +35,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("❌ Disable", callback_data="protect_off")
             ],
             [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
+                InlineKeyboardButton("🔙 Back", callback_data="settings")
             ]
         ]))
 
@@ -51,8 +50,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("❌ Disable", callback_data="protect_off")
             ], 
             [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
+                InlineKeyboardButton("🔙 Back", callback_data="settings")
             ]
         ]))
 
@@ -67,8 +65,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("❌ Disable", callback_data="protect_off")
             ], 
             [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
+                InlineKeyboardButton("🔙 Back", callback_data="settings")
             ]
         ]))
         
