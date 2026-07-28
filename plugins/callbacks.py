@@ -9,7 +9,7 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
     user_id = query.from_user.id
     
     if await is_maintenance(user_id):
-        return await query.answer("🛠 Maintenance mode ON. Normal operations are temporarily paused.", show_alert=True)
+        return await query.answer("🛠 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴇɴᴀʙʟᴇᴅ. ɴᴏɴ ᴀᴅᴍɪɴꜱ ᴄᴀɴɴᴏᴛ ᴜꜱᴇ ᴛʜᴇ ʙᴏᴛ ᴀᴛ ᴛʜɪꜱ ᴛɪᴍᴇ.", show_alert=True)
         
     await query.answer()
     data = query.data
