@@ -7,28 +7,28 @@ from database.database import is_admin, add_premium, remove_premium, premium_col
 @Client.on_callback_query(filters.regex(r"^premium_"))
 async def premium_callbacks(client: Client, query: CallbackQuery):
     if not await is_admin(query.from_user.id): 
-        return await query.answer("⚠️ Access Denied: Premium Menu is restricted!", show_alert=True)
+        return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ ɪꜱ ʀᴇꜱᴛʀɪᴄᴛᴇᴅ!", show_alert=True)
         
     data = query.data
 
     if data == "premium_menu":
-        return await safe_edit(query.message, "💎 Premium Management\n\nPremium users can generate file links.", InlineKeyboardMarkup([
+        return await safe_edit(query.message, "💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ\n\nᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ ᴄᴀɴ ɢᴇɴᴇʀᴀᴛᴇ ʟɪɴᴋꜱ.", InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("➕ Add Premium", callback_data="premium_add"),
-                InlineKeyboardButton("➖ Remove Premium", callback_data="premium_remove")
+                InlineKeyboardButton("➕ ᴀᴅᴅ ᴘʀᴇᴍɪᴜᴍ", callback_data="premium_add"),
+                InlineKeyboardButton("➖ ʀᴇᴍᴏᴠᴇ ᴘʀᴇᴍɪᴜᴍ", callback_data="premium_remove")
             ],
             [
-                InlineKeyboardButton("📋 Premium List", callback_data="premium_list")
+                InlineKeyboardButton("📋 ᴘʀᴇᴍɪᴜᴍ ʟɪꜱᴛ", callback_data="premium_list")
             ],
             [
-                InlineKeyboardButton("🔙 Back", callback_data="settings")
+                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
             ]
         ]))
 
     elif data == "premium_add":
         keyboard = InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🔙 Back", callback_data="premium_menu")
+                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
             ]
         ])
         text = await get_input(client, query.message, "Send user_id and number of days (Space separated). Example: `123456789 30`", keyboard)
@@ -42,7 +42,7 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
     elif data == "premium_remove":
         keyboard = InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🔙 Back", callback_data="premium_menu")
+                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
             ]
         ])
         text = await get_input(client, query.message, "Send user_id to revoke Premium access", keyboard)
@@ -57,13 +57,13 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
         users = await cursor.to_list(length=100)
         if not users: return await safe_edit(query.message, "No premium users found.", InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🔙 Back", callback_data="premium_menu")
+                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
             ]
         ]))
         text = "".join([f"• <code>{u['_id']}</code> (Expires: {u.get('expires_at').strftime('%Y-%m-%d') if u.get('expires_at') else 'Never'})\n" for u in users])
         return await safe_edit(query.message, f"💎 Premium Users:\n\n{text}", InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🔙 Back", callback_data="premium_menu")
+                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
             ]
         ]))
         
