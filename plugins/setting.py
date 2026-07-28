@@ -23,10 +23,6 @@ async def settings_cb(client: Client, query: CallbackQuery):
             [
                 InlineKeyboardButton("🔒 Protect Content", callback_data="protect_menu"),
                 InlineKeyboardButton("🔙 Back", callback_data="start")
-            ],
-            [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
             ]
         ]))
 
