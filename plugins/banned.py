@@ -31,14 +31,14 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")
             ]
         ])
-        text = await get_input(client, query.message, "Send user_id [reason]", keyboard)
+        text = await get_input(client, query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ [ʀᴇᴀꜱᴏɴ]", keyboard)
         if not text: return 
         parts = text.split(maxsplit=1)
-        if not parts[0].isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ Invalid ID", reply_markup=keyboard)
+        if not parts[0].isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ɪᴅ", reply_markup=keyboard)
         uid = int(parts[0])
-        reason = parts[1] if len(parts) > 1 else "No reason"
+        reason = parts[1] if len(parts) > 1 else "ɴᴏ ʀᴇᴀꜱᴏɴ"
         await ban_user(uid, reason)
-        await query.message.reply_photo(photo=START_PIC, caption=f"✅ User {uid} banned", reply_markup=keyboard)
+        await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ʙᴀɴɴᴇᴅ", reply_markup=keyboard)
 
     elif data == "ban_unban_user":
         keyboard = InlineKeyboardMarkup([
@@ -46,22 +46,22 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")
             ]
         ])
-        text = await get_input(client, query.message, "Send user_id", keyboard)
+        text = await get_input(client, query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ", keyboard)
         if not text: return 
-        if not text.isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ Invalid ID", reply_markup=keyboard)
+        if not text.isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ɪᴅ", reply_markup=keyboard)
         uid = int(text)
         await unban_user(uid)
-        await query.message.reply_photo(photo=START_PIC, caption=f"✅ User {uid} unbanned", reply_markup=keyboard)
+        await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ᴜɴʙᴀɴɴᴇᴅ", reply_markup=keyboard)
 
     elif data == "ban_list":
         banned = await get_banned_users()
-        if not banned: return await safe_edit(query.message, "No banned users.", InlineKeyboardMarkup([
+        if not banned: return await safe_edit(query.message, "ɴᴏ ʙᴀɴɴᴇᴅ ᴜꜱᴇʀꜱ.", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")
             ]
         ]))
         text = "\n".join([f"• {u['_id']} - {u.get('reason','No reason')}" for u in banned[:100]])
-        return await safe_edit(query.message, f"🚫 Banned Users:\n\n{text}", InlineKeyboardMarkup([
+        return await safe_edit(query.message, f"🚫 ʙᴀɴɴᴇᴅ ᴜꜱᴇʀꜱ:\n\n{text}", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")
             ]
