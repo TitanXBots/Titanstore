@@ -61,7 +61,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
         await set_auto_delete_status(False)
         await query.answer("❌ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
         current_time = await get_auto_delete_time()
-        return await safe_edit(query.message, f"🗑 ʜᴇʀᴇ ʏᴏᴜ ᴄᴀɴ ᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ʙᴏᴛ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ꜱᴇᴛᴛɪɴɢ\n\nᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ: ᴏꜰꜰ ❌\nᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ: {get_readable_time(current_time)}", InlineKeyboardMarkup([
+        return await safe_edit(query.message, f"🗑 ʜᴇʀᴇ ʏᴏᴜ ᴄᴀɴ ᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ʙᴏᴛ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ꜱᴇᴛᴛɪɴɢ\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: ᴏꜰꜰ ❌\nᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ: {get_readable_time(current_time)}", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="autodelete_on"), 
                 InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="autodelete_off")
