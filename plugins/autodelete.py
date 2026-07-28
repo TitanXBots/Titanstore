@@ -33,7 +33,9 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("❌ Disable", callback_data="autodelete_off")
             ],
             [
-                InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time"),
+                InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time")
+            ],
+            [
                 InlineKeyboardButton("🔙 Back", callback_data="settings")
             ]
         ]))
@@ -48,7 +50,9 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("❌ Disable", callback_data="autodelete_off")
             ],
             [
-                InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time"),
+                InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time")
+            ],
+            [
                 InlineKeyboardButton("🔙 Back", callback_data="settings")
             ]
         ]))
@@ -63,7 +67,9 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("❌ Disable", callback_data="autodelete_off")
             ],
             [
-                InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time"),
+                InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time")
+            ],
+            [
                 InlineKeyboardButton("🔙 Back", callback_data="settings")
             ]
         ]))
