@@ -25,14 +25,9 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
         ]
         if admin_status: 
             buttons.append([
-                InlineKeyboardButton("⚙️ Settings", callback_data="settings"),
-                InlineKeyboardButton("⚡ Close", callback_data="close")
+                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
             ])
-        else:
-            buttons.append([
-                InlineKeyboardButton("⚓ Home", callback_data="start"),
-                InlineKeyboardButton("⚡ Close", callback_data="close")
-            ])
+            
         return await safe_edit(query.message, START_MSG.format(first=first_name), InlineKeyboardMarkup(buttons))
 
     elif data == "help":
@@ -50,8 +45,7 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
     elif data == "commands":
         return await safe_edit(query.message, COMMANDS_TXT, InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🔙 Back", callback_data="help"),
-                InlineKeyboardButton("🔰 About", callback_data="about")
+                InlineKeyboardButton("🔙 Back", callback_data="help")
             ],
             [
                 InlineKeyboardButton("⚓ Home", callback_data="start"), 
@@ -74,8 +68,7 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
     elif data == "disclaimer":
         return await safe_edit(query.message, DISCLAIMER_TXT, InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🔙 Back", callback_data="about"),
-                InlineKeyboardButton("🔐 Source", url="https://github.com/TitanXBots/FileStore-Bot")
+                InlineKeyboardButton("🔙 Back", callback_data="about")
             ],
             [
                 InlineKeyboardButton("⚓ Home", callback_data="start"), 
