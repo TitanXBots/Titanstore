@@ -46,7 +46,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
             return await query.answer("⚠️ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴏɴ!", show_alert=True)
         await set_protect_status(True)
         await query.answer("✅ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
-        return await safe_edit(query.message, "🔒 **ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ**\n\nCurrent Status: **ON ✅**", InlineKeyboardMarkup([
+        return await safe_edit(query.message, "🔒 **ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ**\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: **ON ✅**", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), 
                 InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")
@@ -61,7 +61,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
             return await query.answer("⚠️ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴏꜰꜰ!", show_alert=True)
         await set_protect_status(False)
         await query.answer("❌ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
-        return await safe_edit(query.message, "🔒 **ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ**\n\nCurrent Status: **OFF ❌**", InlineKeyboardMarkup([
+        return await safe_edit(query.message, "🔒 **ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ**\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: **OFF ❌**", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), 
                 InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")
