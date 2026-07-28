@@ -18,7 +18,9 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("➖ Remove Premium", callback_data="premium_remove")
             ],
             [
-                InlineKeyboardButton("📋 Premium List", callback_data="premium_list"),
+                InlineKeyboardButton("📋 Premium List", callback_data="premium_list")
+            ],
+            [
                 InlineKeyboardButton("🔙 Back", callback_data="settings")
             ]
         ]))
