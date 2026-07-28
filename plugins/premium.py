@@ -68,12 +68,24 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
         cursor = premium_collection.find({"is_premium": True})
         users = await cursor.to_list(length=100)
         if not users: return await safe_edit(query.message, "No premium users found.", InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 Back", callback_data="premium_menu"), InlineKeyboardButton("⚙️ Settings", callback_data="settings")],
-            [InlineKeyboardButton("⚓ Home", callback_data="start"), InlineKeyboardButton("⚡ Close", callback_data="close")]
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="premium_menu"), 
+                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
         ]))
         text = "".join([f"• <code>{u['_id']}</code> (Expires: {u.get('expires_at').strftime('%Y-%m-%d') if u.get('expires_at') else 'Never'})\n" for u in users])
         return await safe_edit(query.message, f"💎 Premium Users:\n\n{text}", InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 Back", callback_data="premium_menu"), InlineKeyboardButton("⚙️ Settings", callback_data="settings")],
-            [InlineKeyboardButton("⚓ Home", callback_data="start"), InlineKeyboardButton("⚡ Close", callback_data="close")]
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="premium_menu"), 
+                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
         ]))
         
