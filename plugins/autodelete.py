@@ -80,7 +80,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="autodelete_menu")
             ]
         ])
-        prompt_text = "<b>ꜱᴇɴᴅ ᴍᴇ ᴀ ᴛɪᴍᴇ ɪɴ ʟɪᴋᴇ ᴛʜɪꜱ - 1h OR 15m\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.</b>"
+        prompt_text = "<b>ꜱᴇɴᴅ ᴍᴇ ᴀ ᴛɪᴍᴇ ɪɴ ʟɪᴋᴇ ᴛʜɪꜱ - 1h ᴏʀ 15m\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.</b>"
         
         text = await get_input(client, query.message, prompt_text, back_keyboard)
         if not text: return 
