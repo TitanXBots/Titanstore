@@ -13,6 +13,6 @@ async def maintenance_toggle_command(client: Client, message: Message):
         return await message.reply_text("❌ ɪɴᴠᴀʟɪᴅ ᴀʀɢᴜᴍᴇɴᴛ. ᴜꜱᴇ ᴏɴʟʏ `on` or `off`.")
 
     await maintenance_collection.update_one({"_id": "maintenance"}, {"$set": {"maintenance": arg}}, upsert=True)
-    if arg == "on": await message.reply_text("✅ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴇɴᴀʙʟᴇᴅ. ᴛʜᴇ ʙᴏᴛ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ ᴜɴᴅᴇʀ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ. ᴜꜱᴇʀꜱ ᴄᴀɴɴᴏᴛ ᴜꜱᴇ ᴛʜᴇ ʙᴏᴛ ᴀᴛ ᴛʜɪꜱ ᴛɪᴍᴇ.")
+    if arg == "on": await message.reply_text("✅ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴇɴᴀʙʟᴇᴅ. ᴛʜᴇ ʙᴏᴛ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ ᴜɴᴅᴇʀ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ. ɴᴏɴ ᴀᴅᴍɪɴ ᴜꜱᴇʀꜱ ᴄᴀɴɴᴏᴛ ᴜꜱᴇ ᴛʜᴇ ʙᴏᴛ ᴀᴛ ᴛʜɪꜱ ᴛɪᴍᴇ.")
     else: await message.reply_text("⚙️ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅɪꜱᴀʙʟᴇᴅ. ᴛʜᴇ ʙᴏᴛ ɪꜱ ɴᴏᴡ ᴀᴠᴀɪʟᴀʙʟᴇ ᴛᴏ ᴀʟʟ ᴜꜱᴇʀꜱ.")
         
