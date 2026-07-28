@@ -22,7 +22,6 @@ async def start_command(client: Client, message: Message):
     first_name = message.from_user.first_name or "User"
     username = message.from_user.username or ""
 
-    # Force Sub with exactly formatted multi-line grid array
     if not await subscribed(client, message):
         buttons = []
         row = []
@@ -87,7 +86,6 @@ async def start_command(client: Client, message: Message):
                 asyncio.create_task(delete_files(copied_msgs, client, warn, text.split(" ", 1)[1], auto_delete_time))
         return
 
-    # ONLY Help, About, and Settings (for admins)
     btn = [
         [
             InlineKeyboardButton("🧠 Help", callback_data="help"), 
