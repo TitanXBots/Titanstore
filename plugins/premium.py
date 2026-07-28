@@ -37,7 +37,7 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
         if len(parts) != 2 or not parts[0].isdigit() or not parts[1].isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ Invalid format. Use: `user_id days`", reply_markup=keyboard)
         uid, days = int(parts[0]), int(parts[1])
         await add_premium(uid, days)
-        await query.message.reply_photo(photo=START_PIC, caption=f"✅ User {uid} granted Premium for {days} days.", reply_markup=keyboard)
+        await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} granted Premium for {days} days.", reply_markup=keyboard)
 
     elif data == "premium_remove":
         keyboard = InlineKeyboardMarkup([
@@ -45,23 +45,23 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
             ]
         ])
-        text = await get_input(client, query.message, "Send user_id to revoke Premium access", keyboard)
+        text = await get_input(client, query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴠᴏᴋᴇ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ", keyboard)
         if not text: return 
-        if not text.isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ Invalid ID", reply_markup=keyboard)
+        if not text.isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ɪᴅ", reply_markup=keyboard)
         uid = int(text)
         await remove_premium(uid)
-        await query.message.reply_photo(photo=START_PIC, caption=f"✅ User {uid}'s Premium access revoked.", reply_markup=keyboard)
+        await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid}'ꜱ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ ʀᴇᴠᴏᴋᴇᴅ.", reply_markup=keyboard)
 
     elif data == "premium_list":
         cursor = premium_collection.find({"is_premium": True})
         users = await cursor.to_list(length=100)
-        if not users: return await safe_edit(query.message, "No premium users found.", InlineKeyboardMarkup([
+        if not users: return await safe_edit(query.message, "ɴᴏ ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ ꜰᴏᴜɴᴅ.", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
             ]
         ]))
         text = "".join([f"• <code>{u['_id']}</code> (Expires: {u.get('expires_at').strftime('%Y-%m-%d') if u.get('expires_at') else 'Never'})\n" for u in users])
-        return await safe_edit(query.message, f"💎 Premium Users:\n\n{text}", InlineKeyboardMarkup([
+        return await safe_edit(query.message, f"💎 ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ:\n\n{text}", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
             ]
