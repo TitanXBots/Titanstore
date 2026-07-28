@@ -13,13 +13,31 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
 
     if data == "ban_menu":
         return await safe_edit(query.message, "🚫 Ban Management", InlineKeyboardMarkup([
-            [InlineKeyboardButton("🚫 Ban User", callback_data="ban_user"), InlineKeyboardButton("✅ Unban User", callback_data="ban_unban_user")],
-            [InlineKeyboardButton("📄 Banned List", callback_data="ban_list")],
-            [InlineKeyboardButton("🔙 Back", callback_data="settings")]
+            [
+                InlineKeyboardButton("🚫 Ban User", callback_data="ban_user"), 
+                InlineKeyboardButton("✅ Unban User", callback_data="ban_unban_user")
+            ],
+            [
+                InlineKeyboardButton("📄 Banned List", callback_data="ban_list"),
+                InlineKeyboardButton("🔙 Back", callback_data="settings")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
         ]))
 
     elif data == "ban_user":
-        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]])
+        keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="ban_menu"),
+                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
+        ])
         text = await get_input(client, query.message, "Send user_id [reason]", keyboard)
         if not text: return 
         parts = text.split(maxsplit=1)
@@ -30,7 +48,16 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
         await query.message.reply_photo(photo=START_PIC, caption=f"✅ User {uid} banned", reply_markup=keyboard)
 
     elif data == "ban_unban_user":
-        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]])
+        keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="ban_menu"),
+                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
+        ])
         text = await get_input(client, query.message, "Send user_id", keyboard)
         if not text: return 
         if not text.isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ Invalid ID", reply_markup=keyboard)
@@ -40,7 +67,13 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
 
     elif data == "ban_list":
         banned = await get_banned_users()
-        if not banned: return await safe_edit(query.message, "No banned users.", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]]))
+        if not banned: return await safe_edit(query.message, "No banned users.", InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔙 Back", callback_data="ban_menu"), InlineKeyboardButton("⚙️ Settings", callback_data="settings")],
+            [InlineKeyboardButton("⚓ Home", callback_data="start"), InlineKeyboardButton("⚡ Close", callback_data="close")]
+        ]))
         text = "\n".join([f"• {u['_id']} - {u.get('reason','No reason')}" for u in banned[:100]])
-        return await safe_edit(query.message, f"🚫 Banned Users:\n\n{text}", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="ban_menu")]]))
+        return await safe_edit(query.message, f"🚫 Banned Users:\n\n{text}", InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔙 Back", callback_data="ban_menu"), InlineKeyboardButton("⚙️ Settings", callback_data="settings")],
+            [InlineKeyboardButton("⚓ Home", callback_data="start"), InlineKeyboardButton("⚡ Close", callback_data="close")]
+        ]))
         
