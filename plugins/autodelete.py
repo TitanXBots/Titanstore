@@ -80,7 +80,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="autodelete_menu")
             ]
         ])
-        prompt_text = "<b>SEND ME A TIME IN LIKE THIS - 1h OR 15m\n\n/cancel - CANCEL THIS PROCESS.</b>"
+        prompt_text = "<b>ꜱᴇɴᴅ ᴍᴇ ᴀ ᴛɪᴍᴇ ɪɴ ʟɪᴋᴇ ᴛʜɪꜱ - 1h OR 15m\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.</b>"
         
         text = await get_input(client, query.message, prompt_text, back_keyboard)
         if not text: return 
@@ -89,7 +89,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
         if time_in_seconds < 10: 
             return await query.message.reply_photo(
                 photo=START_PIC,
-                caption="❌ **Invalid format!** Please use formats like `1h`, `15m`, or `30s`.", 
+                caption="❌ ɪɴᴠᴀʟɪᴅ ꜰᴏʀᴍᴀᴛ! ᴘʟᴇᴀꜱᴇ ᴜꜱᴇ ꜰᴏʀᴍᴀᴛꜱ ʟɪᴋᴇ ᴛʜɪꜱ `1h`, `15m`, or `30s`.", 
                 reply_markup=back_keyboard
             )
             
@@ -97,7 +97,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
         
         await query.message.reply_photo(
             photo=START_PIC,
-            caption=f"✅ Auto-delete timer successfully set to **{get_readable_time(time_in_seconds)}**.", 
+            caption=f"✅ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ꜱᴇᴛ ᴛᴏ {get_readable_time(time_in_seconds)}.", 
             reply_markup=back_keyboard
         )
         
