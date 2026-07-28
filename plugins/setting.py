@@ -6,7 +6,7 @@ from database.database import is_admin, get_protect_status, set_protect_status
 @Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off)$"))
 async def settings_cb(client: Client, query: CallbackQuery):
     if not await is_admin(query.from_user.id): 
-        return await query.answer("⚠️ Access Denied: Settings are for Admins only!", show_alert=True)
+        return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴄᴀɴ ᴀᴄᴄᴇꜱꜱ ᴛʜᴇ ꜱᴇᴛᴛɪɴɢꜱ!", show_alert=True)
         
     data = query.data
 
