@@ -33,7 +33,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="autodelete_off")
             ],
             [
-                InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time")
+                InlineKeyboardButton("⏱ ꜱᴇᴛ ᴛɪᴍᴇ", callback_data="autodelete_set_time")
             ],
             [
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
