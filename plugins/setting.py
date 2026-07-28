@@ -31,7 +31,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
     elif data == "protect_menu":
         is_on = await get_protect_status()
         status = "ON ✅" if is_on else "OFF ❌"
-        return await safe_edit(query.message, f"🔒 **ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ**\n\nPrevents users from forwarding, saving, or copying files.\n\nCurrent Status: **{status}**", InlineKeyboardMarkup([
+        return await safe_edit(query.message, f"🔒 **ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ**\n\nᴘʀᴇᴠᴇɴᴛꜱ ᴜꜱᴇʀꜱ ꜰʀᴏᴍ ꜰᴏʀᴡᴀʀᴅɪɴɢ, ꜱᴀᴠɪɴɢ, ᴏʀ ᴄᴏᴘʏɪɴɢ ꜰɪʟᴇꜱ.\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: **{status}**", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), 
                 InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")
