@@ -87,6 +87,7 @@ async def start_command(client: Client, message: Message):
                 asyncio.create_task(delete_files(copied_msgs, client, warn, text.split(" ", 1)[1], auto_delete_time))
         return
 
+    # ONLY Help, About, and Settings (for admins)
     btn = [
         [
             InlineKeyboardButton("🧠 Help", callback_data="help"), 
@@ -95,16 +96,14 @@ async def start_command(client: Client, message: Message):
     ]
     if await is_admin(user_id): 
         btn.append([
-            InlineKeyboardButton("⚙️ Settings", callback_data="settings"), 
-            InlineKeyboardButton("⚡ Close", callback_data="close")
-        ])
-    else:
-        btn.append([
-            InlineKeyboardButton("⚓ Home", callback_data="start"), 
-            InlineKeyboardButton("⚡ Close", callback_data="close")
+            InlineKeyboardButton("⚙️ Settings", callback_data="settings")
         ])
         
-    await message.reply_photo(photo=START_PIC, caption=START_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(btn))
+    await message.reply_photo(
+        photo=START_PIC, 
+        caption=START_MSG.format(first=first_name), 
+        reply_markup=InlineKeyboardMarkup(btn)
+    )
 
 async def delete_files(messages, client, main_message, payload, timer):
     await asyncio.sleep(timer)
