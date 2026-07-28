@@ -14,4 +14,4 @@ async def check_users_command(client: Client, message: Message):
         f"📊 **Bot Statistics**\n\n"
         f"👥 **Total Registered Users:** `{len(users)}`"
     )
-
+    
