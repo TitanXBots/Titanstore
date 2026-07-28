@@ -11,20 +11,20 @@ async def settings_cb(client: Client, query: CallbackQuery):
     data = query.data
 
     if data == "settings":
-        return await safe_edit(query.message, "⚙️ Admin Settings Panel", InlineKeyboardMarkup([
+        return await safe_edit(query.message, "⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ ᴘᴀɴᴇʟ", InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("👨‍💻 Admin Menu", callback_data="admin_menu"), 
-                InlineKeyboardButton("🚫 Ban Menu", callback_data="ban_menu")
+                InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), 
+                InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")
             ],
             [
-                InlineKeyboardButton("💎 Premium Menu", callback_data="premium_menu"), 
-                InlineKeyboardButton("🗑 Auto Delete", callback_data="autodelete_menu")
+                InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ", callback_data="premium_menu"), 
+                InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu")
             ],
             [
-                InlineKeyboardButton("🔒 Protect Content", callback_data="protect_menu")
+                InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu")
             ],
             [
-                InlineKeyboardButton("🔙 Back", callback_data="start")
+                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")
             ]
         ]))
 
@@ -33,11 +33,11 @@ async def settings_cb(client: Client, query: CallbackQuery):
         status = "ON ✅" if is_on else "OFF ❌"
         return await safe_edit(query.message, f"🔒 **Protect Content Management**\n\nPrevents users from forwarding, saving, or copying files.\n\nCurrent Status: **{status}**", InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("✅ Enable", callback_data="protect_on"), 
-                InlineKeyboardButton("❌ Disable", callback_data="protect_off")
+                InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), 
+                InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")
             ],
             [
-                InlineKeyboardButton("🔙 Back", callback_data="settings")
+                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
             ]
         ]))
 
@@ -48,11 +48,11 @@ async def settings_cb(client: Client, query: CallbackQuery):
         await query.answer("✅ Protect Content Enabled!", show_alert=True)
         return await safe_edit(query.message, "🔒 **Protect Content Management**\n\nCurrent Status: **ON ✅**", InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("✅ Enable", callback_data="protect_on"), 
-                InlineKeyboardButton("❌ Disable", callback_data="protect_off")
+                InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), 
+                InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")
             ], 
             [
-                InlineKeyboardButton("🔙 Back", callback_data="settings")
+                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
             ]
         ]))
 
@@ -63,11 +63,11 @@ async def settings_cb(client: Client, query: CallbackQuery):
         await query.answer("❌ Protect Content Disabled!", show_alert=True)
         return await safe_edit(query.message, "🔒 **Protect Content Management**\n\nCurrent Status: **OFF ❌**", InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("✅ Enable", callback_data="protect_on"), 
-                InlineKeyboardButton("❌ Disable", callback_data="protect_off")
+                InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), 
+                InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")
             ], 
             [
-                InlineKeyboardButton("🔙 Back", callback_data="settings")
+                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
             ]
         ]))
         
