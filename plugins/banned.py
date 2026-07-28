@@ -68,12 +68,24 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
     elif data == "ban_list":
         banned = await get_banned_users()
         if not banned: return await safe_edit(query.message, "No banned users.", InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 Back", callback_data="ban_menu"), InlineKeyboardButton("⚙️ Settings", callback_data="settings")],
-            [InlineKeyboardButton("⚓ Home", callback_data="start"), InlineKeyboardButton("⚡ Close", callback_data="close")]
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="ban_menu"), 
+                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
         ]))
         text = "\n".join([f"• {u['_id']} - {u.get('reason','No reason')}" for u in banned[:100]])
         return await safe_edit(query.message, f"🚫 Banned Users:\n\n{text}", InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 Back", callback_data="ban_menu"), InlineKeyboardButton("⚙️ Settings", callback_data="settings")],
-            [InlineKeyboardButton("⚓ Home", callback_data="start"), InlineKeyboardButton("⚡ Close", callback_data="close")]
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="ban_menu"), 
+                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
         ]))
         
