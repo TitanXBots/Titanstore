@@ -20,22 +20,13 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
             [
                 InlineKeyboardButton("📋 Admin List", callback_data="admin_list"),
                 InlineKeyboardButton("🔙 Back", callback_data="settings")
-            ],
-            [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
             ]
         ]))
 
     elif data == "admin_add":
         keyboard = InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🔙 Back", callback_data="admin_menu"),
-                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
-            ],
-            [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
+                InlineKeyboardButton("🔙 Back", callback_data="admin_menu")
             ]
         ])
         text = await get_input(client, query.message, "Send user_id to add as admin", keyboard)
@@ -49,12 +40,7 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
     elif data == "admin_remove":
         keyboard = InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🔙 Back", callback_data="admin_menu"),
-                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
-            ],
-            [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
+                InlineKeyboardButton("🔙 Back", callback_data="admin_menu")
             ]
         ])
         text = await get_input(client, query.message, "Send user_id to remove from admin", keyboard)
@@ -69,23 +55,13 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
         admins = await get_admins()
         if not admins: return await safe_edit(query.message, "No admins found.", InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🔙 Back", callback_data="admin_menu"), 
-                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
-            ],
-            [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
+                InlineKeyboardButton("🔙 Back", callback_data="admin_menu")
             ]
         ]))
         text = "\n".join([f"• {a}" for a in admins[:100]])
         return await safe_edit(query.message, f"👨‍💻 Admin List:\n\n{text}", InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🔙 Back", callback_data="admin_menu"), 
-                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
-            ],
-            [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
+                InlineKeyboardButton("🔙 Back", callback_data="admin_menu")
             ]
         ]))
         
