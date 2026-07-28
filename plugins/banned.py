@@ -18,7 +18,9 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("✅ Unban User", callback_data="ban_unban_user")
             ],
             [
-                InlineKeyboardButton("📄 Banned List", callback_data="ban_list"),
+                InlineKeyboardButton("📄 Banned List", callback_data="ban_list")
+            ],
+            [
                 InlineKeyboardButton("🔙 Back", callback_data="settings")
             ]
         ]))
