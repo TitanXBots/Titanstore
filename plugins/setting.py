@@ -21,7 +21,9 @@ async def settings_cb(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("🗑 Auto Delete", callback_data="autodelete_menu")
             ],
             [
-                InlineKeyboardButton("🔒 Protect Content", callback_data="protect_menu"),
+                InlineKeyboardButton("🔒 Protect Content", callback_data="protect_menu")
+            ],
+            [
                 InlineKeyboardButton("🔙 Back", callback_data="start")
             ]
         ]))
