@@ -35,10 +35,6 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
             [
                 InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time"),
                 InlineKeyboardButton("🔙 Back", callback_data="settings")
-            ],
-            [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
             ]
         ]))
         
@@ -54,10 +50,6 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
             [
                 InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time"),
                 InlineKeyboardButton("🔙 Back", callback_data="settings")
-            ],
-            [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
             ]
         ]))
         
@@ -73,22 +65,13 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
             [
                 InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time"),
                 InlineKeyboardButton("🔙 Back", callback_data="settings")
-            ],
-            [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
             ]
         ]))
         
     elif data == "autodelete_set_time":
         back_keyboard = InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🔙 Back", callback_data="autodelete_menu"),
-                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
-            ],
-            [
-                InlineKeyboardButton("⚓ Home", callback_data="start"), 
-                InlineKeyboardButton("⚡ Close", callback_data="close")
+                InlineKeyboardButton("🔙 Back", callback_data="autodelete_menu")
             ]
         ])
         prompt_text = "<b>SEND ME A TIME IN LIKE THIS - 1h OR 15m\n\n/cancel - CANCEL THIS PROCESS.</b>"
