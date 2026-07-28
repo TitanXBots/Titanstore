@@ -31,7 +31,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
     elif data == "protect_menu":
         is_on = await get_protect_status()
         status = "ON ✅" if is_on else "OFF ❌"
-        return await safe_edit(query.message, f"🔒 **Protect Content Management**\n\nPrevents users from forwarding, saving, or copying files.\n\nCurrent Status: **{status}**", InlineKeyboardMarkup([
+        return await safe_edit(query.message, f"🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ\n\nPrevents users from forwarding, saving, or copying files.\n\nCurrent Status: **{status}**", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), 
                 InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")
@@ -43,10 +43,10 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data == "protect_on":
         if await get_protect_status():
-            return await query.answer("⚠️ Protect Content is already ON!", show_alert=True)
+            return await query.answer("⚠️ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴏɴ!", show_alert=True)
         await set_protect_status(True)
         await query.answer("✅ Protect Content Enabled!", show_alert=True)
-        return await safe_edit(query.message, "🔒 **Protect Content Management**\n\nCurrent Status: **ON ✅**", InlineKeyboardMarkup([
+        return await safe_edit(query.message, "🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ\n\nCurrent Status: **ON ✅**", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), 
                 InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")
@@ -58,10 +58,10 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data == "protect_off":
         if not await get_protect_status():
-            return await query.answer("⚠️ Protect Content is already OFF!", show_alert=True)
+            return await query.answer("⚠️ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴏꜰꜰ!", show_alert=True)
         await set_protect_status(False)
-        await query.answer("❌ Protect Content Disabled!", show_alert=True)
-        return await safe_edit(query.message, "🔒 **Protect Content Management**\n\nCurrent Status: **OFF ❌**", InlineKeyboardMarkup([
+        await query.answer("❌ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
+        return await safe_edit(query.message, "🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ\n\nCurrent Status: **OFF ❌**", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), 
                 InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")
