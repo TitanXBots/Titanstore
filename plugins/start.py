@@ -5,10 +5,7 @@ from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait
 
-from config import (
-    FORCE_PIC, FORCE_MSG, LOG_CHANNEL_ID, START_PIC, 
-    START_MSG
-)
+from config import FORCE_PIC, FORCE_MSG, LOG_CHANNEL_ID, START_PIC, START_MSG
 from helper_func import subscribed, decode, get_messages, get_readable_time
 from database.database import (
     is_user_present, add_user, is_user_banned, get_ban_reason, 
@@ -25,7 +22,6 @@ async def start_command(client: Client, message: Message):
     first_name = message.from_user.first_name or "User"
     username = message.from_user.username or ""
 
-    # Force Subscription Check (Now with 2-column grid layout)
     if not await subscribed(client, message):
         buttons = []
         row = []
@@ -36,9 +32,7 @@ async def start_command(client: Client, message: Message):
                 if len(row) == 2:
                     buttons.append(row)
                     row = []
-        # Append any leftover buttons if you have an odd number of channels
-        if row:
-            buttons.append(row)
+        if row: buttons.append(row)
             
         return await message.reply_photo(
             photo=FORCE_PIC, 
@@ -46,74 +40,45 @@ async def start_command(client: Client, message: Message):
             reply_markup=InlineKeyboardMarkup(buttons)
         )
 
-    # Ban Check
     if await is_user_banned(user_id):
         return await message.reply_text(f"🚫 You are banned.\nReason: {await get_ban_reason(user_id)}")
 
-    # New User Registration with Custom Log Format
     if not await is_user_present(user_id):
         await add_user(user_id, first_name, username)
-        
-        NEW_USER_TXT = """#New_User {}
+        NEW_USER_TXT = """#New_User {}\n\n≈ ɪᴅ:- <code>{}</code>\n≈ ɴᴀᴍᴇ:- {}"""
+        try: await client.send_message(LOG_CHANNEL_ID, NEW_USER_TXT.format(message.from_user.mention, user_id, first_name))
+        except: pass
 
-≈ ɪᴅ:- <code>{}</code>
-≈ ɴᴀᴍᴇ:- {}"""
-        
-        try: 
-            await client.send_message(
-                LOG_CHANNEL_ID, 
-                NEW_USER_TXT.format(message.from_user.mention, user_id, first_name)
-            )
-        except: 
-            pass
-
-    # Maintenance Check
     if await is_maintenance(user_id):
         return await message.reply_text("🛠 Maintenance mode ON. Normal operations are temporarily paused.")
 
-    # File Fetching Logic (Deep Linking)
     if len(text.split()) > 1:
         try:
             argument = (await decode(text.split(" ", 1)[1])).split("-")
             ids = range(int(argument[1]) // abs(client.db_channel.id), (int(argument[2]) // abs(client.db_channel.id)) + 1) if len(argument) == 3 else [int(argument[1]) // abs(client.db_channel.id)]
-        except Exception:
-            return
+        except Exception: return
 
         temp = await message.reply_text("⏳ Processing...")
         messages = await get_messages(client, ids)
         await temp.delete()
 
         copied_msgs = []
-        
-        # 🔒 Dynamically check if Protect Content is ON in the database
         is_protected = await get_protect_status()
         
         for msg in messages:
             if msg.empty: continue 
             try:
-                copied = await msg.copy(
-                    chat_id=user_id, 
-                    caption=msg.caption.html if msg.caption else "", 
-                    parse_mode=ParseMode.HTML, 
-                    protect_content=is_protected
-                )
+                copied = await msg.copy(chat_id=user_id, caption=msg.caption.html if msg.caption else "", parse_mode=ParseMode.HTML, protect_content=is_protected)
                 copied_msgs.append(copied)
             except FloodWait as e:
                 await asyncio.sleep(e.value)
-                copied = await msg.copy(
-                    chat_id=user_id, 
-                    caption=msg.caption.html if msg.caption else "", 
-                    parse_mode=ParseMode.HTML, 
-                    protect_content=is_protected
-                )
+                copied = await msg.copy(chat_id=user_id, caption=msg.caption.html if msg.caption else "", parse_mode=ParseMode.HTML, protect_content=is_protected)
                 copied_msgs.append(copied)
-            except Exception as e:
-                logging.error(f"Copy error: {e}")
+            except Exception as e: logging.error(f"Copy error: {e}")
 
         if not copied_msgs: 
             return await message.reply("❌ **Error:** Files unavailable or deleted from the database.")
 
-        # 🗑️ Dynamic Auto-Delete Timer
         if await get_auto_delete_status():
             auto_delete_time = await get_auto_delete_time()
             if auto_delete_time > 0:
@@ -121,27 +86,15 @@ async def start_command(client: Client, message: Message):
                 asyncio.create_task(delete_files(copied_msgs, client, warn, text.split(" ", 1)[1], auto_delete_time))
         return
 
-    # Standard Start Menu
     btn = [[InlineKeyboardButton("🧠 HELP", callback_data="help"), InlineKeyboardButton("🔰 ABOUT", callback_data="about")]]
-    
-    if await is_admin(user_id): 
-        btn.append([InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")])
-        
+    if await is_admin(user_id): btn.append([InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")])
     await message.reply_photo(photo=START_PIC, caption=START_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(btn))
-
 
 async def delete_files(messages, client, main_message, payload, timer):
     await asyncio.sleep(timer)
     for msg in messages:
-        try: 
-            await client.delete_messages(chat_id=msg.chat.id, message_ids=msg.id)
-        except Exception: 
-            pass
-    try: 
-        await main_message.edit_text(
-            text="✅ <b>Your File Has Been Deleted.</b>\n👇 Click below to get it again.", 
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("♻️ Get File Again", url=f"https://t.me/{client.username}?start={payload}")]])
-        )
-    except Exception: 
-        pass
+        try: await client.delete_messages(chat_id=msg.chat.id, message_ids=msg.id)
+        except: pass
+    try: await main_message.edit_text("✅ <b>Your File Has Been Deleted.</b>\n👇 Click below to get it again.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("♻️ Get File Again", url=f"https://t.me/{client.username}?start={payload}")]]))
+    except: pass
         
