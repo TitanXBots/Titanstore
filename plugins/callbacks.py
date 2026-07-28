@@ -17,20 +17,46 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
     first_name = query.from_user.first_name or "User"
 
     if data == "start":
-        buttons = [[InlineKeyboardButton("🧠 Help", callback_data="help"), InlineKeyboardButton("🔰 About", callback_data="about")]]
-        if admin_status: buttons.append([InlineKeyboardButton("⚙️ Settings", callback_data="settings")])
+        buttons = [
+            [
+                InlineKeyboardButton("🧠 Help", callback_data="help"), 
+                InlineKeyboardButton("🔰 About", callback_data="about")
+            ]
+        ]
+        if admin_status: 
+            buttons.append([
+                InlineKeyboardButton("⚙️ Settings", callback_data="settings"),
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ])
+        else:
+            buttons.append([
+                InlineKeyboardButton("⚓ Home", callback_data="start"),
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ])
         return await safe_edit(query.message, START_MSG.format(first=first_name), InlineKeyboardMarkup(buttons))
 
     elif data == "help":
         return await safe_edit(query.message, HELP_TXT.format(first=first_name), InlineKeyboardMarkup([
-            [InlineKeyboardButton("🧑‍💻 Contact Owner", url=f"tg://user?id={OWNER_ID}"), InlineKeyboardButton("💬 Commands", callback_data="commands")],
-            [InlineKeyboardButton("⚓ Home", callback_data="start"), InlineKeyboardButton("⚡ Close", callback_data="close")]
+            [
+                InlineKeyboardButton("🧑‍💻 Contact Owner", url=f"tg://user?id={OWNER_ID}"), 
+                InlineKeyboardButton("💬 Commands", callback_data="commands")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
         ]))
 
     elif data == "commands":
         return await safe_edit(query.message, COMMANDS_TXT, InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 Back", callback_data="help")],
-            [InlineKeyboardButton("⚓ Home", callback_data="start"), InlineKeyboardButton("⚡ Close", callback_data="close")]
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="help"),
+                InlineKeyboardButton("🔰 About", callback_data="about")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
         ]))
 
     elif data == "about":
@@ -47,8 +73,14 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
 
     elif data == "disclaimer":
         return await safe_edit(query.message, DISCLAIMER_TXT, InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 Back", callback_data="about")],
-            [InlineKeyboardButton("⚓ Home", callback_data="start"), InlineKeyboardButton("⚡ Close", callback_data="close")]
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="about"),
+                InlineKeyboardButton("🔐 Source", url="https://github.com/TitanXBots/FileStore-Bot")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
         ]))
 
     elif data == "close":
