@@ -15,3 +15,4 @@ async def maintenance_toggle_command(client: Client, message: Message):
     await maintenance_collection.update_one({"_id": "maintenance"}, {"$set": {"maintenance": arg}}, upsert=True)
     if arg == "on": await message.reply_text("✅ Maintenance mode enabled. Non-admin users are locked out.")
     else: await message.reply_text("⚙️ Maintenance mode disabled. Normal operations resumed.")
+        
