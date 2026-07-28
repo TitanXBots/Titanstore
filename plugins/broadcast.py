@@ -38,9 +38,23 @@ async def broadcast_command(client: Client, message: Message):
         except (UserDeactivated, InputUserDeactivated): deleted += 1
         except Exception: unsuccessful += 1
             
-    status = f"<b>📢 ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</b>\n\n<b>ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ:</b> <code>{total}</code>\n<b>ꜱᴜᴄᴄᴇꜱꜰᴜʟ:</b> <code>{successful}</code>\n<b>ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ:</b> <code>{blocked}</code>\n<b>ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ:</b> <code>{deleted}</code>\n<b>ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ:</b> <code>{unsuccessful}</code>"
+    status = f"""
+<b>📢 BROADCAST COMPLETED</b>
+
+<b>TOTAL USERS:</b> <code>{total}</code>
+<b>SUCCESSFUL:</b> <code>{successful}</code>
+<b>BLOCKED USERS:</b> <code>{blocked}</code>
+<b>DELETED ACCOUNTS:</b> <code>{deleted}</code>
+<b>UNSUCCESSFUL:</b> <code>{unsuccessful}</code>
+"""
+
+    # Edit the message to show the final status
     await b_msg.edit_text(status)
+    
+    # Wait for 30 seconds, then delete the status message to avoid chat clutter
     await asyncio.sleep(30)
-    try: await b_msg.delete()
-    except Exception: pass
+    try: 
+        await b_msg.delete()
+    except Exception: 
+        pass
         
