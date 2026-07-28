@@ -25,7 +25,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
 
     if data == "autodelete_menu":
         is_on = await get_auto_delete_status()
-        status = "ON ✅" if is_on else "OFF ❌"
+        status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
         current_time = await get_auto_delete_time()
         return await safe_edit(query.message, f"🗑 ʜᴇʀᴇ ʏᴏᴜ ᴄᴀɴ ᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ʙᴏᴛ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ꜱᴇᴛᴛɪɴɢ\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: {status}\nᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ: {get_readable_time(current_time)}", InlineKeyboardMarkup([
             [
@@ -36,7 +36,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time")
             ],
             [
-                InlineKeyboardButton("🔙 Back", callback_data="settings")
+                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
             ]
         ]))
         
@@ -50,7 +50,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="autodelete_off")
             ],
             [
-                InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time")
+                InlineKeyboardButton("⏱ ꜱᴇᴛ ᴛɪᴍᴇ", callback_data="autodelete_set_time")
             ],
             [
                 InlineKeyboardButton("🔙 Back", callback_data="settings")
@@ -67,7 +67,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="autodelete_off")
             ],
             [
-                InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time")
+                InlineKeyboardButton("⏱ ꜱᴇᴛ ᴛɪᴍᴇ", callback_data="autodelete_set_time")
             ],
             [
                 InlineKeyboardButton("🔙 Back", callback_data="settings")
