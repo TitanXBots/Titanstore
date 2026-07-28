@@ -18,7 +18,9 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("➖ Remove Admin", callback_data="admin_remove")
             ],
             [
-                InlineKeyboardButton("📋 Admin List", callback_data="admin_list"),
+                InlineKeyboardButton("📋 Admin List", callback_data="admin_list")
+            ],
+            [
                 InlineKeyboardButton("🔙 Back", callback_data="settings")
             ]
         ]))
