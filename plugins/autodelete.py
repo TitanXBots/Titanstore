@@ -28,9 +28,18 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
         status = "ON ✅" if is_on else "OFF ❌"
         current_time = await get_auto_delete_time()
         return await safe_edit(query.message, f"🗑 **Auto Delete Management**\n\nCurrent Status: **{status}**\nDelete Time: **{get_readable_time(current_time)}**", InlineKeyboardMarkup([
-            [InlineKeyboardButton("✅ Enable", callback_data="autodelete_on"), InlineKeyboardButton("❌ Disable", callback_data="autodelete_off")],
-            [InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time")],
-            [InlineKeyboardButton("🔙 Back", callback_data="settings")]
+            [
+                InlineKeyboardButton("✅ Enable", callback_data="autodelete_on"), 
+                InlineKeyboardButton("❌ Disable", callback_data="autodelete_off")
+            ],
+            [
+                InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time"),
+                InlineKeyboardButton("🔙 Back", callback_data="settings")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
         ]))
         
     elif data == "autodelete_on":
@@ -38,9 +47,18 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
         await query.answer("✅ Auto Delete Enabled!", show_alert=True)
         current_time = await get_auto_delete_time()
         return await safe_edit(query.message, f"🗑 **Auto Delete Management**\n\nCurrent Status: **ON ✅**\nDelete Time: **{get_readable_time(current_time)}**", InlineKeyboardMarkup([
-            [InlineKeyboardButton("✅ Enable", callback_data="autodelete_on"), InlineKeyboardButton("❌ Disable", callback_data="autodelete_off")],
-            [InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time")],
-            [InlineKeyboardButton("🔙 Back", callback_data="settings")]
+            [
+                InlineKeyboardButton("✅ Enable", callback_data="autodelete_on"), 
+                InlineKeyboardButton("❌ Disable", callback_data="autodelete_off")
+            ],
+            [
+                InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time"),
+                InlineKeyboardButton("🔙 Back", callback_data="settings")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
         ]))
         
     elif data == "autodelete_off":
@@ -48,13 +66,31 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
         await query.answer("❌ Auto Delete Disabled!", show_alert=True)
         current_time = await get_auto_delete_time()
         return await safe_edit(query.message, f"🗑 **Auto Delete Management**\n\nCurrent Status: **OFF ❌**\nDelete Time: **{get_readable_time(current_time)}**", InlineKeyboardMarkup([
-            [InlineKeyboardButton("✅ Enable", callback_data="autodelete_on"), InlineKeyboardButton("❌ Disable", callback_data="autodelete_off")],
-            [InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time")],
-            [InlineKeyboardButton("🔙 Back", callback_data="settings")]
+            [
+                InlineKeyboardButton("✅ Enable", callback_data="autodelete_on"), 
+                InlineKeyboardButton("❌ Disable", callback_data="autodelete_off")
+            ],
+            [
+                InlineKeyboardButton("⏱ Change Timer", callback_data="autodelete_set_time"),
+                InlineKeyboardButton("🔙 Back", callback_data="settings")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
         ]))
         
     elif data == "autodelete_set_time":
-        back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="autodelete_menu")]])
+        back_keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("🔙 Back", callback_data="autodelete_menu"),
+                InlineKeyboardButton("⚙️ Settings", callback_data="settings")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
+        ])
         prompt_text = "<b>SEND ME A TIME IN LIKE THIS - 1h OR 15m\n\n/cancel - CANCEL THIS PROCESS.</b>"
         
         text = await get_input(client, query.message, prompt_text, back_keyboard)
