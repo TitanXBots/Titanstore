@@ -35,8 +35,14 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
 
     elif data == "about":
         return await safe_edit(query.message, ABOUT_TXT.format(first=first_name), InlineKeyboardMarkup([
-            [InlineKeyboardButton("📜 Disclaimer", callback_data="disclaimer"), InlineKeyboardButton("🔐 Source", url="https://github.com/TitanXBots/FileStore")],
-            [InlineKeyboardButton("⚓ Home", callback_data="start"), InlineKeyboardButton("⚡ Close", callback_data="close")]
+            [
+                InlineKeyboardButton("📜 Disclaimer", callback_data="disclaimer"), 
+                InlineKeyboardButton("🔐 Source", url="https://github.com/TitanXBots/FileStore-Bot")
+            ],
+            [
+                InlineKeyboardButton("⚓ Home", callback_data="start"), 
+                InlineKeyboardButton("⚡ Close", callback_data="close")
+            ]
         ]))
 
     elif data == "disclaimer":
