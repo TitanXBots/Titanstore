@@ -15,3 +15,4 @@ async def stats(client: Client, message: Message):
     uptime = get_readable_time(int(delta.total_seconds()))
 
     await message.reply(BOT_STATS_TEXT.format(uptime=uptime))
+    
