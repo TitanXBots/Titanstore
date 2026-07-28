@@ -12,7 +12,7 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
     data = query.data
 
     if data == "premium_menu":
-        return await safe_edit(query.message, "💎 ʜᴇʀᴇ ʏᴏᴜ ᴄᴀɴ ᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ꜱᴇᴛᴛɪɴɢꜱ\n\nᴍᴀɴᴀɢᴇ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘꜱ ʙʏ ᴀᴅᴅɪɴɢ ᴏʀ  ʀᴇᴍᴏᴠɪɴɢ ᴜꜱᴇʀꜱ.", InlineKeyboardMarkup([
+        return await safe_edit(query.message, "💎 ʜᴇʀᴇ ʏᴏᴜ ᴄᴀɴ ᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ꜱᴇᴛᴛɪɴɢꜱ\n\nᴍᴀɴᴀɢᴇ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘꜱ ʙʏ ᴀᴅᴅɪɴɢ ᴏʀ ʀᴇᴍᴏᴠɪɴɢ ᴜꜱᴇʀꜱ.", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("➕ ᴀᴅᴅ ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀ", callback_data="premium_add"),
                 InlineKeyboardButton("➖ ʀᴇᴍᴏᴠᴇ ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀ", callback_data="premium_remove")
