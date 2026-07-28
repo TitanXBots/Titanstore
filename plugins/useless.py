@@ -8,7 +8,7 @@ from database.database import is_admin
 
 @Client.on_message(filters.command("stats") & filters.private)
 async def stats(client: Client, message: Message):
-    if not await is_admin(message.from_user.id): return await message.reply_text("⚠️ Access Denied: Admins only!")
+    if not await is_admin(message.from_user.id): return await message.reply_text("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!")
 
     now = datetime.now(timezone.utc)
     delta = now - client.uptime
