@@ -26,44 +26,21 @@ async def broadcast_command(client: Client, message: Message):
             await message.reply_to_message.copy(user_id)
             successful += 1
             await asyncio.sleep(0.1)
-            
         except FloodWait as e:
             await asyncio.sleep(e.value)
             try:
                 await message.reply_to_message.copy(user_id)
                 successful += 1
-            except UserIsBlocked:
-                blocked += 1
-            except (UserDeactivated, InputUserDeactivated):
-                deleted += 1
-            except Exception:
-                unsuccessful += 1
-                
-        except UserIsBlocked:
-            blocked += 1
+            except UserIsBlocked: blocked += 1
+            except (UserDeactivated, InputUserDeactivated): deleted += 1
+            except Exception: unsuccessful += 1
+        except UserIsBlocked: blocked += 1
+        except (UserDeactivated, InputUserDeactivated): deleted += 1
+        except Exception: unsuccessful += 1
             
-        except (UserDeactivated, InputUserDeactivated):
-            deleted += 1
-            
-        except Exception:
-            unsuccessful += 1
-            
-    status = f"""
-<b>📢 ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</b>
-
-<b>ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ:</b> <code>{total}</code>
-<b>ꜱᴜᴄᴄᴇꜱꜰᴜʟ:</b> <code>{successful}</code>
-<b>ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ:</b> <code>{blocked}</code>
-<b>ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ:</b> <code>{deleted}</code>
-<b>ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ:</b> <code>{unsuccessful}</code>
-"""
-    # Edit the message to show the final status
+    status = f"<b>📢 ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</b>\n\n<b>ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ:</b> <code>{total}</code>\n<b>ꜱᴜᴄᴄᴇꜱꜰᴜʟ:</b> <code>{successful}</code>\n<b>ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ:</b> <code>{blocked}</code>\n<b>ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ:</b> <code>{deleted}</code>\n<b>ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ:</b> <code>{unsuccessful}</code>"
     await b_msg.edit_text(status)
-    
-    # Wait for 30 seconds, then delete the status message to avoid chat clutter
     await asyncio.sleep(30)
-    try:
-        await b_msg.delete()
-    except Exception:
-        pass
+    try: await b_msg.delete()
+    except Exception: pass
         
