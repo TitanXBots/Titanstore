@@ -29,23 +29,12 @@ async def get_input(client, message, prompt, keyboard=None):
 
     try:
         msg = await client.listen(message.chat.id, timeout=300)
-        
         if not msg.text or msg.text.lower() == "/cancel":
-            await msg.reply_photo(
-                photo=START_PIC, 
-                caption="❌ 𝙲𝙰𝙽𝙲𝙴𝙻𝙻𝙴𝙳!", 
-                reply_markup=keyboard
-            )
+            await msg.reply_photo(photo=START_PIC, caption="❌ 𝙲𝙰𝙽𝙲𝙴𝙻𝙻𝙴𝙳!", reply_markup=keyboard)
             return None
-            
         return msg.text
-        
     except asyncio.TimeoutError:
-        await message.reply_photo(
-            photo=START_PIC, 
-            caption="⌛ 𝚃𝙸𝙼𝙴𝙾𝚄𝚃!", 
-            reply_markup=keyboard
-        )
+        await message.reply_photo(photo=START_PIC, caption="⌛ 𝚃𝙸𝙼𝙴𝙾𝚄𝚃!", reply_markup=keyboard)
         return None
 
 async def subscribed(client, message) -> bool:
@@ -110,3 +99,4 @@ def get_readable_time(seconds: int) -> str:
     if minutes: res.append(f"{minutes}m")
     if seconds or not res: res.append(f"{seconds}s")
     return " ".join(res)
+    
