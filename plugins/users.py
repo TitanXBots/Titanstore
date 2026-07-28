@@ -12,6 +12,5 @@ async def check_users_command(client: Client, message: Message):
     
     await loading_msg.edit_text(
         f"📊 ʙᴏᴛ ꜱᴛᴀᴛɪꜱᴛɪᴄꜱ\n\n"
-        f"👥 ᴛᴏᴛᴀʟ ʀᴇɢɪꜱᴛᴇʀᴇᴅ ᴜꜱᴇʀꜱ:`{len(users)}`"
+        f"👥 ᴛᴏᴛᴀʟ ʀᴇɢɪꜱᴛᴇʀᴇᴅ ᴜꜱᴇʀꜱ: `{len(users)}`"
     )
-    
