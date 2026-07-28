@@ -22,6 +22,7 @@ async def start_command(client: Client, message: Message):
     first_name = message.from_user.first_name or "User"
     username = message.from_user.username or ""
 
+    # Force Sub with exactly formatted multi-line grid array
     if not await subscribed(client, message):
         buttons = []
         row = []
@@ -86,8 +87,23 @@ async def start_command(client: Client, message: Message):
                 asyncio.create_task(delete_files(copied_msgs, client, warn, text.split(" ", 1)[1], auto_delete_time))
         return
 
-    btn = [[InlineKeyboardButton("🧠 HELP", callback_data="help"), InlineKeyboardButton("🔰 ABOUT", callback_data="about")]]
-    if await is_admin(user_id): btn.append([InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")])
+    btn = [
+        [
+            InlineKeyboardButton("🧠 Help", callback_data="help"), 
+            InlineKeyboardButton("🔰 About", callback_data="about")
+        ]
+    ]
+    if await is_admin(user_id): 
+        btn.append([
+            InlineKeyboardButton("⚙️ Settings", callback_data="settings"), 
+            InlineKeyboardButton("⚡ Close", callback_data="close")
+        ])
+    else:
+        btn.append([
+            InlineKeyboardButton("⚓ Home", callback_data="start"), 
+            InlineKeyboardButton("⚡ Close", callback_data="close")
+        ])
+        
     await message.reply_photo(photo=START_PIC, caption=START_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(btn))
 
 async def delete_files(messages, client, main_message, payload, timer):
@@ -95,6 +111,14 @@ async def delete_files(messages, client, main_message, payload, timer):
     for msg in messages:
         try: await client.delete_messages(chat_id=msg.chat.id, message_ids=msg.id)
         except: pass
-    try: await main_message.edit_text("✅ <b>Your File Has Been Deleted.</b>\n👇 Click below to get it again.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("♻️ Get File Again", url=f"https://t.me/{client.username}?start={payload}")]]))
+    try: 
+        await main_message.edit_text(
+            text="✅ <b>Your File Has Been Deleted.</b>\n👇 Click below to get it again.", 
+            reply_markup=InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("♻️ Get File Again", url=f"https://t.me/{client.username}?start={payload}")
+                ]
+            ])
+        )
     except: pass
         
