@@ -14,3 +14,4 @@ async def check_users_command(client: Client, message: Message):
         f"📊 ʙᴏᴛ ꜱᴛᴀᴛɪꜱᴛɪᴄꜱ\n\n"
         f"👥 ᴛᴏᴛᴀʟ ʀᴇɢɪꜱᴛᴇʀᴇᴅ ᴜꜱᴇʀꜱ: `{len(users)}`"
     )
+    
