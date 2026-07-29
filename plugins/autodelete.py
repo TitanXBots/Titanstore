@@ -23,6 +23,25 @@ def parse_time(time_str: str) -> int:
         return int(time_str)
     return 0
 
+async def render_autodelete_menu(message):
+    is_on = await get_auto_delete_status()
+    status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
+    current_time = await get_auto_delete_time()
+    text = f"🗑 <b>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>\nᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ: <b>{get_readable_time(current_time)}</b>"
+    markup = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="autodelete_on"), 
+            InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="autodelete_off")
+        ],
+        [
+            InlineKeyboardButton("⏱ ᴄʜᴀɴɢᴇ ᴛɪᴍᴇʀ", callback_data="autodelete_set_time")
+        ],
+        [
+            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
+        ]
+    ])
+    await safe_edit(message, text, markup)
+
 @Client.on_callback_query(filters.regex(r"^autodelete_"))
 async def autodelete_callbacks(client: Client, query: CallbackQuery):
     if not await is_admin(query.from_user.id): 
@@ -31,98 +50,45 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
     data = query.data
 
     if data == "autodelete_menu":
-        is_on = await get_auto_delete_status()
-        status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
-        current_time = await get_auto_delete_time()
-        return await safe_edit(query.message, f"🗑 <b>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>\nᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ: <b>{get_readable_time(current_time)}</b>", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="autodelete_on"), 
-                InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="autodelete_off")
-            ],
-            [
-                InlineKeyboardButton("⏱ ᴄʜᴀɴɢᴇ ᴛɪᴍᴇʀ", callback_data="autodelete_set_time")
-            ],
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
-            ]
-        ]))
+        await render_autodelete_menu(query.message)
         
     elif data == "autodelete_on":
         await set_auto_delete_status(True)
         await query.answer("✅ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
-        current_time = await get_auto_delete_time()
-        return await safe_edit(query.message, f"🗑 <b>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏɴ ✅</b>\nᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ: <b>{get_readable_time(current_time)}</b>", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="autodelete_on"), 
-                InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="autodelete_off")
-            ],
-            [
-                InlineKeyboardButton("⏱ ᴄʜᴀɴɢᴇ ᴛɪᴍᴇʀ", callback_data="autodelete_set_time")
-            ],
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
-            ]
-        ]))
+        await render_autodelete_menu(query.message)
         
     elif data == "autodelete_off":
         await set_auto_delete_status(False)
         await query.answer("❌ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
-        current_time = await get_auto_delete_time()
-        return await safe_edit(query.message, f"🗑 <b>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏꜰꜰ ❌</b>\nᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ: <b>{get_readable_time(current_time)}</b>", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="autodelete_on"), 
-                InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="autodelete_off")
-            ],
-            [
-                InlineKeyboardButton("⏱ ᴄʜᴀɴɢᴇ ᴛɪᴍᴇʀ", callback_data="autodelete_set_time")
-            ],
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
-            ]
-        ]))
+        await render_autodelete_menu(query.message)
         
     elif data == "autodelete_set_time":
-        back_keyboard = InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="autodelete_menu")
-            ]
-        ])
-        prompt_text = "<b>ꜱᴇɴᴅ ᴍᴇ ᴀ ᴛɪᴍᴇ ɪɴ ʟɪᴋᴇ ᴛʜɪꜱ - 1ʜ ᴏʀ 15ᴍ\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.</b>"
-        
-        await safe_edit(query.message, prompt_text, back_keyboard)
+        back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="autodelete_menu")]])
+        await safe_edit(query.message, "<b>ꜱᴇɴᴅ ᴍᴇ ᴀ ᴛɪᴍᴇ ɪɴ ʟɪᴋᴇ ᴛʜɪꜱ - 1ʜ ᴏʀ 15ᴍ\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.</b>", back_keyboard)
         
         try:
-            input_msg = await client.listen(query.message.chat.id, timeout=300)
+            input_msg = await client.listen(query.message.chat.id, timeout=60)
         except ListenerTimeout:
-            await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!", back_keyboard)
-            return asyncio.create_task(delayed_delete(query.message))
+            await query.answer("⌛ ᴛɪᴍᴇᴏᴜᴛ!", show_alert=True)
+            return await render_autodelete_menu(query.message)
         
         text = input_msg.text
-        
-        try:
-            await input_msg.delete()
-        except Exception:
-            pass
+        try: await input_msg.delete()
+        except: pass
             
         if not text or text.lower() == "/cancel":
-            await safe_edit(query.message, "❌ ᴄᴀɴᴄᴇʟʟᴇᴅ!", back_keyboard)
-            return asyncio.create_task(delayed_delete(query.message))
+            await query.answer("❌ ᴄᴀɴᴄᴇʟʟᴇᴅ!", show_alert=True)
+            return await render_autodelete_menu(query.message)
             
         time_in_seconds = parse_time(text)
         if time_in_seconds < 10: 
-            await safe_edit(
-                query.message,
-                "❌ <b>ɪɴᴠᴀʟɪᴅ ꜰᴏʀᴍᴀᴛ!</b> ᴘʟᴇᴀꜱᴇ ᴜꜱᴇ ꜰᴏʀᴍᴀᴛꜱ ʟɪᴋᴇ <code>1h</code>, <code>15m</code>, ᴏʀ <code>30s</code>.", 
-                back_keyboard
-            )
-            return asyncio.create_task(delayed_delete(query.message))
+            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ <b>ɪɴᴠᴀʟɪᴅ ꜰᴏʀᴍᴀᴛ!</b> ᴘʟᴇᴀꜱᴇ ᴜꜱᴇ ꜰᴏʀᴍᴀᴛꜱ ʟɪᴋᴇ <code>1h</code>, <code>15m</code>, ᴏʀ <code>30s</code>.", reply_markup=back_keyboard)
+            asyncio.create_task(delayed_delete(msg))
+            return await render_autodelete_menu(query.message)
             
         await set_auto_delete_time(time_in_seconds)
         
-        await safe_edit(
-            query.message,
-            f"✅ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ꜱᴇᴛ ᴛᴏ <b>{get_readable_time(time_in_seconds)}</b>.", 
-            back_keyboard
-        )
-        asyncio.create_task(delayed_delete(query.message))
+        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ꜱᴇᴛ ᴛᴏ <b>{get_readable_time(time_in_seconds)}</b>.", reply_markup=back_keyboard)
+        asyncio.create_task(delayed_delete(msg))
+        await render_autodelete_menu(query.message)
         
