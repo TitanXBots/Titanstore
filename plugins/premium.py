@@ -1,14 +1,29 @@
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from pyromod.exceptions import ListenerTimeout
 from config import START_PIC
-from helper_func import safe_edit, get_input
+from helper_func import safe_edit
 from database.database import is_admin, add_premium, remove_premium, premium_collection
 
 async def delayed_delete(message, delay=7):
     await asyncio.sleep(delay)
     try: await message.delete()
     except: pass
+
+def get_premium_menu():
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("➕ ᴀᴅᴅ ᴘʀᴇᴍɪᴜᴍ", callback_data="premium_add"),
+            InlineKeyboardButton("➖ ʀᴇᴍᴏᴠᴇ ᴘʀᴇᴍɪᴜᴍ", callback_data="premium_remove")
+        ],
+        [
+            InlineKeyboardButton("📋 ᴘʀᴇᴍɪᴜᴍ ʟɪꜱᴛ", callback_data="premium_list")
+        ],
+        [
+            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
+        ]
+    ])
 
 @Client.on_callback_query(filters.regex(r"^premium_"))
 async def premium_callbacks(client: Client, query: CallbackQuery):
@@ -18,53 +33,62 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
     data = query.data
 
     if data == "premium_menu":
-        return await safe_edit(query.message, "💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ\n\nᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ ᴄᴀɴ ɢᴇɴᴇʀᴀᴛᴇ ꜰɪʟᴇ ʟɪɴᴋꜱ.", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("➕ ᴀᴅᴅ ᴘʀᴇᴍɪᴜᴍ", callback_data="premium_add"),
-                InlineKeyboardButton("➖ ʀᴇᴍᴏᴠᴇ ᴘʀᴇᴍɪᴜᴍ", callback_data="premium_remove")
-            ],
-            [
-                InlineKeyboardButton("📋 ᴘʀᴇᴍɪᴜᴍ ʟɪꜱᴛ", callback_data="premium_list")
-            ],
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
-            ]
-        ]))
+        return await safe_edit(query.message, "💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ\n\nᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ ᴄᴀɴ ɢᴇɴᴇʀᴀᴛᴇ ꜰɪʟᴇ ʟɪɴᴋꜱ.", get_premium_menu())
 
     elif data == "premium_add":
-        keyboard = InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
-            ]
-        ])
-        text = await get_input(client, query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴀɴᴅ ɴᴜᴍʙᴇʀ ᴏꜰ ᴅᴀʏꜱ (ꜱᴘᴀᴄᴇ ꜱᴇᴘᴀʀᴀᴛᴇᴅ). ᴇxᴀᴍᴘʟᴇ: <code>123456789 30</code>", keyboard)
-        if not text: return 
+        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")]])
+        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴀɴᴅ ɴᴜᴍʙᴇʀ ᴏꜰ ᴅᴀʏꜱ (ꜱᴘᴀᴄᴇ ꜱᴇᴘᴀʀᴀᴛᴇᴅ). ᴇxᴀᴍᴘʟᴇ: <code>123456789 30</code>\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.", keyboard)
+        
+        try:
+            input_msg = await client.listen(query.message.chat.id, timeout=60)
+        except ListenerTimeout:
+            return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!\n\n💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
+            
+        text = input_msg.text
+        try: await input_msg.delete()
+        except: pass
+        
+        if not text or text.lower() == "/cancel":
+            return await safe_edit(query.message, "❌ ᴄᴀɴᴄᴇʟʟᴇᴅ!\n\n💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
+            
         parts = text.split()
         if len(parts) != 2 or not parts[0].isdigit() or not parts[1].isdigit(): 
             msg = await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ꜰᴏʀᴍᴀᴛ. ᴜꜱᴇ: <code>user_id days</code>", reply_markup=keyboard)
-            return asyncio.create_task(delayed_delete(msg))
+            asyncio.create_task(delayed_delete(msg))
+            return await safe_edit(query.message, "💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
             
         uid, days = int(parts[0]), int(parts[1])
         await add_premium(uid, days)
         msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ɢʀᴀɴᴛᴇᴅ ᴘʀᴇᴍɪᴜᴍ ꜰᴏʀ {days} ᴅᴀʏꜱ.", reply_markup=keyboard)
         asyncio.create_task(delayed_delete(msg))
+        await safe_edit(query.message, "💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
 
     elif data == "premium_remove":
-        keyboard = InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
-            ]
-        ])
-        text = await get_input(client, query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴠᴏᴋᴇ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ", keyboard)
-        if not text: return 
+        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")]])
+        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴠᴏᴋᴇ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.", keyboard)
+        
+        try:
+            input_msg = await client.listen(query.message.chat.id, timeout=60)
+        except ListenerTimeout:
+            return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!\n\n💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
+            
+        text = input_msg.text
+        try: await input_msg.delete()
+        except: pass
+        
+        if not text or text.lower() == "/cancel":
+            return await safe_edit(query.message, "❌ ᴄᴀɴᴄᴇʟʟᴇᴅ!\n\n💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
+            
         if not text.isdigit(): 
             msg = await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ɪᴅ", reply_markup=keyboard)
-            return asyncio.create_task(delayed_delete(msg))
+            asyncio.create_task(delayed_delete(msg))
+            return await safe_edit(query.message, "💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
             
         uid = int(text)
         await remove_premium(uid)
         msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid}'ꜱ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ ʀᴇᴠᴏᴋᴇᴅ.", reply_markup=keyboard)
         asyncio.create_task(delayed_delete(msg))
+        await safe_edit(query.message, "💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
 
     elif data == "premium_list":
         cursor = premium_collection.find({"is_premium": True})
