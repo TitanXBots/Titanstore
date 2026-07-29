@@ -17,37 +17,6 @@ async def safe_edit(message, text, buttons=None):
         try: await message.reply_text(text=text, reply_markup=buttons, disable_web_page_preview=True)
         except: pass
 
-async def get_input(client, message, prompt, keyboard=None):
-    try:
-        if message.photo or message.video or message.document:
-            await message.edit_caption(caption=prompt, reply_markup=keyboard)
-        else:
-            if message.text != prompt: 
-                await message.edit_text(text=prompt, reply_markup=keyboard)
-    except MessageNotModified: pass
-    except Exception: pass
-
-    try:
-        msg = await client.listen(message.chat.id, timeout=300)
-        
-        if not msg.text or msg.text.lower() == "/cancel":
-            await msg.reply_photo(
-                photo=START_PIC, 
-                caption="❌ ᴄᴀɴᴄᴇʟʟᴇᴅ!", 
-                reply_markup=keyboard
-            )
-            return None
-            
-        return msg.text
-        
-    except asyncio.TimeoutError:
-        await message.reply_photo(
-            photo=START_PIC, 
-            caption="⌛ ᴛɪᴍᴇᴏᴜᴛ!", 
-            reply_markup=keyboard
-        )
-        return None
-
 async def subscribed(client, message) -> bool:
     if not message.from_user: return True
     user_id = message.from_user.id
