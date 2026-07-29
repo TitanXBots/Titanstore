@@ -33,7 +33,7 @@ async def get_input(client, message, prompt, keyboard=None):
         if not msg.text or msg.text.lower() == "/cancel":
             await msg.reply_photo(
                 photo=START_PIC, 
-                caption="❌ 𝙲𝙰𝙽𝙲𝙴𝙻𝙻𝙴𝙳!", 
+                caption="❌ ᴄᴀɴᴄᴇʟʟᴇᴅ!", 
                 reply_markup=keyboard
             )
             return None
@@ -43,7 +43,7 @@ async def get_input(client, message, prompt, keyboard=None):
     except asyncio.TimeoutError:
         await message.reply_photo(
             photo=START_PIC, 
-            caption="⌛ 𝚃𝙸𝙼𝙴𝙾𝚄𝚃!", 
+            caption="⌛ ᴛɪᴍᴇᴏᴜᴛ!", 
             reply_markup=keyboard
         )
         return None
