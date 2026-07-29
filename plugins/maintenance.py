@@ -7,12 +7,12 @@ async def maintenance_toggle_command(client: Client, message: Message):
     if not await is_admin(message.from_user.id): return await message.reply_text("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!")
 
     if len(message.command) != 2:
-        return await message.reply_text("<b>Usage:</b>\n`/maintenance on`\n`/maintenance off`")
+        return await message.reply_text("<b>ᴜꜱᴀɢᴇ:</b>\n`/maintenance on`\n`/maintenance off`")
     arg = message.command[1].lower()
     if arg not in ("on", "off"):
-        return await message.reply_text("❌ ɪɴᴠᴀʟɪᴅ ᴀʀɢᴜᴍᴇɴᴛ. ᴜꜱᴇ ᴏɴʟʏ `on` or `off`.")
+        return await message.reply_text("❌ ɪɴᴠᴀʟɪᴅ ᴀʀɢᴜᴍᴇɴᴛ. ᴜꜱᴇ ᴏɴʟʏ `on` ᴏʀ `off`.")
 
     await maintenance_collection.update_one({"_id": "maintenance"}, {"$set": {"maintenance": arg}}, upsert=True)
-    if arg == "on": await message.reply_text("✅ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴇɴᴀʙʟᴇᴅ. ᴛʜᴇ ʙᴏᴛ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ ᴜɴᴅᴇʀ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ. ɴᴏɴ ᴀᴅᴍɪɴ ᴜꜱᴇʀꜱ ᴄᴀɴɴᴏᴛ ᴜꜱᴇ ᴛʜᴇ ʙᴏᴛ ᴀᴛ ᴛʜɪꜱ ᴛɪᴍᴇ.")
-    else: await message.reply_text("⚙️ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅɪꜱᴀʙʟᴇᴅ. ᴛʜᴇ ʙᴏᴛ ɪꜱ ɴᴏᴡ ᴀᴠᴀɪʟᴀʙʟᴇ ᴛᴏ ᴀʟʟ ᴜꜱᴇʀꜱ.")
+    if arg == "on": await message.reply_text("✅ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴇɴᴀʙʟᴇᴅ. ɴᴏɴ-ᴀᴅᴍɪɴ ᴜꜱᴇʀꜱ ᴀʀᴇ ʟᴏᴄᴋᴇᴅ ᴏᴜᴛ.")
+    else: await message.reply_text("⚙️ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴅɪꜱᴀʙʟᴇᴅ. ɴᴏʀᴍᴀʟ ᴏᴘᴇʀᴀᴛɪᴏɴꜱ ʀᴇꜱᴜᴍᴇᴅ.")
         
