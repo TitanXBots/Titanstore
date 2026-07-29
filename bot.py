@@ -48,12 +48,12 @@ class Bot(Client):
                     if now > expires_at:
                         await remove_premium(user_id)
                         try:
-                            await self.send_message(user_id, f"⚠️ <b>Your premium membership has ended.</b>\n\nIt officially closed on: {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC")
+                            await self.send_message(user_id, f"⚠️ <b>ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ʜᴀꜱ ᴇɴᴅᴇᴅ.</b>\n\nɪᴛ ᴏꜰꜰɪᴄɪᴀʟʟʏ ᴄʟᴏꜱᴇᴅ ᴏɴ: {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC")
                         except (UserIsBlocked, UserDeactivated): pass
                         except Exception as e: self.logger.error(f"Expiry notify error for {user_id}: {e}")
                     elif warning_time > expires_at and not user.get("notified", False):
                         try:
-                            await self.send_message(user_id, f"⚠️ <b>Reminder:</b> Your premium membership is closing soon!\n\n<b>Expiry Date:</b> {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC")
+                            await self.send_message(user_id, f"⚠️ <b>ʀᴇᴍɪɴᴅᴇʀ:</b> ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ɪꜱ ᴄʟᴏꜱɪɴɢ ꜱᴏᴏɴ!\n\n<b>ᴇxᴘɪʀʏ ᴅᴀᴛᴇ:</b> {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC")
                             await premium_collection.update_one({"_id": user_id}, {"$set": {"notified": True}})
                         except (UserIsBlocked, UserDeactivated): pass
                         except Exception as e: self.logger.error(f"Warning notify error for {user_id}: {e}")
