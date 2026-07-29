@@ -88,8 +88,8 @@ async def start_command(client: Client, message: Message):
 
     btn = [
         [
-            InlineKeyboardButton("🧠 Help", callback_data="help"), 
-            InlineKeyboardButton("🔰 About", callback_data="about")
+            InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"), 
+            InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
         ]
     ]
     if await is_admin(user_id): 
