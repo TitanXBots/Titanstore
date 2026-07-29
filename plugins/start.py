@@ -28,7 +28,7 @@ async def start_command(client: Client, message: Message):
         for i, key in enumerate(["fs1", "fs2", "fs3", "fs4"], start=1):
             link = client.invitelinks.get(key)
             if link:
-                row.append(InlineKeyboardButton(f"Join Channel {i}", url=link))
+                row.append(InlineKeyboardButton(f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ {i}", url=link))
                 if len(row) == 2:
                     buttons.append(row)
                     row = []
@@ -41,7 +41,7 @@ async def start_command(client: Client, message: Message):
         )
 
     if await is_user_banned(user_id):
-        return await message.reply_text(f"🚫 You are banned.\nReason: {await get_ban_reason(user_id)}")
+        return await message.reply_text(f"🚫 ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ.\nʀᴇᴀꜱᴏɴ: {await get_ban_reason(user_id)}")
 
     if not await is_user_present(user_id):
         await add_user(user_id, first_name, username)
@@ -50,7 +50,7 @@ async def start_command(client: Client, message: Message):
         except: pass
 
     if await is_maintenance(user_id):
-        return await message.reply_text("🛠 Maintenance mode ON. Normal operations are temporarily paused.")
+        return await message.reply_text("🛠 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴏɴ. ɴᴏʀᴍᴀʟ ᴏᴘᴇʀᴀᴛɪᴏɴꜱ ᴀʀᴇ ᴛᴇᴍᴘᴏʀᴀʀɪʟʏ ᴘᴀᴜꜱᴇᴅ.")
 
     if len(text.split()) > 1:
         try:
@@ -58,7 +58,7 @@ async def start_command(client: Client, message: Message):
             ids = range(int(argument[1]) // abs(client.db_channel.id), (int(argument[2]) // abs(client.db_channel.id)) + 1) if len(argument) == 3 else [int(argument[1]) // abs(client.db_channel.id)]
         except Exception: return
 
-        temp = await message.reply_text("⏳ Processing...")
+        temp = await message.reply_text("⏳ ᴘʀᴏᴄᴇꜱꜱɪɴɢ...")
         messages = await get_messages(client, ids)
         await temp.delete()
 
@@ -77,12 +77,12 @@ async def start_command(client: Client, message: Message):
             except Exception as e: logging.error(f"Copy error: {e}")
 
         if not copied_msgs: 
-            return await message.reply("❌ **Error:** Files unavailable or deleted from the database.")
+            return await message.reply("❌ <b>ᴇʀʀᴏʀ:</b> ꜰɪʟᴇꜱ ᴜɴᴀᴠᴀɪʟᴀʙʟᴇ ᴏʀ ᴅᴇʟᴇᴛᴇᴅ ꜰʀᴏᴍ ᴛʜᴇ ᴅᴀᴛᴀʙᴀꜱᴇ.")
 
         if await get_auto_delete_status():
             auto_delete_time = await get_auto_delete_time()
             if auto_delete_time > 0:
-                warn = await message.reply(f"<b>❗️ <u>IMPORTANT</u> ❗️</b>\n\nThis File Will Be Deleted In <b>{get_readable_time(auto_delete_time)}</b>.")
+                warn = await message.reply(f"<b>❗️ <u>ɪᴍᴘᴏʀᴛᴀɴᴛ</u> ❗️</b>\n\nᴛʜɪꜱ ꜰɪʟᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ ɪɴ <b>{get_readable_time(auto_delete_time)}</b>.")
                 asyncio.create_task(delete_files(copied_msgs, client, warn, text.split(" ", 1)[1], auto_delete_time))
         return
 
@@ -94,7 +94,7 @@ async def start_command(client: Client, message: Message):
     ]
     if await is_admin(user_id): 
         btn.append([
-            InlineKeyboardButton("⚙️ Settings", callback_data="settings")
+            InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")
         ])
         
     await message.reply_photo(
@@ -110,10 +110,10 @@ async def delete_files(messages, client, main_message, payload, timer):
         except: pass
     try: 
         await main_message.edit_text(
-            text="✅ <b>Your File Has Been Deleted.</b>\n👇 Click below to get it again.", 
+            text="✅ <b>ʏᴏᴜʀ ꜰɪʟᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ.</b>\n👇 ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ᴛᴏ ɢᴇᴛ ɪᴛ ᴀɢᴀɪɴ.", 
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("♻️ Get File Again", url=f"https://t.me/{client.username}?start={payload}")
+                    InlineKeyboardButton("♻️ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ", url=f"https://t.me/{client.username}?start={payload}")
                 ]
             ])
         )
