@@ -31,7 +31,7 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
             ]
         ])
-        text = await get_input(client, query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴀɴᴅ ɴᴜᴍʙᴇʀ ᴏꜰ ᴅᴀʏꜱ (ꜱᴘᴀᴄᴇ ꜱᴇᴘᴀʀᴀᴛᴇᴅ). ᴇxᴀᴍᴘʟᴇ: '123456789 30' ᴏʀ ꜱᴇɴᴅ /cancel ᴛᴏ ꜱᴛᴏᴘ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ", keyboard)
+        text = await get_input(client, query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴀɴᴅ ɴᴜᴍʙᴇʀ ᴏꜰ ᴅᴀʏꜱ. ᴇxᴀᴍᴘʟᴇ: '123456789 30' ᴏʀ ꜱᴇɴᴅ /cancel ᴛᴏ ꜱᴛᴏᴘ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ", keyboard)
         if not text: return 
         parts = text.split()
         if len(parts) != 2 or not parts[0].isdigit() or not parts[1].isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ꜰᴏʀᴍᴀᴛ. ᴜꜱᴇ: `user_id ᴅᴀʏꜱ`", reply_markup=keyboard)
