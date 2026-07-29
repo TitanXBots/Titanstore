@@ -9,23 +9,23 @@ from database.database import is_premium
 @Client.on_message(filters.private & filters.command('batch'))
 async def batch(client: Client, message: Message):
     if not await is_premium(message.from_user.id): 
-        return await message.reply_text("⚠️ **Access Denied:** Only Admins and Premium Members can generate batch links.")
+        return await message.reply_text("⚠️ <b>ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ:</b> ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀɴᴅ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱ ᴄᴀɴ ɢᴇɴᴇʀᴀᴛᴇ ʙᴀᴛᴄʜ ʟɪɴᴋꜱ.")
 
     while True:
         try:
-            first_message = await client.ask(chat_id=message.from_user.id, text="Forward FIRST message from DB channel\nor send DB post link", filters=(filters.forwarded | filters.text), timeout=60)
+            first_message = await client.ask(chat_id=message.from_user.id, text="ꜰᴏʀᴡᴀʀᴅ ꜰɪʀꜱᴛ ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ\nᴏʀ ꜱᴇɴᴅ ᴅʙ ᴘᴏꜱᴛ ʟɪɴᴋ", filters=(filters.forwarded | filters.text), timeout=60)
         except ListenerTimeout: return
         f_msg_id = await get_message_id(client, first_message)
         if f_msg_id: break
-        await first_message.reply_text("❌ Invalid message (not from DB channel)")
+        await first_message.reply_text("❌ ɪɴᴠᴀʟɪᴅ ᴍᴇꜱꜱᴀɢᴇ (ɴᴏᴛ ꜰʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ)")
 
     while True:
         try:
-            second_message = await client.ask(chat_id=message.from_user.id, text="Forward LAST message from DB channel\nor send DB post link", filters=(filters.forwarded | filters.text), timeout=60)
+            second_message = await client.ask(chat_id=message.from_user.id, text="ꜰᴏʀᴡᴀʀᴅ ʟᴀꜱᴛ ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ\nᴏʀ ꜱᴇɴᴅ ᴅʙ ᴘᴏꜱᴛ ʟɪɴᴋ", filters=(filters.forwarded | filters.text), timeout=60)
         except ListenerTimeout: return
         s_msg_id = await get_message_id(client, second_message)
         if s_msg_id: break
-        await second_message.reply_text("❌ Invalid message (not from DB channel)")
+        await second_message.reply_text("❌ ɪɴᴠᴀʟɪᴅ ᴍᴇꜱꜱᴀɢᴇ (ɴᴏᴛ ꜰʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ)")
 
     if f_msg_id > s_msg_id:
         f_msg_id, s_msg_id = s_msg_id, f_msg_id
@@ -37,23 +37,23 @@ async def batch(client: Client, message: Message):
     share_url = urllib.parse.quote(link)
     keyboard = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🔁 Share URL", url=f"https://telegram.me/share/url?url={share_url}")
+            InlineKeyboardButton("🔁 ꜱʜᴀʀᴇ ᴜʀʟ", url=f"https://telegram.me/share/url?url={share_url}")
         ]
     ])
-    await second_message.reply_text(f"<b>Here is your batch link:</b>\n\n{link}", reply_markup=keyboard)
+    await second_message.reply_text(f"<b>ʜᴇʀᴇ ɪꜱ ʏᴏᴜʀ ʙᴀᴛᴄʜ ʟɪɴᴋ:</b>\n\n{link}", reply_markup=keyboard)
 
 @Client.on_message(filters.private & filters.command('genlink'))
 async def link_generator(client: Client, message: Message):
     if not await is_premium(message.from_user.id): 
-        return await message.reply_text("⚠️ **Access Denied:** Only Admins and Premium Members can generate links.")
+        return await message.reply_text("⚠️ <b>ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ:</b> ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀɴᴅ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱ ᴄᴀɴ ɢᴇɴᴇʀᴀᴛᴇ ʟɪɴᴋꜱ.")
 
     while True:
         try:
-            channel_message = await client.ask(chat_id=message.from_user.id, text="Forward message from DB channel\nor send DB post link", filters=(filters.forwarded | filters.text), timeout=60)
+            channel_message = await client.ask(chat_id=message.from_user.id, text="ꜰᴏʀᴡᴀʀᴅ ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ\nᴏʀ ꜱᴇɴᴅ ᴅʙ ᴘᴏꜱᴛ ʟɪɴᴋ", filters=(filters.forwarded | filters.text), timeout=60)
         except ListenerTimeout: return
         msg_id = await get_message_id(client, channel_message)
         if msg_id: break
-        await channel_message.reply_text("❌ Invalid message (not from DB channel)")
+        await channel_message.reply_text("❌ ɪɴᴠᴀʟɪᴅ ᴍᴇꜱꜱᴀɢᴇ (ɴᴏᴛ ꜰʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ)")
 
     base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
     link = f"https://t.me/{client.username}?start={base64_string}"
@@ -61,8 +61,8 @@ async def link_generator(client: Client, message: Message):
     share_url = urllib.parse.quote(link)
     keyboard = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🔁 Share URL", url=f"https://telegram.me/share/url?url={share_url}")
+            InlineKeyboardButton("🔁 ꜱʜᴀʀᴇ ᴜʀʟ", url=f"https://telegram.me/share/url?url={share_url}")
         ]
     ])
-    await channel_message.reply_text(f"<b>Here is your link:</b>\n\n{link}", reply_markup=keyboard)
+    await channel_message.reply_text(f"<b>ʜᴇʀᴇ ɪꜱ ʏᴏᴜʀ ʟɪɴᴋ:</b>\n\n{link}", reply_markup=keyboard)
     
