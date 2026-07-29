@@ -4,6 +4,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 from config import CHANNEL_ID, USER_REPLY_TEXT
 from helper_func import encode
+from database.database import is_admin
 
 IGNORE_CMDS = [
     'start','users','broadcast','batch','genlink','stats','joinchannels','pypi',
@@ -14,10 +15,11 @@ IGNORE_CMDS = [
 
 @Client.on_message(filters.private & filters.incoming & ~filters.command(IGNORE_CMDS))
 async def private_message_handler(client: Client, message: Message):
-    try: 
-        await message.reply_text(USER_REPLY_TEXT, quote=True)
-    except: 
-        pass
+    if not await is_admin(message.from_user.id):
+        try: 
+            await message.reply_text(USER_REPLY_TEXT, quote=True)
+        except: 
+            pass
 
 @Client.on_message(filters.channel & filters.incoming & filters.chat(CHANNEL_ID))
 async def new_post(client: Client, message: Message):
