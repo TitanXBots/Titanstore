@@ -42,16 +42,13 @@ async def broadcast_command(client: Client, message: Message):
 <b>📢 ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</b>
 
 <b>ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ:</b> <code>{total}</code>
-<b>ꜱᴜᴄᴄᴇꜱꜰᴜʟ:</b> <code>{successful}</code>
+<b>ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ:</b> <code>{successful}</code>
 <b>ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ:</b> <code>{blocked}</code>
 <b>ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ:</b> <code>{deleted}</code>
 <b>ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ:</b> <code>{unsuccessful}</code>
 """
 
-    # Edit the message to show the final status
     await b_msg.edit_text(status)
-    
-    # Wait for 30 seconds, then delete the status message to avoid chat clutter
     await asyncio.sleep(30)
     try: 
         await b_msg.delete()
