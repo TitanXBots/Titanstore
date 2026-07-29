@@ -1,8 +1,14 @@
+import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from config import START_PIC
 from helper_func import safe_edit, get_input
 from database.database import is_admin, add_premium, remove_premium, premium_collection
+
+async def delayed_delete(message, delay=7):
+    await asyncio.sleep(delay)
+    try: await message.delete()
+    except: pass
 
 @Client.on_callback_query(filters.regex(r"^premium_"))
 async def premium_callbacks(client: Client, query: CallbackQuery):
@@ -12,13 +18,13 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
     data = query.data
 
     if data == "premium_menu":
-        return await safe_edit(query.message, "💎 ʜᴇʀᴇ ʏᴏᴜ ᴄᴀɴ ᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ꜱᴇᴛᴛɪɴɢꜱ\n\nᴍᴀɴᴀɢᴇ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘꜱ ʙʏ ᴀᴅᴅɪɴɢ ᴏʀ ʀᴇᴍᴏᴠɪɴɢ ᴜꜱᴇʀꜱ.", InlineKeyboardMarkup([
+        return await safe_edit(query.message, "💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ\n\nᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ ᴄᴀɴ ɢᴇɴᴇʀᴀᴛᴇ ꜰɪʟᴇ ʟɪɴᴋꜱ.", InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("➕ ᴀᴅᴅ ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀ", callback_data="premium_add"),
-                InlineKeyboardButton("➖ ʀᴇᴍᴏᴠᴇ ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀ", callback_data="premium_remove")
+                InlineKeyboardButton("➕ ᴀᴅᴅ ᴘʀᴇᴍɪᴜᴍ", callback_data="premium_add"),
+                InlineKeyboardButton("➖ ʀᴇᴍᴏᴠᴇ ᴘʀᴇᴍɪᴜᴍ", callback_data="premium_remove")
             ],
             [
-                InlineKeyboardButton("📋 ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ ʟɪꜱᴛ", callback_data="premium_list")
+                InlineKeyboardButton("📋 ᴘʀᴇᴍɪᴜᴍ ʟɪꜱᴛ", callback_data="premium_list")
             ],
             [
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
@@ -31,13 +37,17 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
             ]
         ])
-        text = await get_input(client, query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴀɴᴅ ɴᴜᴍʙᴇʀ ᴏꜰ ᴅᴀʏꜱ. ᴇxᴀᴍᴘʟᴇ: '123456789 30' ᴏʀ ꜱᴇɴᴅ /cancel ᴛᴏ ꜱᴛᴏᴘ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ", keyboard)
+        text = await get_input(client, query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴀɴᴅ ɴᴜᴍʙᴇʀ ᴏꜰ ᴅᴀʏꜱ (ꜱᴘᴀᴄᴇ ꜱᴇᴘᴀʀᴀᴛᴇᴅ). ᴇxᴀᴍᴘʟᴇ: <code>123456789 30</code>", keyboard)
         if not text: return 
         parts = text.split()
-        if len(parts) != 2 or not parts[0].isdigit() or not parts[1].isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ꜰᴏʀᴍᴀᴛ. ᴜꜱᴇ: `user_id ᴅᴀʏꜱ`", reply_markup=keyboard)
+        if len(parts) != 2 or not parts[0].isdigit() or not parts[1].isdigit(): 
+            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ꜰᴏʀᴍᴀᴛ. ᴜꜱᴇ: <code>user_id days</code>", reply_markup=keyboard)
+            return asyncio.create_task(delayed_delete(msg))
+            
         uid, days = int(parts[0]), int(parts[1])
         await add_premium(uid, days)
-        await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ɢʀᴀɴᴛᴇᴅ ᴘʀᴇᴍɪᴜᴍ ꜰᴏʀ {days} ᴅᴀʏꜱ.", reply_markup=keyboard)
+        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ɢʀᴀɴᴛᴇᴅ ᴘʀᴇᴍɪᴜᴍ ꜰᴏʀ {days} ᴅᴀʏꜱ.", reply_markup=keyboard)
+        asyncio.create_task(delayed_delete(msg))
 
     elif data == "premium_remove":
         keyboard = InlineKeyboardMarkup([
@@ -45,12 +55,16 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
             ]
         ])
-        text = await get_input(client, query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴠᴏᴋᴇ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ ᴏʀ ꜱᴇɴᴅ /cancel ᴛᴏ ꜱᴛᴏᴘ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ", keyboard)
+        text = await get_input(client, query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴠᴏᴋᴇ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ", keyboard)
         if not text: return 
-        if not text.isdigit(): return await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ɪᴅ", reply_markup=keyboard)
+        if not text.isdigit(): 
+            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ɪᴅ", reply_markup=keyboard)
+            return asyncio.create_task(delayed_delete(msg))
+            
         uid = int(text)
         await remove_premium(uid)
-        await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid}'ꜱ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ ʀᴇᴠᴏᴋᴇᴅ.", reply_markup=keyboard)
+        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid}'ꜱ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ ʀᴇᴠᴏᴋᴇᴅ.", reply_markup=keyboard)
+        asyncio.create_task(delayed_delete(msg))
 
     elif data == "premium_list":
         cursor = premium_collection.find({"is_premium": True})
