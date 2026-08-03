@@ -59,7 +59,6 @@ ABOUT_TXT = """<b>✯ ᴄʀᴇᴀᴛᴏʀ : <a href=https://t.me/TitanXBots>ʏ�
 ✯ ᴜᴘᴅᴀᴛᴇꜱ ᴄʜᴀɴɴᴇʟ : <a href=https://t.me/TitanXBots>ᴛɪᴛᴀɴxʙᴏᴛꜱ</a>
 ✯ ꜱᴜᴘᴘᴏʀᴛ : <a href=https://t.me/TitanMattersSupport>ᴛɪᴛᴀɴ ɢʀᴏᴜᴘ</a></b>"""
 
-
 COMMANDS_TXT = """<b>🤖 ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ ᴄᴏᴍᴍᴀɴᴅ</b>
 
 • /genlink - ᴄʀᴇᴀᴛᴇ ʟɪɴᴋ ꜰᴏʀ ᴏɴᴇ ᴘᴏꜱᴛ
