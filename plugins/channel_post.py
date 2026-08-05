@@ -2,9 +2,9 @@ import urllib.parse
 from pyrogram import filters, Client
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
-from config import CHANNEL_ID, USER_REPLY_TEXT
+from config import USER_REPLY_TEXT
 from helper_func import encode
-from database.database import is_admin, get_tenant_by_db
+from database.database import is_admin, get_tenant_by_db, get_global_db_channel
 
 IGNORE_CMDS = [
     'start','users','broadcast','batch','genlink','stats','joinchannels','pypi',
@@ -26,7 +26,8 @@ async def new_post(client: Client, message: Message):
     chat_id = message.chat.id
     owner_id = None
     
-    if chat_id == CHANNEL_ID:
+    global_db = await get_global_db_channel()
+    if chat_id == global_db:
         owner_id = 0
     else:
         tenant = await get_tenant_by_db(chat_id)
