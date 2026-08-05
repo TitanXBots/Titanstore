@@ -5,7 +5,7 @@ from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import FloodWait
 
-from config import FORCE_PIC, FORCE_MSG, LOG_CHANNEL_ID, START_PIC, START_MSG
+from config import FORCE_PIC, FORCE_MSG, LOG_CHANNEL_ID, START_PIC, START_MSG, CHANNEL_ID, FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4
 from helper_func import subscribed, decode, get_messages, get_readable_time
 from database.database import (
     is_user_present, add_user, is_user_banned, get_ban_reason, 
@@ -142,20 +142,21 @@ async def start_command(client: Client, message: Message):
         buttons.append([InlineKeyboardButton("🔄 ʀᴇꜰʀᴇꜱʜ", callback_data="refresh_")])
         return await message.reply_photo(photo=FORCE_PIC, caption=FORCE_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(buttons))
 
-    btn = [[InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"), InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")]]
-    if await is_admin(user_id): btn.append([InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")])
+    btn = [
+        [InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"), InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")],
+        [InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")]
+    ]
     await message.reply_photo(photo=START_PIC, caption=START_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(btn))
 
 
 @Client.on_callback_query(filters.regex(r"^refresh_"))
 async def refresh_cb(client: Client, query: CallbackQuery):
-    user_id = query.from_user.id
     first_name = query.from_user.first_name or "User"
     payload = query.data.split("_", 1)[1]
     
     if payload:
         await query.message.delete()
-        return await handle_file_delivery(client, user_id, query, payload)
+        return await handle_file_delivery(client, query.from_user.id, query, payload)
         
     if await get_force_sub_status() and not await subscribed(client, query):
         return await query.answer("❌ ʏᴏᴜ ʜᴀᴠᴇɴ'ᴛ ᴊᴏɪɴᴇᴅ ᴀʟʟ ᴄʜᴀɴɴᴇʟꜱ ʏᴇᴛ!", show_alert=True)
@@ -163,9 +164,12 @@ async def refresh_cb(client: Client, query: CallbackQuery):
     await query.answer("✅ ʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴊᴏɪɴᴇᴅ!", show_alert=True)
     await query.message.delete()
     
-    btn = [[InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"), InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")]]
-    if await is_admin(user_id): btn.append([InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")])
-    await client.send_photo(chat_id=user_id, photo=START_PIC, caption=START_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(btn))
+    btn = [
+        [InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"), InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")],
+        [InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")]
+    ]
+    await client.send_photo(chat_id=query.from_user.id, photo=START_PIC, caption=START_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(btn))
+
 
 async def delete_files(messages, client, main_message, payload, timer):
     await asyncio.sleep(timer)
