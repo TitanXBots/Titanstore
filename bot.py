@@ -43,19 +43,28 @@ class Bot(Client):
                     
                     expires_at = expires_at.replace(tzinfo=timezone.utc)
                     
-                    # --- AUTO-REMOVE CUSTOM CHANNELS ON EXPIRY ---
+                    # --- AUTO-REMOVE PREMIUM & CUSTOM CHANNELS ON EXPIRY ---
                     if now > expires_at:
                         await remove_premium(user_id)
                         await delete_tenant_config(user_id) # Wipes user's Custom DB & FS channels!
                         try:
-                            await self.send_message(user_id, f"⚠️ <b>ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ʜᴀꜱ ᴇɴᴅᴇᴅ.</b>\n\nʏᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟ ꜱᴇᴛᴜᴘ ʜᴀꜱ ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ.\nɪᴛ ᴏꜰꜰɪᴄɪᴀʟʟʏ ᴄʟᴏꜱᴇᴅ ᴏɴ: {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC")
+                            await self.send_message(
+                                user_id, 
+                                f"⚠️ <b>ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ʜᴀꜱ ᴇɴᴅᴇᴅ.</b>\n\n"
+                                f"ʏᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴅᴀᴛᴀʙᴀꜱᴇ ᴀɴᴅ ꜰᴏʀᴄᴇ-ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʀᴇᴍᴏᴠᴇᴅ ꜰʀᴏᴍ ᴛʜᴇ ʙᴏᴛ.\n"
+                                f"ɪᴛ ᴏꜰꜰɪᴄɪᴀʟʟʏ ᴄʟᴏꜱᴇᴅ ᴏɴ: {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC"
+                            )
                         except (UserIsBlocked, UserDeactivated): pass
                         except Exception as e: self.logger.error(f"Expiry notify error for {user_id}: {e}")
                     
                     # --- SEND 24 HOUR WARNING ---
                     elif warning_time > expires_at and not user.get("notified", False):
                         try:
-                            await self.send_message(user_id, f"⚠️ <b>ʀᴇᴍɪɴᴅᴇʀ:</b> ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ɪꜱ ᴄʟᴏꜱɪɴɢ ꜱᴏᴏɴ!\n\n<b>ᴇxᴘɪʀʏ ᴅᴀᴛᴇ:</b> {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC")
+                            await self.send_message(
+                                user_id, 
+                                f"⚠️ <b>ʀᴇᴍɪɴᴅᴇʀ:</b> ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ɪꜱ ᴄʟᴏꜱɪɴɢ ꜱᴏᴏɴ!\n\n"
+                                f"<b>ᴇxᴘɪʀʏ ᴅᴀᴛᴇ:</b> {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC"
+                            )
                             await premium_collection.update_one({"_id": user_id}, {"$set": {"notified": True}})
                         except (UserIsBlocked, UserDeactivated): pass
                         except Exception as e: self.logger.error(f"Warning notify error for {user_id}: {e}")
@@ -69,7 +78,6 @@ class Bot(Client):
         self.uptime = datetime.now(timezone.utc)
         self.username = me.username
         
-        # Start the background task that checks for expirations
         asyncio.create_task(self.premium_expiry_task())
         self.logger.info("✅ Premium Expiry Monitor started.")
 
