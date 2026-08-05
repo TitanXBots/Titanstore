@@ -3,8 +3,8 @@ import re
 import asyncio
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import UserNotParticipant, FloodWait, MessageNotModified
-from config import FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4, START_PIC
-from database.database import is_admin, is_owner
+from config import START_PIC
+from database.database import is_admin, is_owner, get_force_sub_status, get_global_fs_channels
 
 async def safe_edit(message, text, buttons=None):
     try:
@@ -17,11 +17,18 @@ async def safe_edit(message, text, buttons=None):
         try: await message.reply_text(text=text, reply_markup=buttons, disable_web_page_preview=True)
         except: pass
 
-async def subscribed(client, message) -> bool:
+async def subscribed(client, message, custom_channels=None) -> bool:
     if not message.from_user: return True
+    
+    if not await get_force_sub_status(): 
+        return True
+
     user_id = message.from_user.id
     if await is_admin(user_id) or await is_owner(user_id): return True
-    for channel in [FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4]:
+    
+    channels_to_check = custom_channels if custom_channels is not None else await get_global_fs_channels()
+    
+    for channel in channels_to_check:
         if not channel or str(channel) in ["0", "-100"]: continue
         try:
             chat_id = int(channel) if str(channel).startswith("-100") or str(channel).isdigit() else channel
@@ -45,28 +52,28 @@ async def decode(base64_string: str) -> str:
     padded = base64_string + "=" * (-len(base64_string) % 4)
     return base64.urlsafe_b64decode(padded.encode()).decode()
 
-async def get_messages(client, message_ids):
+async def get_messages(client, message_ids, db_channel_id):
     messages, total = [], 0
     while total != len(message_ids):
         batch = message_ids[total:total + 200]
-        try: msgs = await client.get_messages(chat_id=client.db_channel.id, message_ids=batch)
+        try: msgs = await client.get_messages(chat_id=db_channel_id, message_ids=batch)
         except FloodWait as e:
             await asyncio.sleep(e.value)
-            msgs = await client.get_messages(chat_id=client.db_channel.id, message_ids=batch)
+            msgs = await client.get_messages(chat_id=db_channel_id, message_ids=batch)
         except: msgs = []
         messages.extend(msgs)
         total += len(batch)
     return messages
 
-async def get_message_id(client, message):
+async def get_message_id(client, message, expected_channel_id):
     if message.forward_from_chat:
-        return message.forward_from_message_id if message.forward_from_chat.id == client.db_channel.id else 0
+        return message.forward_from_message_id if message.forward_from_chat.id == expected_channel_id else 0
     if message.forward_sender_name: return 0
     if message.text:
         match = re.search(r"https://t.me/(?:c/)?([^/]+)/(\d+)", message.text)
         if match:
             chat, msg_id = match.group(1), int(match.group(2))
-            if chat in [str(client.db_channel.id), client.db_channel.username, f"-100{client.db_channel.id}".replace("-100-100", "-100")]: return msg_id
+            if chat in [str(expected_channel_id), str(expected_channel_id).replace("-100", "")]: return msg_id
     return 0
 
 def get_readable_time(seconds: int) -> str:
