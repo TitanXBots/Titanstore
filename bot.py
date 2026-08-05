@@ -15,7 +15,7 @@ from config import (
     API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN, TG_BOT_WORKERS,
     PORT
 )
-from database.database import premium_collection, remove_premium, get_global_db_channel, get_global_fs_channels
+from database.database import premium_collection, remove_premium, get_global_db_channel, get_global_fs_channels, delete_tenant_config
 
 class Bot(Client):
     def __init__(self):
@@ -43,12 +43,16 @@ class Bot(Client):
                     
                     expires_at = expires_at.replace(tzinfo=timezone.utc)
                     
+                    # --- AUTO-REMOVE CUSTOM CHANNELS ON EXPIRY ---
                     if now > expires_at:
                         await remove_premium(user_id)
+                        await delete_tenant_config(user_id) # Wipes user's Custom DB & FS channels!
                         try:
-                            await self.send_message(user_id, f"⚠️ <b>ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ʜᴀꜱ ᴇɴᴅᴇᴅ.</b>\n\nɪᴛ ᴏꜰꜰɪᴄɪᴀʟʟʏ ᴄʟᴏꜱᴇᴅ ᴏɴ: {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC")
+                            await self.send_message(user_id, f"⚠️ <b>ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ʜᴀꜱ ᴇɴᴅᴇᴅ.</b>\n\nʏᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟ ꜱᴇᴛᴜᴘ ʜᴀꜱ ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ.\nɪᴛ ᴏꜰꜰɪᴄɪᴀʟʟʏ ᴄʟᴏꜱᴇᴅ ᴏɴ: {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC")
                         except (UserIsBlocked, UserDeactivated): pass
                         except Exception as e: self.logger.error(f"Expiry notify error for {user_id}: {e}")
+                    
+                    # --- SEND 24 HOUR WARNING ---
                     elif warning_time > expires_at and not user.get("notified", False):
                         try:
                             await self.send_message(user_id, f"⚠️ <b>ʀᴇᴍɪɴᴅᴇʀ:</b> ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ɪꜱ ᴄʟᴏꜱɪɴɢ ꜱᴏᴏɴ!\n\n<b>ᴇxᴘɪʀʏ ᴅᴀᴛᴇ:</b> {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC")
@@ -65,6 +69,7 @@ class Bot(Client):
         self.uptime = datetime.now(timezone.utc)
         self.username = me.username
         
+        # Start the background task that checks for expirations
         asyncio.create_task(self.premium_expiry_task())
         self.logger.info("✅ Premium Expiry Monitor started.")
 
@@ -83,7 +88,6 @@ class Bot(Client):
                 self.logger.error(f"❌ FORCE SUB CRITICAL: Failed to get link for {label} ({channel_id}). Error: {e}")
                 self.invitelinks[key_name] = None
 
-        # Dynamically load the active Force Sub channels for startup caching
         active_fs_channels = await get_global_fs_channels()
         for idx, channel_id in enumerate(active_fs_channels, start=1):
             await get_invite(channel_id, str(channel_id), f"Channel {idx}")
