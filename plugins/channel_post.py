@@ -4,13 +4,13 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 from config import CHANNEL_ID, USER_REPLY_TEXT
 from helper_func import encode
-from database.database import is_admin
+from database.database import is_admin, get_tenant_by_db
 
 IGNORE_CMDS = [
     'start','users','broadcast','batch','genlink','stats','joinchannels','pypi',
     'restart','settings','joinchannelon','joinchanneloff','admin','autodelete',
     'autodeleteon','autodeleteoff','maintenance','ban','unban','bannedlist',
-    'addadmin','removeadmin','adminlist', 'about', 'help'
+    'addadmin','removeadmin','adminlist', 'about', 'help', 'connect'
 ]
 
 @Client.on_message(filters.private & filters.incoming & ~filters.command(IGNORE_CMDS))
@@ -21,10 +21,23 @@ async def private_message_handler(client: Client, message: Message):
         except: 
             pass
 
-@Client.on_message(filters.channel & filters.incoming & filters.chat(CHANNEL_ID))
+@Client.on_message(filters.channel & filters.incoming)
 async def new_post(client: Client, message: Message):
-    converted_id = message.id * abs(client.db_channel.id)
-    string = f"get-{converted_id}"
+    chat_id = message.chat.id
+    owner_id = None
+    
+    if chat_id == CHANNEL_ID:
+        owner_id = 0
+    else:
+        tenant = await get_tenant_by_db(chat_id)
+        if tenant:
+            owner_id = tenant["_id"]
+            
+    if owner_id is None:
+        return
+
+    converted_id = message.id * abs(chat_id)
+    string = f"get-{owner_id}-{converted_id}"
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
 
