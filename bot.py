@@ -13,9 +13,7 @@ pyrogram.utils.MIN_CHANNEL_ID = -1009999999999
 
 from config import (
     API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN, TG_BOT_WORKERS,
-    FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2,
-    FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4,
-    CHANNEL_ID, PORT
+    PORT
 )
 from database.database import premium_collection, remove_premium, get_global_db_channel, get_global_fs_channels
 
@@ -85,10 +83,10 @@ class Bot(Client):
                 self.logger.error(f"❌ FORCE SUB CRITICAL: Failed to get link for {label} ({channel_id}). Error: {e}")
                 self.invitelinks[key_name] = None
 
-        await get_invite(FORCE_SUB_CHANNEL_1, "fs1", "Channel 1")
-        await get_invite(FORCE_SUB_CHANNEL_2, "fs2", "Channel 2")
-        await get_invite(FORCE_SUB_CHANNEL_3, "fs3", "Channel 3")
-        await get_invite(FORCE_SUB_CHANNEL_4, "fs4", "Channel 4")
+        # Dynamically load the active Force Sub channels for startup caching
+        active_fs_channels = await get_global_fs_channels()
+        for idx, channel_id in enumerate(active_fs_channels, start=1):
+            await get_invite(channel_id, str(channel_id), f"Channel {idx}")
 
         try:
             active_db = await get_global_db_channel()
