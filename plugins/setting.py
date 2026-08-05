@@ -1,13 +1,23 @@
+import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from pyromod.exceptions import ListenerTimeout
+from config import START_PIC
 from helper_func import safe_edit
 from database.database import (
     is_admin, get_protect_status, set_protect_status, 
     get_force_sub_status, set_force_sub_status,
-    get_file_again_status, set_file_again_status
+    get_file_again_status, set_file_again_status,
+    get_global_db_channel, set_global_db_channel,
+    get_global_fs_channels, set_global_fs_channels
 )
 
-@Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off|forcesub_menu|forcesub_on|forcesub_off|getfileagain_menu|getfileagain_on|getfileagain_off)$"))
+async def delayed_delete(message, delay=7):
+    await asyncio.sleep(delay)
+    try: await message.delete()
+    except: pass
+
+@Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off|forcesub_menu|forcesub_on|forcesub_off|getfileagain_menu|getfileagain_on|getfileagain_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set)$"))
 async def settings_cb(client: Client, query: CallbackQuery):
     if not await is_admin(query.from_user.id): 
         return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ꜱᴇᴛᴛɪɴɢꜱ ᴀʀᴇ ꜰᴏʀ ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
@@ -26,7 +36,11 @@ async def settings_cb(client: Client, query: CallbackQuery):
             ],
             [
                 InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu"),
-                InlineKeyboardButton("📢 ꜰᴏʀᴄᴇ ꜱᴜʙ", callback_data="forcesub_menu")
+                InlineKeyboardButton("📢 ꜰᴏʀᴄᴇ ꜱᴜʙ ᴛᴏɢɢʟᴇ", callback_data="forcesub_menu")
+            ],
+            [
+                InlineKeyboardButton("📁 ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_menu"),
+                InlineKeyboardButton("📢 ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_menu")
             ],
             [
                 InlineKeyboardButton("♻️ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ", callback_data="getfileagain_menu")
@@ -68,7 +82,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
-    # --- FORCE SUB MENU ---
+    # --- FORCE SUB TOGGLE MENU ---
     elif data == "forcesub_menu":
         is_on = await get_force_sub_status()
         status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
@@ -129,6 +143,121 @@ async def settings_cb(client: Client, query: CallbackQuery):
         await query.answer("❌ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
         return await safe_edit(query.message, "♻️ <b>ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏꜰꜰ ❌</b>", InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="getfileagain_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="getfileagain_off")], 
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
+        ]))
+
+    # --- GLOBAL DATABASE CHANNEL MENU ---
+    elif data == "global_db_menu":
+        current_db = await get_global_db_channel()
+        return await safe_edit(query.message, f"📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ᴅʙ ᴄʜᴀɴɴᴇʟ ɪᴅ: <code>{current_db}</code>", InlineKeyboardMarkup([
+            [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_set")],
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
+        ]))
+
+    elif data == "global_db_set":
+        back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_db_menu")]])
+        await safe_edit(query.message, "<b>ꜱᴇɴᴅ ɴᴇᴡ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ɪᴅ (ᴍᴜꜱᴛ ꜱᴛᴀʀᴛ ᴡɪᴛʜ -100)\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.</b>", back_keyboard)
+        try:
+            input_msg = await client.listen(query.message.chat.id, timeout=60)
+        except ListenerTimeout:
+            await query.answer("⌛ ᴛɪᴍᴇᴏᴜᴛ!", show_alert=True)
+            current_db = await get_global_db_channel()
+            return await safe_edit(query.message, f"📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ᴅʙ ᴄʜᴀɴɴᴇʟ ɪᴅ: <code>{current_db}</code>", InlineKeyboardMarkup([
+                [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_set")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
+            ]))
+
+        text = input_msg.text
+        try: await input_msg.delete()
+        except: pass
+
+        if not text or text.lower() == "/cancel":
+            await query.answer("❌ ᴄᴀɴᴄᴇʟʟᴇᴅ!", show_alert=True)
+            current_db = await get_global_db_channel()
+            return await safe_edit(query.message, f"📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ᴅʙ ᴄʜᴀɴɴᴇʟ ɪᴅ: <code>{current_db}</code>", InlineKeyboardMarkup([
+                [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_set")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
+            ]))
+
+        try:
+            new_id = int(text)
+            if not str(new_id).startswith("-100"):
+                raise ValueError("Must start with -100")
+        except Exception:
+            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ <b>ɪɴᴠᴀʟɪᴅ ɪᴅ!</b> ᴍᴜꜱᴛ ʙᴇ A ᴠᴀʟɪᴅ Nᴜᴍʙᴇʀ ꜱᴛᴀʀᴛɪɴɢ ᴡɪᴛʜ -100.", reply_markup=back_keyboard)
+            asyncio.create_task(delayed_delete(msg))
+            current_db = await get_global_db_channel()
+            return await safe_edit(query.message, f"📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ᴅʙ ᴄʜᴀɴɴᴇʟ ɪᴅ: <code>{current_db}</code>", InlineKeyboardMarkup([
+                [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_set")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
+            ]))
+
+        await set_global_db_channel(new_id)
+        try:
+            client.db_channel = await client.get_chat(new_id)
+        except Exception as e:
+            msg = await query.message.reply_photo(photo=START_PIC, caption=f"⚠️ <b>Wᴀʀɴɪɴɢ:</b> ID ᴜᴘᴅᴀᴛᴇᴅ, ʙᴜᴛ ʙᴏᴛ ᴍɪɢʜᴛ ɴᴏᴛ ʙᴇ ᴀᴅᴍɪɴ! Eʀʀᴏʀ: {e}", reply_markup=back_keyboard)
+            asyncio.create_task(delayed_delete(msg))
+        
+        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ <b>ɢʟᴏʙᴀʟ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴜᴘᴅᴀᴛᴇᴅ:</b> <code>{new_id}</code>", reply_markup=back_keyboard)
+        asyncio.create_task(delayed_delete(msg))
+        return await safe_edit(query.message, f"📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ᴅʙ ᴄʜᴀɴɴᴇʟ ɪᴅ: <code>{new_id}</code>", InlineKeyboardMarkup([
+            [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_set")],
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
+        ]))
+
+    # --- GLOBAL FORCE SUB CHANNELS MENU ---
+    elif data == "global_fs_menu":
+        current_fs = await get_global_fs_channels()
+        fs_str = "\n".join([f"• <code>{ch}</code>" for ch in current_fs]) if current_fs else "ɴᴏɴᴇ"
+        return await safe_edit(query.message, f"📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ᴄʜᴀɴɴᴇʟꜱ:\n{fs_str}", InlineKeyboardMarkup([
+            [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_set")],
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
+        ]))
+
+    elif data == "global_fs_set":
+        back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_fs_menu")]])
+        await safe_edit(query.message, "<b>ꜱᴇɴᴅ ɴᴇᴡ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟ ɪᴅꜱ (ꜱᴘᴀᴄᴇ ꜱᴇᴘᴀʀᴀᴛᴇᴅ, ᴏʀ 0 ᴛᴏ ᴄʟᴇᴀʀ)\n\nᴇxᴀᴍᴘʟᴇ: <code>-100123456789 -100987654321</code>\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.</b>", back_keyboard)
+        try:
+            input_msg = await client.listen(query.message.chat.id, timeout=60)
+        except ListenerTimeout:
+            await query.answer("⌛ ᴛɪᴍᴇᴏᴜᴛ!", show_alert=True)
+            current_fs = await get_global_fs_channels()
+            fs_str = "\n".join([f"• <code>{ch}</code>" for ch in current_fs]) if current_fs else "ɴᴏɴᴇ"
+            return await safe_edit(query.message, f"📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ᴄʜᴀɴɴᴇʟꜱ:\n{fs_str}", InlineKeyboardMarkup([
+                [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_set")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
+            ]))
+
+        text = input_msg.text
+        try: await input_msg.delete()
+        except: pass
+
+        if not text or text.lower() == "/cancel":
+            await query.answer("❌ ᴄᴀɴᴄᴇʟʟᴇᴅ!", show_alert=True)
+            current_fs = await get_global_fs_channels()
+            fs_str = "\n".join([f"• <code>{ch}</code>" for ch in current_fs]) if current_fs else "ɴᴏɴᴇ"
+            return await safe_edit(query.message, f"📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ᴄʜᴀɴɴᴇʟꜱ:\n{fs_str}", InlineKeyboardMarkup([
+                [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_set")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
+            ]))
+
+        new_channels = []
+        if text.strip() != "0":
+            for item in text.split():
+                try:
+                    ch = int(item)
+                    if str(ch).startswith("-100"):
+                        new_channels.append(ch)
+                except Exception: pass
+
+        await set_global_fs_channels(new_channels)
+        
+        fs_str = "\n".join([f"• <code>{ch}</code>" for ch in new_channels]) if new_channels else "ɴᴏɴᴇ"
+        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ <b>ɢʟᴏʙᴀʟ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴜᴘᴅᴀᴛᴇᴅ!</b>", reply_markup=back_keyboard)
+        asyncio.create_task(delayed_delete(msg))
+        return await safe_edit(query.message, f"📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ᴄʜᴀɴɴᴇʟꜱ:\n{fs_str}", InlineKeyboardMarkup([
+            [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_set")],
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
         
