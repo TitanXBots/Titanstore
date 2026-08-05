@@ -5,7 +5,8 @@ from pyromod.exceptions import ListenerTimeout
 from config import START_PIC
 from helper_func import safe_edit
 from database.database import (
-    is_admin, get_protect_status, set_protect_status, 
+    is_admin, is_premium, get_tenant_config,
+    get_protect_status, set_protect_status, 
     get_force_sub_status, set_force_sub_status,
     get_file_again_status, set_file_again_status,
     get_global_db_channel, set_global_db_channel,
@@ -19,39 +20,71 @@ async def delayed_delete(message, delay=7):
 
 @Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off|forcesub_menu|forcesub_on|forcesub_off|getfileagain_menu|getfileagain_on|getfileagain_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set)$"))
 async def settings_cb(client: Client, query: CallbackQuery):
-    if not await is_admin(query.from_user.id): 
-        return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ꜱᴇᴛᴛɪɴɢꜱ ᴀʀᴇ ꜰᴏʀ ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
-        
+    user_id = query.from_user.id
+    is_user_admin = await is_admin(user_id)
     data = query.data
 
     if data == "settings":
-        return await safe_edit(query.message, "⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ ᴘᴀɴᴇʟ", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), 
-                InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")
-            ],
-            [
-                InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ", callback_data="premium_menu"), 
-                InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu")
-            ],
-            [
-                InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu"),
-                InlineKeyboardButton("📢 ꜰᴏʀᴄᴇ ꜱᴜʙ ᴛᴏɢɢʟᴇ", callback_data="forcesub_menu")
-            ],
-            [
-                InlineKeyboardButton("📁 ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_menu"),
-                InlineKeyboardButton("📢 ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_menu")
-            ],
-            [
-                InlineKeyboardButton("♻️ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ", callback_data="getfileagain_menu")
-            ],
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")
-            ]
-        ]))
+        # 1. ADMIN MENU ROUTING
+        if is_user_admin:
+            return await safe_edit(query.message, "⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ ᴘᴀɴᴇʟ", InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), 
+                    InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")
+                ],
+                [
+                    InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ", callback_data="premium_menu"), 
+                    InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu")
+                ],
+                [
+                    InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu"),
+                    InlineKeyboardButton("📢 ꜰᴏʀᴄᴇ ꜱᴜʙ ᴛᴏɢɢʟᴇ", callback_data="forcesub_menu")
+                ],
+                [
+                    InlineKeyboardButton("📁 ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_menu"),
+                    InlineKeyboardButton("📢 ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_menu")
+                ],
+                [
+                    InlineKeyboardButton("♻️ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ", callback_data="getfileagain_menu")
+                ],
+                [
+                    InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")
+                ]
+            ]))
+        
+        # 2. FREE/PREMIUM USER MENU ROUTING
+        else:
+            is_prem = await is_premium(user_id)
+            status = "💎 ᴘʀᴇᴍɪᴜᴍ" if is_prem else "🆓 ꜰʀᴇᴇ"
+            
+            text = f"👤 <b>ᴜꜱᴇʀ ᴘʀᴏꜰɪʟᴇ & ꜱᴇᴛᴛɪɴɢꜱ</b>\n\n"
+            text += f"🆔 <b>ᴜꜱᴇʀ ɪᴅ:</b> <code>{user_id}</code>\n"
+            text += f"📊 <b>ꜱᴛᴀᴛᴜꜱ:</b> {status}\n\n"
+            
+            buttons = []
+            if is_prem:
+                tenant = await get_tenant_config(user_id)
+                if tenant:
+                    fs_str = ", ".join([f"<code>{x}</code>" for x in tenant['fs_channels']])
+                    text += f"📁 <b>ʏᴏᴜʀ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b> <code>{tenant['db_channel']}</code>\n"
+                    text += f"📢 <b>ʏᴏᴜʀ ꜰꜱ ᴄʜᴀɴɴᴇʟꜱ:</b> {fs_str}\n\n"
+                    buttons.append([InlineKeyboardButton("🔌 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="user_connect_req")])
+                else:
+                    text += "<i>ʏᴏᴜ ᴀʀᴇ ᴀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀ!\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ᴛᴏ ꜱᴇᴛᴜᴘ ʏᴏᴜʀ ᴏᴡɴ ꜰɪʟᴇ ꜱᴛᴏʀᴇ ᴄʜᴀɴɴᴇʟꜱ.</i>"
+                    buttons.append([InlineKeyboardButton("🔌 ꜱᴇᴛᴜᴘ ᴄʜᴀɴɴᴇʟꜱ", callback_data="user_connect_req")])
+            else:
+                text += "<i>ᴄᴏɴᴛᴀᴄᴛ ᴛʜᴇ ᴏᴡɴᴇʀ ᴛᴏ ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ ᴀɴᴅ ʜᴏꜱᴛ ʏᴏᴜʀ ᴏᴡɴ ꜰɪʟᴇꜱ.</i>"
+            
+            buttons.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")])
+            
+            return await safe_edit(query.message, text, InlineKeyboardMarkup(buttons))
+
+    # SECURITY LOCK: Block normal users from directly triggering admin callbacks
+    if not is_user_admin:
+        return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
 
     # --- PROTECT CONTENT MENU ---
-    elif data == "protect_menu":
+    if data == "protect_menu":
         is_on = await get_protect_status()
         status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
         return await safe_edit(query.message, f"🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴘʀᴇᴠᴇɴᴛꜱ ᴜꜱᴇʀꜱ ꜰʀᴏᴍ ꜰᴏʀᴡᴀʀᴅɪɴɢ, ꜱᴀᴠɪɴɢ, ᴏʀ ᴄᴏᴘʏɪɴɢ ꜰɪʟᴇꜱ.\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>", InlineKeyboardMarkup([
