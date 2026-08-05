@@ -33,7 +33,7 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
     elif data == "help":
         return await safe_edit(query.message, HELP_TXT.format(first=first_name), InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", url="https://t.me/TitanXBots"), 
+                InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", url=f"tg://user?id={OWNER_ID}"), 
                 InlineKeyboardButton("💬 ᴄᴏᴍᴍᴀɴᴅꜱ", callback_data="commands")
             ],
             [
