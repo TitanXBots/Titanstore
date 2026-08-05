@@ -17,7 +17,7 @@ from config import (
     FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4,
     CHANNEL_ID, PORT
 )
-from database.database import premium_collection, remove_premium
+from database.database import premium_collection, remove_premium, get_global_db_channel, get_global_fs_channels
 
 class Bot(Client):
     def __init__(self):
@@ -91,13 +91,14 @@ class Bot(Client):
         await get_invite(FORCE_SUB_CHANNEL_4, "fs4", "Channel 4")
 
         try:
-            db_channel = await self.get_chat(CHANNEL_ID)
+            active_db = await get_global_db_channel()
+            db_channel = await self.get_chat(active_db)
             self.db_channel = db_channel
             msg = await self.send_message(db_channel.id, "Test Message")
             await msg.delete()
             self.logger.info("✅ Database Channel verified successfully.")
         except Exception as e:
-            self.logger.error(f"❌ CRITICAL: Bot is not admin in DB channel or CHANNEL_ID is wrong: {CHANNEL_ID}. Error: {e}")
+            self.logger.error(f"❌ CRITICAL: Bot is not admin in DB channel or CHANNEL_ID is wrong. Error: {e}")
             sys.exit()
 
         try:
