@@ -49,14 +49,17 @@ async def settings_cb(client: Client, query: CallbackQuery):
             ]))
         else:
             is_prem = await is_premium(user_id)
-            status = "💎 ᴘʀᴇᴍɪᴜᴍ" if is_prem else "🆓 ꜰʀᴇᴇ"
+            status = "💎 ᴘʀᴇᴍɪᴜﾑ" if is_prem else "🆓 ꜰʀᴇᴇ"
             
             text = f"👤 <b>ᴜꜱᴇʀ ᴘʀᴏꜰɪʟᴇ & ꜱᴇᴛᴛɪɴɢꜱ</b>\n\n"
             text += f"🆔 <b>ᴜꜱᴇʀ ɪᴅ:</b> <code>{user_id}</code>\n"
             text += f"📊 <b>ꜱᴛᴀᴛᴜꜱ:</b> {status}\n\n"
             
             buttons = []
-            buttons.append([InlineKeyboardButton("🍁 ᴄʜᴇᴄᴋ ᴀʟʟ ᴘʟᴀɴꜱ & ᴘʀɪᴄᴇꜱ 🍁", callback_data="buy_plans")])
+            
+            # Only show plans button if the user is NOT premium
+            if not is_prem:
+                buttons.append([InlineKeyboardButton("🍁 ᴄʜᴇᴄᴋ ᴀʟʟ ᴘʟᴀɴꜱ & ᴘʀɪᴄᴇꜱ 🍁", callback_data="buy_plans")])
             
             if is_prem:
                 tenant = await get_tenant_config(user_id)
