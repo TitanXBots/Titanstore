@@ -1,44 +1,64 @@
 import asyncio
 from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyromod.exceptions import ListenerTimeout
 from config import LOG_CHANNEL_ID
+from helper_func import safe_edit
 from database.database import is_premium, is_admin, save_tenant_request, update_tenant_status
 
-@Client.on_message(filters.command("connect") & filters.private)
-async def request_custom_channels(client: Client, message: Message):
-    user_id = message.from_user.id
+@Client.on_callback_query(filters.regex(r"^user_connect_req$"))
+async def request_custom_channels_cb(client: Client, query: CallbackQuery):
+    user_id = query.from_user.id
     
     if not await is_premium(user_id):
-        return await message.reply_text("⚠️ <b>ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ:</b> ᴏɴʟʏ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱ ᴄᴀɴ ʀᴇQᴜᴇꜱᴛ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟꜱ.")
+        return await query.answer("⚠️ ᴏɴʟʏ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱ ᴄᴀɴ ᴅᴏ ᴛʜɪꜱ!", show_alert=True)
 
-    await message.reply_text("<b>⚠️ ɪᴍᴘᴏʀᴛᴀɴᴛ ɴᴏᴛɪᴄᴇ:</b>\n\n1. Yᴏᴜ ᴍᴜꜱᴛ ᴀᴅᴅ ᴛʜɪꜱ ʙᴏᴛ ᴀꜱ ᴀɴ <b>Aᴅᴍɪɴ</b> ɪɴ Yᴏᴜʀ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ꜰᴏʀᴄᴇ-ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ʙᴇꜰᴏʀᴇ ᴄᴏɴᴛɪɴᴜɪɴɢ.\n2. Tʜᴇ ʙᴏᴛ ɴᴇᴇᴅꜱ 'ɪɴᴠɪᴛᴇ ᴜꜱᴇʀꜱ' ᴀɴᴅ 'ᴘᴏꜱᴛ ᴍᴇꜱꜱᴀɢᴇꜱ' ʀɪɢʜᴛꜱ.")
+    back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ᴄᴀɴᴄᴇʟ", callback_data="settings")]])
+    
+    await safe_edit(query.message, "<b>⚠️ ɪᴍᴘᴏʀᴛᴀɴᴛ ɴᴏᴛɪᴄᴇ:</b>\n\n1. Yᴏᴜ ᴍᴜꜱᴛ ᴀᴅᴅ ᴛʜɪꜱ ʙᴏᴛ ᴀꜱ ᴀɴ <b>Aᴅᴍɪɴ</b> ɪɴ ʏᴏᴜʀ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ꜰᴏʀᴄᴇ-ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ʙᴇꜰᴏʀᴇ ᴄᴏɴᴛɪɴᴜɪɴɢ.\n2. Tʜᴇ ʙᴏᴛ ɴᴇᴇᴅꜱ 'ɪɴᴠɪᴛᴇ ᴜꜱᴇʀꜱ' ᴀɴᴅ 'ᴘᴏꜱᴛ ᴍᴇꜱꜱᴀɢᴇꜱ' ʀɪɢʜᴛꜱ.\n\n📤 <b>ꜱᴇɴᴅ ʏᴏᴜʀ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ɪᴅ:</b>\n(Iᴛ ᴍᴜꜱᴛ ꜱᴛᴀʀᴛ ᴡɪᴛʜ -100)\n\n/cancel - ᴛᴏ ꜱᴛᴏᴘ ᴘʀᴏᴄᴇꜱꜱ.", back_keyboard)
     
     try:
-        db_prompt = await client.ask(user_id, "📤 <b>ꜱᴇɴᴅ ʏᴏᴜʀ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ɪᴅ:</b>\n(Iᴛ ᴍᴜꜱᴛ ꜱᴛᴀʀᴛ ᴡɪᴛʜ -100)\n\nSᴇɴᴅ /cancel ᴛᴏ ꜱᴛᴏᴘ.", timeout=120)
+        db_prompt = await client.listen(query.message.chat.id, timeout=120)
     except ListenerTimeout:
-        return await message.reply_text("⌛ ᴛɪᴍᴇᴏᴜᴛ!")
+        return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!", back_keyboard)
         
-    if db_prompt.text.lower() == "/cancel": return await message.reply_text("❌ ᴄᴀɴᴄᴇʟʟᴇᴅ.")
+    if not db_prompt.text or db_prompt.text.lower() == "/cancel":
+        try: await db_prompt.delete()
+        except: pass
+        return await safe_edit(query.message, "❌ ᴄᴀɴᴄᴇʟʟᴇᴅ.", back_keyboard)
     
     try: db_channel = int(db_prompt.text)
-    except: return await message.reply_text("❌ Iɴᴠᴀʟɪᴅ ID. Mᴜꜱᴛ ʙᴇ ᴀ ɴᴜᴍʙᴇʀ ꜱᴛᴀʀᴛɪɴɢ ᴡɪᴛʜ -100.")
+    except: 
+        try: await db_prompt.delete()
+        except: pass
+        return await safe_edit(query.message, "❌ Iɴᴠᴀʟɪᴅ ID. Mᴜꜱᴛ ʙᴇ ᴀ ɴᴜᴍʙᴇʀ ꜱᴛᴀʀᴛɪɴɢ ᴡɪᴛʜ -100.", back_keyboard)
+
+    try: await db_prompt.delete()
+    except: pass
+
+    await safe_edit(query.message, "📤 <b>ꜱᴇɴᴅ ʏᴏᴜʀ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟ ɪᴅꜱ:</b>\nSᴇᴘᴀʀᴀᴛᴇ ᴍᴜʟᴛɪᴘʟᴇ ɪᴅꜱ ᴡɪᴛʜ ᴀ ꜱᴘᴀᴄᴇ. (Iꜰ ɴᴏɴᴇ, ꜱᴇɴᴅ 0)\n\n/cancel - ᴛᴏ ꜱᴛᴏᴘ ᴘʀᴏᴄᴇꜱꜱ.", back_keyboard)
 
     try:
-        fs_prompt = await client.ask(user_id, "📤 <b>ꜱᴇɴᴅ ʏᴏᴜʀ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟ ɪᴅꜱ:</b>\nSᴇᴘᴀʀᴀᴛᴇ ᴍᴜʟᴛɪᴘʟᴇ ɪᴅꜱ ᴡɪᴛʜ ᴀ ꜱᴘᴀᴄᴇ. (Iꜰ ɴᴏɴᴇ, ꜱᴇɴᴅ 0)\n\nSᴇɴᴅ /cancel ᴛᴏ ꜱᴛᴏᴘ.", timeout=120)
+        fs_prompt = await client.listen(query.message.chat.id, timeout=120)
     except ListenerTimeout:
-        return await message.reply_text("⌛ ᴛɪᴍᴇᴏᴜᴛ!")
+        return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!", back_keyboard)
 
-    if fs_prompt.text.lower() == "/cancel": return await message.reply_text("❌ ᴄᴀɴᴄᴇʟʟᴇᴅ.")
+    if not fs_prompt.text or fs_prompt.text.lower() == "/cancel":
+        try: await fs_prompt.delete()
+        except: pass
+        return await safe_edit(query.message, "❌ ᴄᴀɴᴄᴇʟʟᴇᴅ.", back_keyboard)
     
     fs_channels = []
-    if fs_prompt.text != "0":
+    if fs_prompt.text.strip() != "0":
         for ch in fs_prompt.text.split():
             try: fs_channels.append(int(ch))
             except: pass
 
+    try: await fs_prompt.delete()
+    except: pass
+
     await save_tenant_request(user_id, db_channel, fs_channels)
-    await message.reply_text("✅ <b>ʀᴇQᴜᴇꜱᴛ ꜱᴜʙᴍɪᴛᴛᴇᴅ!</b>\n\nPʟᴇᴀꜱᴇ ᴡᴀɪᴛ ꜰᴏʀ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ᴀᴘᴘʀᴏᴠᴇ ʏᴏᴜʀ ᴄʜᴀɴɴᴇʟꜱ. Yᴏᴜ ᴡɪʟʟ ʙᴇ ɴᴏᴛɪꜰɪᴇᴅ ʜᴇʀᴇ.")
+    await safe_edit(query.message, "✅ <b>ʀᴇQᴜᴇꜱᴛ ꜱᴜʙᴍɪᴛᴛᴇᴅ!</b>\n\nPʟᴇᴀꜱᴇ ᴡᴀɪᴛ ꜰᴏʀ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ᴀᴘᴘʀᴏᴠᴇ ʏᴏᴜʀ ᴄʜᴀɴɴᴇʟꜱ. Yᴏᴜ ᴡɪʟʟ ʙᴇ ɴᴏᴛɪꜰɪᴇᴅ ʜᴇʀᴇ.", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]]))
 
     admin_markup = InlineKeyboardMarkup([
         [
@@ -48,7 +68,7 @@ async def request_custom_channels(client: Client, message: Message):
     ])
     await client.send_message(
         LOG_CHANNEL_ID,
-        f"<b>🔔 ɴᴇᴡ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟ ʀᴇQᴜᴇꜱᴛ</b>\n\n<b>Uꜱᴇʀ:</b> {message.from_user.mention} (<code>{user_id}</code>)\n<b>DB Cʜᴀɴɴᴇʟ:</b> <code>{db_channel}</code>\n<b>FS Cʜᴀɴɴᴇʟꜱ:</b> <code>{fs_channels}</code>",
+        f"<b>🔔 ɴᴇᴡ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟ ʀᴇQᴜᴇꜱᴛ</b>\n\n<b>Uꜱᴇʀ:</b> {query.from_user.mention} (<code>{user_id}</code>)\n<b>DB Cʜᴀɴɴᴇʟ:</b> <code>{db_channel}</code>\n<b>FS Cʜᴀɴɴᴇʟꜱ:</b> <code>{fs_channels}</code>",
         reply_markup=admin_markup
     )
 
@@ -69,4 +89,4 @@ async def handle_tenant_request(client: Client, query: CallbackQuery):
         await query.message.edit_reply_markup(InlineKeyboardMarkup([[InlineKeyboardButton("❌ ʀᴇᴊᴇᴄᴛᴇᴅ", callback_data="none")]]))
         try: await client.send_message(user_id, "❌ <b>RᴇQᴜᴇꜱᴛ Rᴇᴊᴇᴄᴛᴇᴅ</b>\n\nYᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟ ꜱᴇᴛᴜᴘ ᴡᴀꜱ ᴅᴇᴄʟɪɴᴇᴅ ʙʏ ᴀɴ ᴀᴅᴍɪɴ. Eɴꜱᴜʀᴇ ᴛʜᴇ ʙᴏᴛ ɪꜱ ᴀɴ ᴀᴅᴍɪɴ ɪɴ ʏᴏᴜʀ ᴄʜᴀɴɴᴇʟꜱ ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ ʟᴀᴛᴇʀ.")
         except: pass
-          
+            
