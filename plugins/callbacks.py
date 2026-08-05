@@ -13,7 +13,6 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
         
     await query.answer()
     data = query.data
-    admin_status = await is_admin(user_id)
     first_name = query.from_user.first_name or "User"
 
     if data == "start":
@@ -21,13 +20,11 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
             [
                 InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"), 
                 InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
+            ],
+            [
+                InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")
             ]
         ]
-        if admin_status: 
-            buttons.append([
-                InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")
-            ])
-            
         return await safe_edit(query.message, START_MSG.format(first=first_name), InlineKeyboardMarkup(buttons))
 
     elif data == "help":
