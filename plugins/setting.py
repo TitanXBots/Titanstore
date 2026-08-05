@@ -37,11 +37,11 @@ async def settings_cb(client: Client, query: CallbackQuery):
                 ],
                 [
                     InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu"),
-                    InlineKeyboardButton("📁 ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_menu")
+                    InlineKeyboardButton("♻️ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ", callback_data="getfileagain_menu")
                 ],
                 [
-                    InlineKeyboardButton("📢 ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_menu"),
-                    InlineKeyboardButton("♻️ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ", callback_data="getfileagain_menu")
+                    InlineKeyboardButton("📁 ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_menu"),
+                    InlineKeyboardButton("📢 ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_menu")
                 ],
                 [
                     InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")
@@ -224,7 +224,6 @@ async def settings_cb(client: Client, query: CallbackQuery):
             input_msg = await client.listen(query.message.chat.id, timeout=60)
         except ListenerTimeout:
             await query.answer("⌛ ᴛɪᴍᴇᴏᴜᴛ!", show_alert=True)
-            # Re-render menu
             is_on = await get_force_sub_status()
             status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
             current_fs = await get_global_fs_channels()
@@ -272,4 +271,4 @@ async def settings_cb(client: Client, query: CallbackQuery):
             [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_set")],
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
-        
+            
