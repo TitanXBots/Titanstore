@@ -1,6 +1,6 @@
 import motor.motor_asyncio
 from datetime import datetime, timedelta, timezone
-from config import DB_URI, DB_NAME, OWNER_ID, ADMINS
+from config import DB_URI, DB_NAME, OWNER_ID, ADMINS, CHANNEL_ID, FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4
 
 dbclient = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
 database = dbclient[DB_NAME]
@@ -11,7 +11,48 @@ admins_collection = database["admins"]
 maintenance_collection = database["maintenance"]
 premium_collection = database["premium_users"]
 settings_collection = database["settings"]
+tenant_collection = database["tenant_configs"]
 
+# --- GLOBAL DYNAMIC CHANNELS FUNCTIONS ---
+async def get_global_db_channel() -> int:
+    data = await settings_collection.find_one({"_id": "global_db_channel"})
+    return data.get("channel_id", CHANNEL_ID) if data else CHANNEL_ID
+
+async def set_global_db_channel(channel_id: int):
+    await settings_collection.update_one({"_id": "global_db_channel"}, {"$set": {"channel_id": channel_id}}, upsert=True)
+
+async def get_global_fs_channels() -> list:
+    data = await settings_collection.find_one({"_id": "global_fs_channels"})
+    if data and "channels" in data:
+        return data["channels"]
+    defaults = [FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4]
+    return [c for c in defaults if c and str(c) not in ["0", "-100"]]
+
+async def set_global_fs_channels(fs_channels: list):
+    await settings_collection.update_one({"_id": "global_fs_channels"}, {"$set": {"channels": fs_channels}}, upsert=True)
+
+# --- SAAS TENANT FUNCTIONS ---
+async def save_tenant_request(user_id: int, db_channel: int, fs_channels: list):
+    await tenant_collection.update_one(
+        {"_id": user_id},
+        {"$set": {"db_channel": db_channel, "fs_channels": fs_channels, "status": "pending"}},
+        upsert=True
+    )
+
+async def update_tenant_status(user_id: int, status: str):
+    await tenant_collection.update_one({"_id": user_id}, {"$set": {"status": status}})
+
+async def get_tenant_config(user_id: int):
+    return await tenant_collection.find_one({"_id": user_id, "status": "approved"})
+
+async def get_tenant_by_db(db_channel: int):
+    return await tenant_collection.find_one({"db_channel": db_channel, "status": "approved"})
+
+async def get_pending_tenants():
+    cursor = tenant_collection.find({"status": "pending"})
+    return await cursor.to_list(length=None)
+
+# --- USER FUNCTIONS ---
 async def is_user_present(user_id: int) -> bool:
     return await user_data.find_one({"_id": user_id}) is not None
 
@@ -48,6 +89,7 @@ async def get_banned_users():
     cursor = banned_users.find({"is_banned": True})
     return await cursor.to_list(length=None)
 
+# --- ADMIN & PREMIUM FUNCTIONS ---
 async def add_admin(user_id: int):
     await admins_collection.update_one({"_id": user_id}, {"$set": {"is_admin": True}}, upsert=True)
 
@@ -60,20 +102,16 @@ async def get_admins():
     return [admin["_id"] for admin in admins]
 
 async def is_owner(user_id) -> bool:
-    try:
-        return int(user_id) == int(OWNER_ID)
-    except (ValueError, TypeError):
-        return False
+    try: return int(user_id) == int(OWNER_ID)
+    except (ValueError, TypeError): return False
 
 async def is_admin(user_id) -> bool:
     try:
         uid = int(user_id)
-        if uid == int(OWNER_ID) or uid in ADMINS: 
-            return True
+        if uid == int(OWNER_ID) or uid in ADMINS: return True
         data = await admins_collection.find_one({"_id": uid})
         return data is not None and data.get("is_admin", False)
-    except (ValueError, TypeError):
-        return False
+    except (ValueError, TypeError): return False
 
 async def add_premium(user_id: int, days: int):
     expires_at = datetime.now(timezone.utc) + timedelta(days=days)
@@ -103,9 +141,9 @@ async def is_premium(user_id) -> bool:
                 return False
             return True
         return False
-    except (ValueError, TypeError):
-        return False
+    except (ValueError, TypeError): return False
 
+# --- SETTINGS FUNCTIONS ---
 async def is_maintenance(user_id: int) -> bool:
     if await is_admin(user_id): return False
     data = await maintenance_collection.find_one({"_id": "maintenance"})
@@ -131,4 +169,18 @@ async def get_protect_status() -> bool:
 
 async def set_protect_status(status: bool):
     await settings_collection.update_one({"_id": "protect_content"}, {"$set": {"status": status}}, upsert=True)
+
+async def get_force_sub_status() -> bool:
+    data = await settings_collection.find_one({"_id": "force_sub"})
+    return data.get("status", True) if data else True
+
+async def set_force_sub_status(status: bool):
+    await settings_collection.update_one({"_id": "force_sub"}, {"$set": {"status": status}}, upsert=True)
+
+async def get_file_again_status() -> bool:
+    data = await settings_collection.find_one({"_id": "get_file_again"})
+    return data.get("status", True) if data else True
+
+async def set_file_again_status(status: bool):
+    await settings_collection.update_one({"_id": "get_file_again"}, {"$set": {"status": status}}, upsert=True)
     
