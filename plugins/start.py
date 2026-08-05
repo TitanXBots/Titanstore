@@ -5,12 +5,13 @@ from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import FloodWait
 
-from config import FORCE_PIC, FORCE_MSG, LOG_CHANNEL_ID, START_PIC, START_MSG, CHANNEL_ID, FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4
+from config import FORCE_PIC, FORCE_MSG, LOG_CHANNEL_ID, START_PIC, START_MSG
 from helper_func import subscribed, decode, get_messages, get_readable_time
 from database.database import (
     is_user_present, add_user, is_user_banned, get_ban_reason, 
     is_maintenance, is_admin, get_auto_delete_status, get_protect_status,
-    get_auto_delete_time, get_tenant_config, get_file_again_status, get_force_sub_status
+    get_auto_delete_time, get_tenant_config, get_file_again_status, get_force_sub_status,
+    get_global_db_channel, get_global_fs_channels
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -20,12 +21,10 @@ async def handle_file_delivery(client, user_id, message_or_query, payload):
         argument = (await decode(payload)).split("-")
         owner_id = 0
         
-        # 1. Check Owner ID
         if len(argument) >= 3: owner_id = int(argument[1])
         
-        # 2. Assign Correct DB Channel & FS Channels
-        db_chat_id = CHANNEL_ID
-        fs_channels = [FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4]
+        db_chat_id = await get_global_db_channel()
+        fs_channels = await get_global_fs_channels()
         
         if owner_id != 0:
             tenant = await get_tenant_config(owner_id)
@@ -33,17 +32,15 @@ async def handle_file_delivery(client, user_id, message_or_query, payload):
                 db_chat_id = tenant["db_channel"]
                 fs_channels = tenant["fs_channels"]
 
-        # 3. Safe ID Extraction & Division
-        if len(argument) == 2: # Legacy global link (get-123456)
+        if len(argument) == 2: 
             ids = range(int(argument[1]) // abs(db_chat_id), (int(argument[1]) // abs(db_chat_id)) + 1)
-        elif len(argument) == 3: # Single link (get-owner_id-encoded_msg)
+        elif len(argument) == 3: 
             ids = [int(argument[2]) // abs(db_chat_id)]
-        elif len(argument) == 4: # Batch link (get-owner_id-encoded_f-encoded_s)
+        elif len(argument) == 4: 
             ids = range(int(argument[2]) // abs(db_chat_id), (int(argument[3]) // abs(db_chat_id)) + 1)
         else: return
     except Exception: return
 
-    # Verify Force Subscription dynamically!
     if await get_force_sub_status() and not await subscribed(client, message_or_query, fs_channels):
         buttons = []
         row = []
@@ -72,7 +69,6 @@ async def handle_file_delivery(client, user_id, message_or_query, payload):
             return await message_or_query.message.reply_photo(photo=FORCE_PIC, caption=FORCE_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(buttons))
         return await message_or_query.reply_photo(photo=FORCE_PIC, caption=FORCE_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(buttons))
 
-    # Proceed to send files
     temp = await client.send_message(user_id, "⏳ ᴘʀᴏᴄᴇꜱꜱɪɴɢ...")
     messages = await get_messages(client, ids, db_chat_id)
     await temp.delete()
@@ -124,19 +120,24 @@ async def start_command(client: Client, message: Message):
         payload = text.split(" ", 1)[1]
         return await handle_file_delivery(client, user_id, message, payload)
 
-    # Standard Welcome Menu
     if await get_force_sub_status() and not await subscribed(client, message):
-        fs_channels = [FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4]
+        fs_channels = await get_global_fs_channels()
         buttons = []
         row = []
         for i, channel in enumerate(fs_channels, start=1):
             if not channel or str(channel) in ["0", "-100"]: continue
-            link = client.invitelinks.get(str(channel))
-            if link:
+            try:
+                link = client.invitelinks.get(str(channel))
+                if not link:
+                    chat = await client.get_chat(channel)
+                    link = chat.invite_link or await client.export_chat_invite_link(channel)
+                    client.invitelinks[str(channel)] = link
                 row.append(InlineKeyboardButton(f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ {i}", url=link))
                 if len(row) == 2:
                     buttons.append(row)
                     row = []
+            except Exception as e:
+                logging.error(f"Failed to generate FS link for {channel}: {e}")
         if row: buttons.append(row)
         buttons.append([InlineKeyboardButton("🔄 ʀᴇꜰʀᴇꜱʜ", callback_data="refresh_")])
         return await message.reply_photo(photo=FORCE_PIC, caption=FORCE_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(buttons))
