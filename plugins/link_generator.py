@@ -4,8 +4,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyromod.exceptions import ListenerTimeout
 
 from helper_func import encode, get_message_id
-from database.database import is_premium, get_tenant_config
-from config import CHANNEL_ID
+from database.database import is_premium, get_tenant_config, get_global_db_channel
 
 @Client.on_message(filters.private & filters.command('batch'))
 async def batch(client: Client, message: Message):
@@ -14,7 +13,8 @@ async def batch(client: Client, message: Message):
         return await message.reply_text("⚠️ <b>ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ:</b> ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀɴᴅ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱ ᴄᴀɴ ɢᴇɴᴇʀᴀᴛᴇ ʙᴀᴛᴄʜ ʟɪɴᴋꜱ.")
 
     tenant = await get_tenant_config(user_id)
-    expected_db_channel = tenant["db_channel"] if tenant else CHANNEL_ID
+    global_db = await get_global_db_channel()
+    expected_db_channel = tenant["db_channel"] if tenant else global_db
     owner_id = user_id if tenant else 0
 
     while True:
@@ -36,7 +36,6 @@ async def batch(client: Client, message: Message):
     if f_msg_id > s_msg_id:
         f_msg_id, s_msg_id = s_msg_id, f_msg_id
 
-    # Smart Payload Calculation
     string = f"get-{owner_id}-{f_msg_id * abs(expected_db_channel)}-{s_msg_id * abs(expected_db_channel)}"
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
@@ -52,7 +51,8 @@ async def link_generator(client: Client, message: Message):
         return await message.reply_text("⚠️ <b>ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ:</b> ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀɴᴅ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱ ᴄᴀɴ ɢᴇɴᴇʀᴀᴛᴇ ʟɪɴᴋꜱ.")
 
     tenant = await get_tenant_config(user_id)
-    expected_db_channel = tenant["db_channel"] if tenant else CHANNEL_ID
+    global_db = await get_global_db_channel()
+    expected_db_channel = tenant["db_channel"] if tenant else global_db
     owner_id = user_id if tenant else 0
 
     while True:
@@ -63,7 +63,6 @@ async def link_generator(client: Client, message: Message):
         if msg_id: break
         await channel_message.reply_text("❌ ɪɴᴠᴀʟɪᴅ ᴍᴇꜱꜱᴀɢᴇ (ɴᴏᴛ ꜰʀᴏᴍ ʏᴏᴜʀ ᴀᴘᴘʀᴏᴠᴇᴅ ᴅʙ ᴄʜᴀɴɴᴇʟ)")
 
-    # Smart Payload Calculation
     base64_string = await encode(f"get-{owner_id}-{msg_id * abs(expected_db_channel)}")
     link = f"https://t.me/{client.username}?start={base64_string}"
     
