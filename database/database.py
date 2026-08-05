@@ -52,6 +52,9 @@ async def get_pending_tenants():
     cursor = tenant_collection.find({"status": "pending"})
     return await cursor.to_list(length=None)
 
+async def delete_tenant_config(user_id: int):
+    await tenant_collection.delete_one({"_id": user_id})
+
 # --- USER FUNCTIONS ---
 async def is_user_present(user_id: int) -> bool:
     return await user_data.find_one({"_id": user_id}) is not None
