@@ -17,6 +17,15 @@ from config import (
 )
 from database.database import premium_collection, remove_premium, get_global_db_channel, get_global_fs_channels, delete_tenant_config
 
+TITAN_BANNER = """
+████████╗██╗████████╗░█████╗░███╗░░██╗██╗░░██╗██████╗░░█████╗░████████╗░██████╗
+╚══██╔══╝██║╚══██╔══╝██╔══██╗████╗░██║╚██╗██╔╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
+░░░██║░░░██║░░░██║░░░███████║██╔██╗██║░╚███╔╝░██████╦╝██║░░██║░░░██║░░░╚█████╗░
+░░░██║░░░██║░░░██║░░░██╔══██║██║╚████║░██╔██╗░██╔══██╗██║░░██║░░░██║░░░░╚═══██╗
+░░░██║░░░██║░░░██║░░░██║░░██║██║░╚███║██╔╝╚██╗██████╦╝╚█████╔╝░░░██║░░░██████╔╝
+░░░╚═╝░░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝╚═════╝░░╚════╝░░░░╚═╝░░░╚═════╝░
+"""
+
 class Bot(Client):
     def __init__(self):
         super().__init__(
@@ -46,7 +55,7 @@ class Bot(Client):
                     # --- AUTO-REMOVE PREMIUM & CUSTOM CHANNELS ON EXPIRY ---
                     if now > expires_at:
                         await remove_premium(user_id)
-                        await delete_tenant_config(user_id) # Wipes user's Custom DB & FS channels!
+                        await delete_tenant_config(user_id)
                         try:
                             await self.send_message(
                                 user_id, 
@@ -123,6 +132,7 @@ class Bot(Client):
         self.set_parse_mode(ParseMode.HTML)
         self.logger.info(f"Bot Running..!\n\nCreated by TitanXBots")
         self.logger.info(f"Username: @{self.username}")
+        self.logger.info(f"\n{TITAN_BANNER}\n")
 
     async def stop(self, *args):
         await super().stop()
