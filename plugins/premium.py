@@ -45,7 +45,7 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
         except ListenerTimeout:
             return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!\n\n💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
             
-        text = input_msg.text
+        text = input_msg.text or ""
         try: await input_msg.delete()
         except: pass
         
@@ -73,7 +73,7 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
         except ListenerTimeout:
             return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!\n\n💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
             
-        text = input_msg.text
+        text = input_msg.text or ""
         try: await input_msg.delete()
         except: pass
         
@@ -101,7 +101,7 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
         except ListenerTimeout:
             return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!\n\n💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
             
-        text = input_msg.text
+        text = input_msg.text or ""
         try: await input_msg.delete()
         except: pass
         
