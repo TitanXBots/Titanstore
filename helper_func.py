@@ -69,8 +69,9 @@ async def get_message_id(client, message, expected_channel_id):
     if message.forward_from_chat:
         return message.forward_from_message_id if message.forward_from_chat.id == expected_channel_id else 0
     if message.forward_sender_name: return 0
-    if message.text:
-        match = re.search(r"https://t.me/(?:c/)?([^/]+)/(\d+)", message.text)
+    text = message.text or message.caption or ""
+    if text:
+        match = re.search(r"https://t.me/(?:c/)?([^/]+)/(\d+)", text)
         if match:
             chat, msg_id = match.group(1), int(match.group(2))
             if chat in [str(expected_channel_id), str(expected_channel_id).replace("-100", "")]: return msg_id
