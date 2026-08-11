@@ -130,9 +130,12 @@ class Bot(Client):
             self.logger.warning(f"⚠️ Web Server failed to initialize: {e}")
 
         self.set_parse_mode(ParseMode.HTML)
-        self.logger.info(f"Bot Running..!\n\nCreated by TitanXBots")
-        self.logger.info(f"Username: @{self.username}")
-        self.logger.info(f"\n{TITAN_BANNER}\n")
+        
+        self.logger.info(f"Bot Running..!\nCreated by TitanXBots\nUsername: @{self.username}")
+        
+        print(f"\n{TITAN_BANNER}\n")
+        
+        self.logger.info(f"ASCII Structure Loaded:\n{TITAN_BANNER}")
 
     async def stop(self, *args):
         await super().stop()
