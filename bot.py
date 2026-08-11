@@ -17,15 +17,6 @@ from config import (
 )
 from database.database import premium_collection, remove_premium, get_global_db_channel, get_global_fs_channels, delete_tenant_config
 
-TITAN_BANNER = """
-████████╗██╗████████╗░█████╗░███╗░░██╗██╗░░██╗██████╗░░█████╗░████████╗░██████╗
-╚══██╔══╝██║╚══██╔══╝██╔══██╗████╗░██║╚██╗██╔╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
-░░░██║░░░██║░░░██║░░░███████║██╔██╗██║░╚███╔╝░██████╦╝██║░░██║░░░██║░░░╚█████╗░
-░░░██║░░░██║░░░██║░░░██╔══██║██║╚████║░██╔██╗░██╔══██╗██║░░██║░░░██║░░░░╚═══██╗
-░░░██║░░░██║░░░██║░░░██║░░██║██║░╚███║██╔╝╚██╗██████╦╝╚█████╔╝░░░██║░░░██████╔╝
-░░░╚═╝░░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝╚═════╝░░╚════╝░░░░╚═╝░░░╚═════╝░
-"""
-
 class Bot(Client):
     def __init__(self):
         super().__init__(
@@ -131,11 +122,8 @@ class Bot(Client):
 
         self.set_parse_mode(ParseMode.HTML)
         
-        self.logger.info(f"Bot Running..!\nCreated by TitanXBots\nUsername: @{self.username}")
-        
-        print(f"\n{TITAN_BANNER}\n")
-        
-        self.logger.info(f"ASCII Structure Loaded:\n{TITAN_BANNER}")
+        # Clean Startup Log
+        self.logger.info(f"Bot Running..!\nUsername: @{self.username}")
 
     async def stop(self, *args):
         await super().stop()
