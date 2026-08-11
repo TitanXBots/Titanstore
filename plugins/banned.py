@@ -44,7 +44,7 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
         except ListenerTimeout:
             return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!\n\n🚫 ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_ban_menu())
             
-        text = input_msg.text
+        text = input_msg.text or ""
         try: await input_msg.delete()
         except: pass
         
@@ -73,7 +73,7 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
         except ListenerTimeout:
             return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!\n\n🚫 ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_ban_menu())
             
-        text = input_msg.text
+        text = input_msg.text or ""
         try: await input_msg.delete()
         except: pass
         
