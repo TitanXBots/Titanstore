@@ -95,7 +95,7 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
             return await safe_edit(query.message, "👨‍💻 ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_admin_menu())
             
         await remove_admin(uid)
-        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ʀᴇᴍᴏᴠᴇᴅ ꜰʀᴏᴍ ᴀᴅᴍɪɴ", reply_markup=keyboard)
+        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ʀᴇᴍᴏᴠᴇ ꜰʀᴏᴍ ᴀᴅᴍɪɴ", reply_markup=keyboard)
         asyncio.create_task(delayed_delete(msg))
         await safe_edit(query.message, "👨‍💻 ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_admin_menu())
 
