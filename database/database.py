@@ -138,15 +138,12 @@ async def is_admin(user_id) -> bool:
     except (ValueError, TypeError): return False
 
 async def add_premium(user_id: int, days: int):
-    # Check if they are already premium to add days correctly
     existing_user = await premium_collection.find_one({"_id": user_id})
     now = datetime.now(timezone.utc)
     
     if existing_user and existing_user.get("is_premium") and existing_user.get("expires_at") > now:
-        # Extend current expiry
         expires_at = existing_user["expires_at"] + timedelta(days=days)
     else:
-        # New premium
         expires_at = now + timedelta(days=days)
         
     await premium_collection.update_one(
