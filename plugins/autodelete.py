@@ -72,7 +72,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
             await query.answer("⌛ ᴛɪᴍᴇᴏᴜᴛ!", show_alert=True)
             return await render_autodelete_menu(query.message)
         
-        text = input_msg.text
+        text = input_msg.text or ""
         try: await input_msg.delete()
         except: pass
             
