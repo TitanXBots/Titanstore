@@ -26,7 +26,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     if data == "settings":
         if is_user_admin:
-            return await safe_edit(query.message, "⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ ᴘᴀɴᴇʟ", InlineKeyboardMarkup([
+            return await safe_edit(query.message, "⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢ ᴘᴀɴᴇʟ", InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), 
                     InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")
@@ -57,7 +57,6 @@ async def settings_cb(client: Client, query: CallbackQuery):
             
             buttons = []
             
-            # Only show plans button if the user is NOT premium
             if not is_prem:
                 buttons.append([InlineKeyboardButton("🍁 ᴄʜᴇᴄᴋ ᴀʟʟ ᴘʟᴀɴꜱ & ᴘʀɪᴄᴇꜱ 🍁", callback_data="buy_plans")])
             
@@ -80,7 +79,6 @@ async def settings_cb(client: Client, query: CallbackQuery):
     if not is_user_admin:
         return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
 
-    # --- PROTECT CONTENT MENU ---
     if data == "protect_menu":
         is_on = await get_protect_status()
         status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
@@ -109,7 +107,6 @@ async def settings_cb(client: Client, query: CallbackQuery):
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
-    # --- GET FILE AGAIN MENU ---
     elif data == "getfileagain_menu":
         is_on = await get_file_again_status()
         status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
@@ -138,7 +135,6 @@ async def settings_cb(client: Client, query: CallbackQuery):
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
-    # --- GLOBAL DATABASE CHANNEL MENU ---
     elif data == "global_db_menu":
         current_db = await get_global_db_channel()
         return await safe_edit(query.message, f"📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ᴅʙ ᴄʜᴀɴɴᴇʟ ɪᴅ: <code>{current_db}</code>", InlineKeyboardMarkup([
@@ -197,7 +193,6 @@ async def settings_cb(client: Client, query: CallbackQuery):
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
-    # --- GLOBAL FORCE SUB CHANNELS + TOGGLE MENU ---
     elif data in ["global_fs_menu", "forcesub_on", "forcesub_off"]:
         if data == "forcesub_on":
             if await get_force_sub_status(): await query.answer("⚠️ ꜰᴏʀᴄᴇ ꜱᴜʙ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴏɴ!", show_alert=True)
@@ -265,7 +260,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
         await set_global_fs_channels(new_channels)
         
-        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ <b>ɢʟᴏʙᴀʟ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴜᴘᴅᴀᴛᴇᴅ!</b>", reply_markup=back_keyboard)
+        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ <b>ɢʟᴏʙᴀ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴜᴘᴅᴀᴛᴇᴅ!</b>", reply_markup=back_keyboard)
         asyncio.create_task(delayed_delete(msg))
         
         is_on = await get_force_sub_status()
