@@ -11,7 +11,8 @@ from database.database import (
     is_user_present, add_user, is_user_banned, get_ban_reason, 
     is_maintenance, is_admin, get_auto_delete_status, get_protect_status,
     get_auto_delete_time, get_tenant_config, get_file_again_status, get_force_sub_status,
-    get_global_db_channel, get_global_fs_channels
+    get_global_db_channel, get_global_fs_channels,
+    add_points, get_points, deduct_points, add_premium
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -107,8 +108,44 @@ async def start_command(client: Client, message: Message):
     if await is_user_banned(user_id):
         return await message.reply_text(f"🚫 ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ.\nʀᴇᴀꜱᴏɴ: {await get_ban_reason(user_id)}")
 
+    # Check for payload
+    payload = text.split(" ", 1)[1] if len(text.split()) > 1 else None
+
+    # --- REFERRAL LOGIC ---
+    referred_by = 0
+    if payload and payload.startswith("ref_"):
+        try:
+            referred_by = int(payload.split("_")[1])
+            if referred_by == user_id: # Prevent self-referral
+                referred_by = 0
+        except ValueError:
+            pass
+
     if not await is_user_present(user_id):
-        await add_user(user_id, first_name, username)
+        await add_user(user_id, first_name, username, referred_by)
+        
+        # Reward the referrer!
+        if referred_by != 0:
+            await add_points(referred_by, 10)
+            current_points = await get_points(referred_by)
+            
+            try:
+                await client.send_message(
+                    referred_by, 
+                    f"🎉 <b>Nᴇᴡ Rᴇꜰᴇʀʀᴀʟ!</b>\n\n{message.from_user.mention} joined using your link!\n🎁 <b>You earned 10 points!</b>\n📊 <b>Total Points:</b> {current_points}/100"
+                )
+                
+                # Upgrade to Premium if they hit 100 points
+                if current_points >= 100: 
+                    await add_premium(referred_by, 30) # 30 Days = 1 Month
+                    await deduct_points(referred_by, 100) # Reset 100 points
+                    await client.send_message(
+                        referred_by, 
+                        "💎 <b>Mɪʟᴇꜱᴛᴏɴᴇ Rᴇᴀᴄʜᴇᴅ!</b>\n\nYou accumulated 100 points and have automatically been granted <b>1 Mᴏɴᴛʜ ᴏꜰ Pʀᴇᴍɪᴜᴍ Aᴄᴄᴇꜱꜱ!</b> 100 points have been deducted."
+                    )
+            except Exception:
+                pass
+
         NEW_USER_TXT = """#New_User {}\n\n≈ ɪᴅ:- <code>{}</code>\n≈ ɴᴀᴍᴇ:- {}"""
         try: await client.send_message(LOG_CHANNEL_ID, NEW_USER_TXT.format(message.from_user.mention, user_id, first_name))
         except: pass
@@ -116,10 +153,11 @@ async def start_command(client: Client, message: Message):
     if await is_maintenance(user_id):
         return await message.reply_text("🛠 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴏɴ. ɴᴏʀᴍᴀʟ ᴏᴘᴇʀᴀᴛɪᴏɴꜱ ᴀʀᴇ ᴛᴇᴍᴘᴏʀᴀʀɪʟʏ ᴘᴀᴜꜱᴇᴅ.")
 
-    if len(text.split()) > 1:
-        payload = text.split(" ", 1)[1]
+    # Process standard file payload (Skip if it's a referral payload)
+    if payload and not payload.startswith("ref_"):
         return await handle_file_delivery(client, user_id, message, payload)
 
+    # Force Sub logic
     if await get_force_sub_status() and not await subscribed(client, message):
         fs_channels = await get_global_fs_channels()
         buttons = []
@@ -142,6 +180,7 @@ async def start_command(client: Client, message: Message):
         buttons.append([InlineKeyboardButton("🔄 ʀᴇꜰʀᴇꜱʜ", callback_data="refresh_")])
         return await message.reply_photo(photo=FORCE_PIC, caption=FORCE_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(buttons))
 
+    # Default Start Menu
     btn = [
         [InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"), InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")],
         [InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")]
