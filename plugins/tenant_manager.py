@@ -15,7 +15,15 @@ async def request_custom_channels_cb(client: Client, query: CallbackQuery):
 
     back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ᴄᴀɴᴄᴇʟ", callback_data="settings")]])
     
-    await safe_edit(query.message, "<b>⚠️ ɪᴍᴘᴏʀᴛᴀɴᴛ ɴᴏᴛɪᴄᴇ:</b>\n\n1. Yᴏᴜ ᴍᴜꜱᴛ ᴀᴅᴅ ᴛʜɪꜱ ʙᴏᴛ ᴀꜱ ᴀɴ <b>Aᴅᴍɪɴ</b> ɪɴ ʏᴏᴜʀ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ꜰᴏʀᴄᴇ-ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ʙᴇꜰᴏʀᴇ ᴄᴏɴᴛɪɴᴜɪɴɢ.\n2. Tʜᴇ ʙᴏᴛ ɴᴇᴇᴅꜱ 'ɪɴᴠɪᴛᴇ ᴜꜱᴇʀꜱ' ᴀɴᴅ 'ᴘᴏꜱᴛ ᴍᴇꜱꜱᴀɢᴇꜱ' ʀɪɢʜᴛꜱ.\n\n📤 <b>ꜱᴇɴᴅ ʏᴏᴜʀ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ɪᴅ:</b>\n(Iᴛ ᴍᴜꜱᴛ ꜱᴛᴀʀᴛ ᴡɪᴛʜ -100)\n\n/cancel - ᴛᴏ ꜱᴛᴏᴘ ᴘʀᴏᴄᴇꜱꜱ.", back_keyboard)
+    notice_text = (
+        "<b>⚠️ ɪᴍᴘᴏʀᴛᴀɴᴛ ɴᴏᴛɪᴄᴇ:</b>\n\n"
+        "1. Yᴏᴜ ᴍᴜꜱᴛ ᴀᴅᴅ ᴛʜɪꜱ ʙᴏᴛ ᴀꜱ ᴀɴ <b>Aᴅᴍɪɴ</b> ɪɴ ʏᴏᴜʀ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ꜰᴏʀᴄᴇ-ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ʙᴇꜰᴏʀᴇ ᴄᴏɴᴛɪɴᴜɪɴɢ.\n"
+        "2. Tʜᴇ ʙᴏᴛ ɴᴇᴇᴅꜱ 'ɪɴᴠɪᴛᴇ ᴜꜱᴇʀꜱ' ᴀɴᴅ 'ᴘᴏꜱᴛ ᴍᴇꜱꜱᴀɢᴇꜱ' ʀɪɢʜᴛꜱ.\n\n"
+        "📤 <b>ꜱᴇɴᴅ ʏᴏᴜʀ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ɪᴅ:</b>\n"
+        "(Iᴛ ᴍᴜꜱᴛ ꜱᴛᴀʀᴛ ᴡɪᴛʜ -100)\n\n"
+        "/cancel - ᴛᴏ ꜱᴛᴏᴘ ᴘʀᴏᴄᴇꜱꜱ."
+    )
+    await safe_edit(query.message, notice_text, back_keyboard)
     
     try:
         db_prompt = await client.listen(query.message.chat.id, timeout=120)
@@ -37,7 +45,12 @@ async def request_custom_channels_cb(client: Client, query: CallbackQuery):
     try: await db_prompt.delete()
     except: pass
 
-    await safe_edit(query.message, "📤 <b>ꜱᴇɴᴅ ʏᴏᴜʀ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟ ɪᴅꜱ:</b>\nSᴇᴘᴀʀᴀᴛᴇ ᴍᴜʟᴛɪᴘʟᴇ ɪᴅꜱ ᴡɪᴛʜ ᴀ ꜱᴘᴀᴄᴇ. (Iꜰ ɴᴏɴᴇ, ꜱᴇɴᴅ 0)\n\n/cancel - ᴛᴏ ꜱᴛᴏᴘ ᴘʀᴏᴄᴇꜱꜱ.", back_keyboard)
+    fs_prompt_text = (
+        "📤 <b>ꜱᴇɴᴅ ʏᴏᴜʀ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟ ɪᴅꜱ:</b>\n"
+        "Sᴇᴘᴀʀᴀᴛᴇ ᴍᴜʟᴛɪᴘʟᴇ ɪᴅꜱ ᴡɪᴛʜ ᴀ ꜱᴘᴀᴄᴇ. (Iꜰ ɴᴏɴᴇ, ꜱᴇɴᴅ 0)\n\n"
+        "/cancel - ᴛᴏ ꜱᴛᴏᴘ ᴘʀᴏᴄᴇꜱꜱ."
+    )
+    await safe_edit(query.message, fs_prompt_text, back_keyboard)
 
     try:
         fs_prompt = await client.listen(query.message.chat.id, timeout=120)
@@ -60,7 +73,12 @@ async def request_custom_channels_cb(client: Client, query: CallbackQuery):
     except: pass
 
     await save_tenant_request(user_id, db_channel, fs_channels)
-    await safe_edit(query.message, "✅ <b>ʀᴇQᴜᴇꜱᴛ ꜱᴜʙᴍɪᴛᴛᴇᴅ!</b>\n\nPʟᴇᴀꜱᴇ ᴡᴀɪᴛ ꜰᴏʀ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ᴀᴘᴘʀᴏᴠᴇ ʏᴏᴜʀ ᴄʜᴀɴɴᴇʟꜱ. Yᴏᴜ ᴡɪʟʟ ʙᴇ ɴᴏᴛɪꜰɪᴇᴅ ʜᴇʀᴇ.", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]]))
+    
+    success_text = (
+        "✅ <b>ʀᴇQᴜᴇꜱᴛ ꜱᴜʙᴍɪᴛᴛᴇᴅ!</b>\n\n"
+        "Pʟᴇᴀꜱᴇ ᴡᴀɪᴛ ꜰᴏʀ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ᴀᴘᴘʀᴏᴠᴇ ʏᴏᴜʀ ᴄʜᴀɴɴᴇʟꜱ. Yᴏᴜ ᴡɪʟʟ ʙᴇ ɴᴏᴛɪꜰɪᴇᴅ ʜᴇʀᴇ."
+    )
+    await safe_edit(query.message, success_text, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]]))
 
     admin_markup = InlineKeyboardMarkup([
         [
@@ -68,11 +86,14 @@ async def request_custom_channels_cb(client: Client, query: CallbackQuery):
             InlineKeyboardButton("❌ ʀᴇᴊᴇᴄᴛ", callback_data=f"req_reject_{user_id}")
         ]
     ])
-    await client.send_message(
-        LOG_CHANNEL_ID,
-        f"<b>🔔 ɴᴇᴡ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟ ʀᴇQᴜᴇꜱᴛ</b>\n\n<b>Uꜱᴇʀ:</b> {query.from_user.mention} (<code>{user_id}</code>)\n<b>DB Cʜᴀɴɴᴇʟ:</b> <code>{db_channel}</code>\n<b>FS Cʜᴀɴɴᴇʟꜱ:</b> <code>{fs_channels}</code>",
-        reply_markup=admin_markup
+    
+    admin_notice = (
+        f"<b>🔔 ɴᴇᴡ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟ ʀᴇQᴜᴇꜱᴛ</b>\n\n"
+        f"<b>Uꜱᴇʀ:</b> {query.from_user.mention} (<code>{user_id}</code>)\n"
+        f"<b>DB Cʜᴀɴɴᴇʟ:</b> <code>{db_channel}</code>\n"
+        f"<b>FS Cʜᴀɴɴᴇʟꜱ:</b> <code>{fs_channels}</code>"
     )
+    await client.send_message(LOG_CHANNEL_ID, admin_notice, reply_markup=admin_markup)
 
 @Client.on_callback_query(filters.regex(r"^req_"))
 async def handle_tenant_request(client: Client, query: CallbackQuery):
@@ -83,12 +104,14 @@ async def handle_tenant_request(client: Client, query: CallbackQuery):
     if action == "approve":
         await update_tenant_status(user_id, "approved")
         await query.message.edit_reply_markup(InlineKeyboardMarkup([[InlineKeyboardButton("✅ ᴀᴘᴘʀᴏᴠᴇᴅ", callback_data="none")]]))
-        try: await client.send_message(user_id, "🎉 <b>Cᴏɴɢʀᴀᴛᴜʟᴀᴛɪᴏɴꜱ!</b>\n\nYᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟ ꜱᴇᴛᴜᴘ ʜᴀꜱ ʙᴇᴇɴ ᴀᴘᴘʀᴏᴠᴇᴅ! Yᴏᴜ ᴄᴀɴ ɴᴏᴡ ᴜꜱᴇ /batch ᴀɴᴅ /genlink ᴡɪᴛʜ ʏᴏᴜʀ ᴏᴡɴ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ.")
+        try: 
+            await client.send_message(user_id, "🎉 <b>Cᴏɴɢʀᴀᴛᴜʟᴀᴛɪᴏɴꜱ!</b>\n\nYᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟ ꜱᴇᴛᴜᴘ ʜᴀꜱ ʙᴇᴇɴ ᴀᴘᴘʀᴏᴠᴇᴅ! Yᴏᴜ ᴄᴀɴ ɴᴏᴡ ᴜꜱᴇ /batch ᴀɴᴅ /genlink ᴡɪᴛʜ ʏᴏᴜʀ ᴏᴡɴ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ.")
         except: pass
     
     elif action == "reject":
         await update_tenant_status(user_id, "rejected")
         await query.message.edit_reply_markup(InlineKeyboardMarkup([[InlineKeyboardButton("❌ ʀᴇᴊᴇᴄᴛᴇᴅ", callback_data="none")]]))
-        try: await client.send_message(user_id, "❌ <b>RᴇQᴜᴇꜱᴛ Rᴇᴊᴇᴄᴛᴇᴅ</b>\n\nYᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟ ꜱᴇᴛᴜᴘ ᴡᴀꜱ ᴅᴇᴄʟɪɴᴇᴅ ʙʏ ᴀɴ ᴀᴅᴍɪɴ. Eɴꜱᴜʀᴇ ᴛʜᴇ ʙᴏᴛ ɪꜱ ᴀɴ ᴀᴅᴍɪɴ ɪɴ ʏᴏᴜʀ ᴄʜᴀɴɴᴇʟꜱ ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ ʟᴀᴛᴇʀ.")
+        try: 
+            await client.send_message(user_id, "❌ <b>RᴇQᴜᴇꜱᴛ Rᴇᴊᴇᴄᴛᴇᴅ</b>\n\nYᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟ ꜱᴇᴛᴜᴘ ᴡᴀꜱ ᴅᴇᴄʟɪɴᴇᴅ ʙʏ ᴀɴ ᴀᴅᴍɪɴ. Eɴꜱᴜʀᴇ ᴛʜᴇ ʙᴏᴛ ɪꜱ ᴀɴ ᴀᴅᴍɪɴ ɪɴ ʏᴏᴜʀ ᴄʜᴀɴɴᴇʟꜱ ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ ʟᴀᴛᴇʀ.")
         except: pass
             
