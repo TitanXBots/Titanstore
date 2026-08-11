@@ -92,7 +92,6 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
         asyncio.create_task(delayed_delete(msg))
         await safe_edit(query.message, "💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
 
-    # --- REMOVE CUSTOM CHANNELS LOGIC ---
     elif data == "premium_remove_channels":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")]])
         await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴠᴏᴋᴇ ᴛʜᴇɪʀ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟꜱ\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.", keyboard)
@@ -117,12 +116,10 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
         uid = int(text)
         await delete_tenant_config(uid)
         
-        # --- SEND DM NOTIFICATION TO USER ---
         try:
             await client.send_message(uid, "❌ <b>ɴᴏᴛɪᴄᴇ:</b> ʏᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴅᴀᴛᴀʙᴀꜱᴇ ᴀɴᴅ ꜰᴏʀᴄᴇ-ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ʜᴀᴠᴇ ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ ᴏʀ ʀᴇᴊᴇᴄᴛᴇᴅ ʙʏ ᴀɴ ᴀᴅᴍɪɴ.\n\nʏᴏᴜ ᴀʀᴇ ɴᴏᴡ ᴜꜱɪɴɢ ᴛʜᴇ ɢʟᴏʙᴀʟ ᴄʜᴀɴɴᴇʟꜱ ᴀɢᴀɪɴ.")
         except Exception:
             pass
-        # ------------------------------------
         
         msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid}'ꜱ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟꜱ ʜᴀᴠᴇ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ.", reply_markup=keyboard)
         asyncio.create_task(delayed_delete(msg))
