@@ -44,7 +44,7 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
         except ListenerTimeout:
             return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!\n\n👨‍💻 ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_admin_menu())
             
-        text = input_msg.text
+        text = input_msg.text or ""
         try: await input_msg.delete()
         except: pass
         
@@ -76,7 +76,7 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
         except ListenerTimeout:
             return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!\n\n👨‍💻 ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_admin_menu())
             
-        text = input_msg.text
+        text = input_msg.text or ""
         try: await input_msg.delete()
         except: pass
         
@@ -95,7 +95,7 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
             return await safe_edit(query.message, "👨‍💻 ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_admin_menu())
             
         await remove_admin(uid)
-        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ʀᴇᴍᴏᴠᴇ ꜰʀᴏᴍ ᴀᴅᴍɪɴ", reply_markup=keyboard)
+        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ʀᴇᴍᴏᴠᴇᴅ ꜰʀᴏᴍ ᴀᴅᴍɪɴ", reply_markup=keyboard)
         asyncio.create_task(delayed_delete(msg))
         await safe_edit(query.message, "👨‍💻 ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_admin_menu())
 
