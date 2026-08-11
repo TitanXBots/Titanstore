@@ -59,12 +59,33 @@ async def delete_tenant_config(user_id: int):
 async def is_user_present(user_id: int) -> bool:
     return await user_data.find_one({"_id": user_id}) is not None
 
-async def add_user(user_id: int, first_name=None, username=None):
-    await user_data.update_one(
-        {"_id": user_id},
-        {"$set": {"first_name": first_name, "username": username, "joined_at": datetime.now(timezone.utc)}},
-        upsert=True
-    )
+async def add_user(user_id: int, first_name=None, username=None, referred_by: int = 0):
+    user = await user_data.find_one({"_id": user_id})
+    if not user:
+        await user_data.insert_one({
+            "_id": user_id,
+            "first_name": first_name,
+            "username": username,
+            "joined_at": datetime.now(timezone.utc),
+            "referred_by": referred_by,
+            "points": 0
+        })
+    else:
+        await user_data.update_one(
+            {"_id": user_id},
+            {"$set": {"first_name": first_name, "username": username}}
+        )
+
+# --- REFERRAL & POINTS FUNCTIONS ---
+async def add_points(user_id: int, points: int):
+    await user_data.update_one({"_id": user_id}, {"$inc": {"points": points}}, upsert=True)
+
+async def get_points(user_id: int) -> int:
+    user = await user_data.find_one({"_id": user_id})
+    return user.get("points", 0) if user else 0
+
+async def deduct_points(user_id: int, points: int):
+    await user_data.update_one({"_id": user_id}, {"$inc": {"points": -points}})
 
 async def get_all_users():
     cursor = user_data.find({}, {"_id": 1})
@@ -117,7 +138,17 @@ async def is_admin(user_id) -> bool:
     except (ValueError, TypeError): return False
 
 async def add_premium(user_id: int, days: int):
-    expires_at = datetime.now(timezone.utc) + timedelta(days=days)
+    # Check if they are already premium to add days correctly
+    existing_user = await premium_collection.find_one({"_id": user_id})
+    now = datetime.now(timezone.utc)
+    
+    if existing_user and existing_user.get("is_premium") and existing_user.get("expires_at") > now:
+        # Extend current expiry
+        expires_at = existing_user["expires_at"] + timedelta(days=days)
+    else:
+        # New premium
+        expires_at = now + timedelta(days=days)
+        
     await premium_collection.update_one(
         {"_id": user_id}, 
         {"$set": {"is_premium": True, "expires_at": expires_at, "notified": False}}, 
@@ -140,9 +171,10 @@ async def is_premium(user_id) -> bool:
         if data and data.get("is_premium"):
             expires_at = data.get("expires_at")
             if expires_at and datetime.now(timezone.utc) > expires_at.replace(tzinfo=timezone.utc):
+                return True
+            else:
                 await remove_premium(uid)
                 return False
-            return True
         return False
     except (ValueError, TypeError): return False
 
