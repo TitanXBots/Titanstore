@@ -22,12 +22,13 @@ async def request_custom_channels_cb(client: Client, query: CallbackQuery):
     except ListenerTimeout:
         return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!", back_keyboard)
         
-    if not db_prompt.text or db_prompt.text.lower() == "/cancel":
+    text = db_prompt.text or ""
+    if not text or text.lower() == "/cancel":
         try: await db_prompt.delete()
         except: pass
         return await safe_edit(query.message, "❌ ᴄᴀɴᴄᴇʟʟᴇᴅ.", back_keyboard)
     
-    try: db_channel = int(db_prompt.text)
+    try: db_channel = int(text)
     except: 
         try: await db_prompt.delete()
         except: pass
@@ -43,14 +44,15 @@ async def request_custom_channels_cb(client: Client, query: CallbackQuery):
     except ListenerTimeout:
         return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!", back_keyboard)
 
-    if not fs_prompt.text or fs_prompt.text.lower() == "/cancel":
+    text_fs = fs_prompt.text or ""
+    if not text_fs or text_fs.lower() == "/cancel":
         try: await fs_prompt.delete()
         except: pass
         return await safe_edit(query.message, "❌ ᴄᴀɴᴄᴇʟʟᴇᴅ.", back_keyboard)
     
     fs_channels = []
-    if fs_prompt.text.strip() != "0":
-        for ch in fs_prompt.text.split():
+    if text_fs.strip() != "0":
+        for ch in text_fs.split():
             try: fs_channels.append(int(ch))
             except: pass
 
