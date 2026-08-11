@@ -10,7 +10,7 @@ IGNORE_CMDS = [
     'start','users','broadcast','batch','genlink','stats','joinchannels','pypi',
     'restart','settings','joinchannelon','joinchanneloff','admin','autodelete',
     'autodeleteon','autodeleteoff','maintenance','ban','unban','bannedlist',
-    'addadmin','removeadmin','adminlist', 'about', 'help', 'connect'
+    'addadmin','removeadmin','adminlist', 'about', 'help', 'connect', 'refer'
 ]
 
 @Client.on_message(filters.private & filters.incoming & ~filters.command(IGNORE_CMDS))
