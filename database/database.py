@@ -215,4 +215,19 @@ async def get_file_again_status() -> bool:
 
 async def set_file_again_status(status: bool):
     await settings_collection.update_one({"_id": "get_file_again"}, {"$set": {"status": status}}, upsert=True)
+
+# --- REFERRAL SETTINGS ---
+async def get_refer_status() -> bool:
+    data = await settings_collection.find_one({"_id": "refer_status"})
+    return data.get("status", True) if data else True
+
+async def set_refer_status(status: bool):
+    await settings_collection.update_one({"_id": "refer_status"}, {"$set": {"status": status}}, upsert=True)
+
+async def get_refer_points() -> int:
+    data = await settings_collection.find_one({"_id": "refer_points"})
+    return data.get("points", 10) if data else 10
+
+async def set_refer_points(points: int):
+    await settings_collection.update_one({"_id": "refer_points"}, {"$set": {"points": points}}, upsert=True)
     
