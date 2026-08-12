@@ -16,7 +16,7 @@ async def refer_command(client: Client, message: Message):
     
     bot = await client.get_me()
     
-    # 👇 Changed from telegram.dog to t.me for a much shorter link 👇
+    # Clean and short t.me referral link
     referral_link = f"https://t.me/{bot.username}?start=ref_{user_id}"
     
     points = await get_points(user_id)
@@ -27,8 +27,8 @@ async def refer_command(client: Client, message: Message):
         f"Share this link with your friends, Each time they join, you will get {pts_per_refer} referral points and after 100 points you will get 1 month premium subscription."
     )
     
-    share_text = f"Hey! Check out this awesome File Store bot. Use my link to start:\n\n{referral_link}"
-    share_url = urllib.parse.quote(share_text)
+    # Only sharing the raw link without any extra text
+    share_url = urllib.parse.quote(referral_link)
     
     markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("• INVITE LINK ↗️", url=f"https://telegram.me/share/url?url={share_url}")],
