@@ -15,7 +15,9 @@ async def refer_command(client: Client, message: Message):
         return await message.reply_text("⚠️ <b>ɴᴏᴛɪᴄᴇ:</b> The Referral System is currently disabled by the Admin.")
     
     bot = await client.get_me()
-    referral_link = f"https://telegram.dog/{bot.username}?start=ref_{user_id}"
+    
+    # 👇 Changed from telegram.dog to t.me for a much shorter link 👇
+    referral_link = f"https://t.me/{bot.username}?start=ref_{user_id}"
     
     points = await get_points(user_id)
     pts_per_refer = await get_refer_points()
