@@ -1,4 +1,3 @@
-import urllib.parse
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import get_points, get_refer_status, get_refer_points
@@ -22,16 +21,18 @@ async def refer_command(client: Client, message: Message):
     points = await get_points(user_id)
     pts_per_refer = await get_refer_points()
     
+    # Added the raw link in text so users can just "Tap to Copy"
     text = (
         f"👋 Hey {first_name}.,\n\n"
-        f"Share this link with your friends, Each time they join, you will get {pts_per_refer} referral points and after 100 points you will get 1 month premium subscription."
+        f"Share this link with your friends, Each time they join, you will get {pts_per_refer} referral points and after 100 points you will get 1 month premium subscription.\n\n"
+        f"🔗 <b>Your Invite Link:</b>\n"
+        f"<code>{referral_link}</code>\n"
+        f"<i>(Tap to copy)</i>"
     )
     
-    # Only sharing the raw link without any extra text
-    share_url = urllib.parse.quote(referral_link)
-    
     markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("• INVITE LINK ↗️", url=f"https://telegram.me/share/url?url={share_url}")],
+        # Button contains pure clean link, no share wrapper
+        [InlineKeyboardButton("• INVITE LINK ↗️", url=referral_link)],
         [InlineKeyboardButton(f"⏳ {points} POINTS", callback_data="show_points")],
         [InlineKeyboardButton("• CLOSE •", callback_data="close")]
     ])
