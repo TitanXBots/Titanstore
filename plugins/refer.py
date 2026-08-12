@@ -21,17 +21,14 @@ async def refer_command(client: Client, message: Message):
     points = await get_points(user_id)
     pts_per_refer = await get_refer_points()
     
-    # Added the raw link in text so users can just "Tap to Copy"
+    # Clean text without the referral link shown in the caption
     text = (
         f"👋 Hey {first_name}.,\n\n"
-        f"Share this link with your friends, Each time they join, you will get {pts_per_refer} referral points and after 100 points you will get 1 month premium subscription.\n\n"
-        f"🔗 <b>Your Invite Link:</b>\n"
-        f"<code>{referral_link}</code>\n"
-        f"<i>(Tap to copy)</i>"
+        f"Share this link with your friends, Each time they join, you will get {pts_per_refer} referral points and after 100 points you will get 1 month premium subscription."
     )
     
     markup = InlineKeyboardMarkup([
-        # Button contains pure clean link, no share wrapper
+        # Button contains pure clean link, hidden from text
         [InlineKeyboardButton("• INVITE LINK ↗️", url=referral_link)],
         [InlineKeyboardButton(f"⏳ {points} POINTS", callback_data="show_points")],
         [InlineKeyboardButton("• CLOSE •", callback_data="close")]
