@@ -25,8 +25,9 @@ def get_ban_menu():
         ]
     ])
 
-@Client.on_callback_query(filters.regex(r"^ban_"))
+@Client.on_callback_query(filters.regex(r"^ban_(menu|user|unban_user|list)$"))
 async def ban_callbacks(client: Client, query: CallbackQuery):
+    await query.answer()
     if not await is_admin(query.from_user.id): 
         return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ʙᴀɴ ᴍᴇɴᴜ ɪꜱ ʀᴇꜱᴛʀɪᴄᴛᴇᴅ!", show_alert=True)
     
