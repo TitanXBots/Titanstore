@@ -20,76 +20,70 @@ async def delayed_delete(message, delay=7):
     try: await message.delete()
     except: pass
 
-@Client.on_callback_query(filters.regex("^(settings|admin_panel|protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|getfileagain_menu|getfileagain_on|getfileagain_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|refer_menu|refer_on|refer_off|refer_set_points)$"))
+@Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|getfileagain_menu|getfileagain_on|getfileagain_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|refer_menu|refer_on|refer_off|refer_set_points)$"))
 async def settings_cb(client: Client, query: CallbackQuery):
     user_id = query.from_user.id
     is_user_admin = await is_admin(user_id)
     data = query.data
 
     if data == "settings":
-        is_prem = await is_premium(user_id)
-        status = "💎 ᴘʀᴇᴍɪᴜﾑ" if is_prem else "🆓 ꜰʀᴇᴇ"
-        
-        text = (
-            f"👤 <b>ᴜꜱᴇʀ ᴘʀᴏꜰɪʟᴇ & ꜱᴇᴛᴛɪɴɢꜱ</b>\n\n"
-            f"🆔 <b>ᴜꜱᴇʀ ɪᴅ:</b> <code>{user_id}</code>\n"
-            f"📊 <b>ꜱᴛᴀᴛᴜꜱ:</b> {status}\n\n"
-        )
-        
-        buttons = []
-        
-        if not is_prem:
-            buttons.append([InlineKeyboardButton("🍁 ᴄʜᴇᴄᴋ ᴀʟʟ ᴘʟᴀɴꜱ & ᴘʀɪᴄᴇꜱ 🍁", callback_data="buy_plans")])
-        
-        if is_prem:
-            tenant = await get_tenant_config(user_id)
-            if tenant:
-                fs_str = ", ".join([f"<code>{x}</code>" for x in tenant['fs_channels']])
-                text += (
-                    f"📁 <b>ʏᴏᴜʀ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b> <code>{tenant['db_channel']}</code>\n"
-                    f"📢 <b>ʏᴏᴜʀ ꜰꜱ ᴄʜᴀɴɴᴇʟꜱ:</b> {fs_str}\n\n"
-                )
-                buttons.append([InlineKeyboardButton("🔌 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="user_connect_req")])
-            else:
-                text += "<i>ʏᴏᴜ ᴀʀᴇ ᴀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀ!\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ᴛᴏ ꜱᴇᴛᴜᴘ ʏᴏᴜʀ ᴏᴡɴ ꜰɪʟᴇ ꜱᴛᴏʀᴇ ᴄʜᴀɴɴᴇʟꜱ.</i>"
-                buttons.append([InlineKeyboardButton("🔌 ꜱᴇᴛᴜᴘ ᴄʜᴀɴɴᴇʟꜱ", callback_data="user_connect_req")])
-        else:
-            text += "<i>ᴄᴏɴᴛᴀᴄᴛ ᴛʜᴇ ᴏᴡɴᴇʀ ᴛᴏ ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ ᴀɴᴅ ʜᴏꜱᴛ ʏᴏᴜʀ ᴏᴡɴ ꜰɪʟᴇꜱ.</i>"
-        
         if is_user_admin:
-            buttons.append([InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴄᴏɴᴛʀᴏʟ ᴘᴀɴᴇʟ", callback_data="admin_panel")])
+            return await safe_edit(query.message, "⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢ ᴘᴀɴᴇʟ", InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), 
+                    InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")
+                ],
+                [
+                    InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ", callback_data="premium_menu"), 
+                    InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu")
+                ],
+                [
+                    InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu"),
+                    InlineKeyboardButton("♻️ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ", callback_data="getfileagain_menu")
+                ],
+                [
+                    InlineKeyboardButton("📁 ɢʟᴏʙᴀʟ ᴅʙ", callback_data="global_db_menu"),
+                    InlineKeyboardButton("📢 ɢʟᴏʙᴀʟ ꜰꜱ", callback_data="global_fs_menu")
+                ],
+                [
+                    InlineKeyboardButton("🎁 ʀᴇꜰᴇʀʀᴀʟ ᴍᴇɴᴜ", callback_data="refer_menu")
+                ],
+                [
+                    InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")
+                ]
+            ]))
+        else:
+            is_prem = await is_premium(user_id)
+            status = "💎 ᴘʀᴇᴍɪᴜﾑ" if is_prem else "🆓 ꜰʀᴇᴇ"
             
-        buttons.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")])
-        return await safe_edit(query.message, text, InlineKeyboardMarkup(buttons))
-
-    elif data == "admin_panel":
-        if not is_user_admin:
-            return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
+            text = (
+                f"👤 <b>ᴜꜱᴇʀ ᴘʀᴏꜰɪʟᴇ & ꜱᴇᴛᴛɪɴɢꜱ</b>\n\n"
+                f"🆔 <b>ᴜꜱᴇʀ ɪᴅ:</b> <code>{user_id}</code>\n"
+                f"📊 <b>ꜱᴛᴀᴛᴜꜱ:</b> {status}\n\n"
+            )
             
-        return await safe_edit(query.message, "⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢ ᴘᴀɴᴇʟ", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), 
-                InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")
-            ],
-            [
-                InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ", callback_data="premium_menu"), 
-                InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu")
-            ],
-            [
-                InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu"),
-                InlineKeyboardButton("♻️ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ", callback_data="getfileagain_menu")
-            ],
-            [
-                InlineKeyboardButton("📁 ɢʟᴏʙᴀʟ ᴅʙ", callback_data="global_db_menu"),
-                InlineKeyboardButton("📢 ɢʟᴏʙᴀʟ ꜰꜱ", callback_data="global_fs_menu")
-            ],
-            [
-                InlineKeyboardButton("🎁 ʀᴇꜰᴇʀʀᴀʟ ᴍᴇɴᴜ", callback_data="refer_menu")
-            ],
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ ᴛᴏ ᴘʀᴏꜰɪʟᴇ", callback_data="settings")
-            ]
-        ]))
+            buttons = []
+            
+            if not is_prem:
+                buttons.append([InlineKeyboardButton("🍁 ᴄʜᴇᴄᴋ ᴀʟʟ ᴘʟᴀɴꜱ & ᴘʀɪᴄᴇꜱ 🍁", callback_data="buy_plans")])
+            
+            if is_prem:
+                tenant = await get_tenant_config(user_id)
+                if tenant:
+                    fs_str = ", ".join([f"<code>{x}</code>" for x in tenant['fs_channels']])
+                    text += (
+                        f"📁 <b>ʏᴏᴜʀ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b> <code>{tenant['db_channel']}</code>\n"
+                        f"📢 <b>ʏᴏᴜʀ ꜰꜱ ᴄʜᴀɴɴᴇʟꜱ:</b> {fs_str}\n\n"
+                    )
+                    buttons.append([InlineKeyboardButton("🔌 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="user_connect_req")])
+                else:
+                    text += "<i>ʏᴏᴜ ᴀʀᴇ ᴀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀ!\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ᴛᴏ ꜱᴇᴛᴜᴘ ʏᴏᴜʀ ᴏᴡɴ ꜰɪʟᴇ ꜱᴛᴏʀᴇ ᴄʜᴀɴɴᴇʟꜱ.</i>"
+                    buttons.append([InlineKeyboardButton("🔌 ꜱᴇᴛᴜᴘ ᴄʜᴀɴɴᴇʟꜱ", callback_data="user_connect_req")])
+            else:
+                text += "<i>ᴄᴏɴᴛᴀᴄᴛ ᴛʜᴇ ᴏᴡɴᴇʀ ᴛᴏ ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ ᴀɴᴅ ʜᴏꜱᴛ ʏᴏᴜʀ ᴏᴡɴ ꜰɪʟᴇꜱ.</i>"
+            
+            buttons.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")])
+            return await safe_edit(query.message, text, InlineKeyboardMarkup(buttons))
 
     if not is_user_admin:
         return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
@@ -107,7 +101,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="refer_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="refer_off")],
             [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴘᴏɪɴᴛꜱ", callback_data="refer_set_points")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data == "refer_on":
@@ -124,7 +118,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="refer_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="refer_off")],
             [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴘᴏɪɴᴛꜱ", callback_data="refer_set_points")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data == "refer_off":
@@ -141,7 +135,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="refer_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="refer_off")],
             [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴘᴏɪɴᴛꜱ", callback_data="refer_set_points")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data == "refer_set_points":
@@ -166,7 +160,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
             return await safe_edit(query.message, text, InlineKeyboardMarkup([
                 [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="refer_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="refer_off")],
                 [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴘᴏɪɴᴛꜱ", callback_data="refer_set_points")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
             ]))
 
         text_input = input_msg.text or ""
@@ -186,7 +180,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
             return await safe_edit(query.message, text, InlineKeyboardMarkup([
                 [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="refer_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="refer_off")],
                 [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴘᴏɪɴᴛꜱ", callback_data="refer_set_points")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
             ]))
 
         try:
@@ -206,7 +200,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
             return await safe_edit(query.message, text, InlineKeyboardMarkup([
                 [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="refer_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="refer_off")],
                 [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴘᴏɪɴᴛꜱ", callback_data="refer_set_points")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
             ]))
 
         await set_refer_points(new_pts)
@@ -222,7 +216,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="refer_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="refer_off")],
             [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴘᴏɪɴᴛꜱ", callback_data="refer_set_points")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data == "protect_menu":
@@ -235,7 +229,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         )
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data == "protect_on":
@@ -249,7 +243,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         )
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")], 
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data == "protect_off":
@@ -263,7 +257,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         )
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")], 
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data == "getfileagain_menu":
@@ -276,7 +270,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         )
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="getfileagain_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="getfileagain_off")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data == "getfileagain_on":
@@ -290,7 +284,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         )
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="getfileagain_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="getfileagain_off")], 
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data == "getfileagain_off":
@@ -304,7 +298,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         )
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="getfileagain_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="getfileagain_off")], 
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data == "global_db_menu":
@@ -315,7 +309,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         )
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_set")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data == "global_db_set":
@@ -336,7 +330,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
             )
             return await safe_edit(query.message, text, InlineKeyboardMarkup([
                 [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_set")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
             ]))
 
         text_input = input_msg.text or ""
@@ -352,7 +346,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
             )
             return await safe_edit(query.message, text, InlineKeyboardMarkup([
                 [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_set")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
             ]))
 
         try:
@@ -369,7 +363,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
             )
             return await safe_edit(query.message, text, InlineKeyboardMarkup([
                 [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_set")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
             ]))
 
         await set_global_db_channel(new_id)
@@ -387,7 +381,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         )
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_set")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data in ["global_fs_menu", "forcesub_on", "forcesub_off"]:
@@ -415,7 +409,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="forcesub_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="forcesub_off")],
             [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_set")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
 
     elif data == "global_fs_set":
@@ -443,7 +437,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
             return await safe_edit(query.message, text, InlineKeyboardMarkup([
                 [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="forcesub_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="forcesub_off")],
                 [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_set")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
             ]))
 
         text_input = input_msg.text or ""
@@ -464,7 +458,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
             return await safe_edit(query.message, text, InlineKeyboardMarkup([
                 [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="forcesub_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="forcesub_off")],
                 [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_set")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
             ]))
 
         new_channels = []
@@ -491,5 +485,5 @@ async def settings_cb(client: Client, query: CallbackQuery):
         return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="forcesub_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="forcesub_off")],
             [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="global_fs_set")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")]
         ]))
