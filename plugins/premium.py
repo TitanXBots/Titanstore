@@ -38,7 +38,7 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
 
     elif data == "premium_add":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")]])
-        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴀɴᴅ ɴᴜᴍʙᴇʀ ᴏꜰ ᴅᴀʏꜱ (ꜱᴘᴀᴄᴇ ꜱᴇᴘᴀʀᴀᴛᴇᴅ). ᴇxᴀᴍᴘʟᴇ: <code>123456789 30</code>\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.", keyboard)
+        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴀɴᴅ ᴅᴀʏꜱ. ᴇx: <code>123456789 30</code>\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
         
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
@@ -66,7 +66,7 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
 
     elif data == "premium_remove":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")]])
-        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴠᴏᴋᴇ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.", keyboard)
+        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴠᴏᴋᴇ ᴘʀᴇᴍɪᴜᴍ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
         
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
@@ -88,13 +88,13 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
         uid = int(text)
         await remove_premium(uid)
         
-        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid}'ꜱ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ ʀᴇᴠᴏᴋᴇᴅ.", reply_markup=keyboard)
+        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid}'ꜱ ᴘʀᴇᴍɪᴜᴍ ʀᴇᴠᴏᴋᴇᴅ.", reply_markup=keyboard)
         asyncio.create_task(delayed_delete(msg))
         await safe_edit(query.message, "💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
 
     elif data == "premium_remove_channels":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")]])
-        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴠᴏᴋᴇ ᴛʜᴇɪʀ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟꜱ\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.", keyboard)
+        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴠᴏᴋᴇ ᴛʜᴇɪʀ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟꜱ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
         
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
@@ -117,11 +117,11 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
         await delete_tenant_config(uid)
         
         try:
-            await client.send_message(uid, "❌ <b>ɴᴏᴛɪᴄᴇ:</b> ʏᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴅᴀᴛᴀʙᴀꜱᴇ ᴀɴᴅ ꜰᴏʀᴄᴇ-ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ʜᴀᴠᴇ ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ ᴏʀ ʀᴇᴊᴇᴄᴛᴇᴅ ʙʏ ᴀɴ ᴀᴅᴍɪɴ.\n\nʏᴏᴜ ᴀʀᴇ ɴᴏᴡ ᴜꜱɪɴɢ ᴛʜᴇ ɢʟᴏʙᴀʟ ᴄʜᴀɴɴᴇʟꜱ ᴀɢᴀɪɴ.")
+            await client.send_message(uid, "❌ <b>ɴᴏᴛɪᴄᴇ:</b> ʏᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴅᴀᴛᴀʙᴀꜱᴇ & ꜰꜱ ᴄʜᴀɴɴᴇʟꜱ ʜᴀᴠᴇ ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ.")
         except Exception:
             pass
         
-        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid}'ꜱ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟꜱ ʜᴀᴠᴇ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ.", reply_markup=keyboard)
+        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid}'ꜱ ᴄᴜꜱᴛᴏᴍ ᴄʜᴀɴɴᴇʟꜱ ᴅᴇʟᴇᴛᴇᴅ.", reply_markup=keyboard)
         asyncio.create_task(delayed_delete(msg))
         await safe_edit(query.message, "💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_premium_menu())
 
@@ -129,14 +129,10 @@ async def premium_callbacks(client: Client, query: CallbackQuery):
         cursor = premium_collection.find({"is_premium": True})
         users = await cursor.to_list(length=100)
         if not users: return await safe_edit(query.message, "ɴᴏ ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ ꜰᴏᴜɴᴅ.", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
-            ]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")]
         ]))
         text = "".join([f"• <code>{u['_id']}</code> (Expires: {u.get('expires_at').strftime('%Y-%m-%d') if u.get('expires_at') else 'Never'})\n" for u in users])
         return await safe_edit(query.message, f"💎 ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ:\n\n{text}", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")
-            ]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium_menu")]
         ]))
         
