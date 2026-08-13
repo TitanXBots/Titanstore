@@ -59,6 +59,7 @@ async def render_autodelete_menu(message):
 
 @Client.on_callback_query(filters.regex(r"^autodelete_"))
 async def autodelete_callbacks(client: Client, query: CallbackQuery):
+    await query.answer()
     if not await is_admin(query.from_user.id): 
         return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
     
