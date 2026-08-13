@@ -8,12 +8,10 @@ from database.database import (
     is_admin, is_premium, get_tenant_config,
     get_protect_status, set_protect_status, 
     get_force_sub_status, set_force_sub_status,
-    get_file_again_status, set_file_again_status,
     get_global_db_channel, set_global_db_channel,
     get_global_fs_channels, set_global_fs_channels,
     get_refer_status, set_refer_status, 
-    get_refer_points, set_refer_points,
-    get_auto_delete_status, get_auto_delete_time
+    get_refer_points, set_refer_points
 )
 
 async def delayed_delete(message, delay=7):
@@ -21,7 +19,7 @@ async def delayed_delete(message, delay=7):
     try: await message.delete()
     except: pass
 
-@Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|getfileagain_menu|getfileagain_on|getfileagain_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|refer_menu|refer_on|refer_off|refer_set_points|add_channels_menu)$"))
+@Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|refer_menu|refer_on|refer_off|refer_set_points|add_channels_menu)$"))
 async def settings_cb(client: Client, query: CallbackQuery):
     user_id = query.from_user.id
     is_user_admin = await is_admin(user_id)
