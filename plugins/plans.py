@@ -128,9 +128,10 @@ async def plans_cb(client: Client, query: CallbackQuery):
             f"‼️ <b>GIVE US SOMETIME TO ADD YOU IN PREMIUM LIST.</b>"
         )
         keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("⭐📸 SEND SCREENSHOT 📸⭐", url=f"tg://user?id={OWNER_ID}")],
+            [InlineKeyboardButton("⭐📸 1. SEND SCREENSHOT 📸⭐", url=f"tg://user?id={OWNER_ID}")],
+            [InlineKeyboardButton("📱 2. CONTACT OWNER", url=f"tg://user?id={OWNER_ID}")],
+            [InlineKeyboardButton("🥤 3. CHECK MY PLAN 🥤", callback_data="myplan")],
             [InlineKeyboardButton("💎 CUSTOM PLAN 💎", callback_data="custom_plan")],
-            [InlineKeyboardButton("🥤 CHECK MY PLAN 🥤", callback_data="myplan")],
             [
                 InlineKeyboardButton("• BACK •", callback_data="buy_plans"),
                 InlineKeyboardButton("• CLOSE •", callback_data="close_menu")
