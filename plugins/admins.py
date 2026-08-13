@@ -37,7 +37,7 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
 
     elif data == "admin_add":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]])
-        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ᴀᴅᴅ ᴀꜱ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.", keyboard)
+        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ᴀᴅᴅ ᴀꜱ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
         
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
@@ -69,7 +69,7 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
 
     elif data == "admin_remove":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]])
-        await safe_edit(query.message, "ꜱᴇɴْد ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴍᴏᴠᴇ ꜰʀᴏᴍ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.", keyboard)
+        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴍᴏᴠᴇ ꜰʀᴏᴍ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
         
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
@@ -102,14 +102,10 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
     elif data == "admin_list":
         admins = await get_admins()
         if not admins: return await safe_edit(query.message, "ɴᴏ ᴀᴅᴍɪɴꜱ ꜰᴏᴜɴᴅ.", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")
-            ]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]
         ]))
         text = "\n".join([f"• {a}" for a in admins[:100]])
         return await safe_edit(query.message, f"👨‍💻 ᴀᴅᴍɪɴ ʟɪꜱᴛ:\n\n{text}", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")
-            ]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]
         ]))
         
