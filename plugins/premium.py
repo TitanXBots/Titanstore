@@ -26,8 +26,9 @@ def get_premium_menu():
         ]
     ])
 
-@Client.on_callback_query(filters.regex(r"^premium_"))
+@Client.on_callback_query(filters.regex(r"^premium_(menu|add|remove|remove_channels|list)$"))
 async def premium_callbacks(client: Client, query: CallbackQuery):
+    await query.answer()
     if not await is_admin(query.from_user.id): 
         return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ ɪꜱ ʀᴇꜱᴛʀɪᴄᴛᴇᴅ!", show_alert=True)
         
