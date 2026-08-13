@@ -25,8 +25,9 @@ def get_admin_menu():
         ]
     ])
 
-@Client.on_callback_query(filters.regex(r"^admin_"))
+@Client.on_callback_query(filters.regex(r"^admin_(menu|add|remove|list)$"))
 async def admin_callbacks(client: Client, query: CallbackQuery):
+    await query.answer()
     if not await is_admin(query.from_user.id): 
         return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴ ᴍᴇɴᴜ ɪꜱ ʀᴇꜱᴛʀɪᴄᴛᴇᴅ!", show_alert=True)
     
@@ -65,7 +66,7 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
         await add_admin(uid)
         msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ᴀᴅᴅᴇᴅ ᴀꜱ ᴀᴅᴍɪɴ", reply_markup=keyboard)
         asyncio.create_task(delayed_delete(msg))
-        await safe_edit(query.message, "👨‍💻 ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_admin_menu())
+        return await safe_edit(query.message, "👨‍💻 ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_admin_menu())
 
     elif data == "admin_remove":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]])
@@ -108,4 +109,5 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
         return await safe_edit(query.message, f"👨‍💻 ᴀᴅᴍɪɴ ʟɪꜱᴛ:\n\n{text}", InlineKeyboardMarkup([
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]
         ]))
+        
         
