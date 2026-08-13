@@ -52,7 +52,7 @@ async def render_autodelete_menu(message):
             InlineKeyboardButton("⏱ ᴄʜᴀɴɢᴇ ᴛɪᴍᴇʀ", callback_data="autodelete_set_time")
         ],
         [
-            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
+            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")
         ]
     ])
     await safe_edit(message, text, markup)
@@ -86,7 +86,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
         
     elif data == "autodelete_set_time":
         back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="autodelete_menu")]])
-        await safe_edit(query.message, "<b>ꜱᴇɴᴅ ᴍᴇ ᴀ ᴛɪᴍᴇ ɪɴ ʟɪᴋᴇ ᴛʜɪꜱ - 1ʜ ᴏʀ 15ᴍ\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.</b>", back_keyboard)
+        await safe_edit(query.message, "<b>ꜱᴇɴᴅ ᴍᴇ ᴀ ᴛɪᴍᴇ ɪɴ ʟɪᴋᴇ ᴛʜɪꜱ - 1ʜ ᴏʀ 15ᴍ\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
         
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
@@ -104,12 +104,12 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
             
         time_in_seconds = parse_time(text)
         if time_in_seconds < 10: 
-            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ <b>ɪɴᴠᴀʟɪᴅ ꜰᴏʀᴍᴀᴛ!</b> ᴘʟᴇᴀꜱᴇ ᴜꜱᴇ ꜰᴏʀᴍᴀᴛꜱ ʟɪᴋᴇ <code>1h</code>, <code>15m</code>, ᴏʀ <code>30s</code>.", reply_markup=back_keyboard)
+            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ <b>ɪɴᴠᴀʟɪᴅ ꜰᴏʀᴍᴀᴛ!</b> ᴜꜱᴇ <code>1h</code>, <code>15m</code>, ᴏʀ <code>30s</code>.", reply_markup=back_keyboard)
             asyncio.create_task(delayed_delete(msg))
             return await render_autodelete_menu(query.message)
             
         await set_auto_delete_time(time_in_seconds)
-        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ꜱᴇᴛ ᴛᴏ <b>{get_readable_time(time_in_seconds)}</b>.", reply_markup=back_keyboard)
+        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ꜱᴇᴛ ᴛᴏ <b>{get_readable_time(time_in_seconds)}</b>.", reply_markup=back_keyboard)
         asyncio.create_task(delayed_delete(msg))
         await render_autodelete_menu(query.message)
         
