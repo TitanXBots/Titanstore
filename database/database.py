@@ -173,7 +173,6 @@ async def is_premium(user_id) -> bool:
             expires_at = data.get("expires_at")
             if expires_at:
                 expiry_dt = expires_at.replace(tzinfo=timezone.utc)
-                # Correct Logic: If current time is LESS than expiry time, user is active!
                 if datetime.now(timezone.utc) <= expiry_dt:
                     return True
                 else:
