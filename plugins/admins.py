@@ -21,7 +21,7 @@ def get_admin_menu():
             InlineKeyboardButton("📋 ᴀᴅᴍɪɴ ʟɪꜱᴛ", callback_data="admin_list")
         ],
         [
-            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
+            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")
         ]
     ])
 
