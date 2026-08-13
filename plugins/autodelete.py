@@ -4,7 +4,11 @@ from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardBu
 from pyromod.exceptions import ListenerTimeout
 from config import START_PIC
 from helper_func import safe_edit, get_readable_time
-from database.database import is_admin, get_auto_delete_status, set_auto_delete_status, get_auto_delete_time, set_auto_delete_time
+from database.database import (
+    is_admin, get_auto_delete_status, set_auto_delete_status, 
+    get_auto_delete_time, set_auto_delete_time,
+    get_file_again_status, set_file_again_status
+)
 
 async def delayed_delete(message, delay=7):
     await asyncio.sleep(delay)
@@ -25,19 +29,30 @@ def parse_time(time_str: str) -> int:
 
 async def render_autodelete_menu(message):
     is_on = await get_auto_delete_status()
+    get_file_on = await get_file_again_status()
     status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
+    gf_status = "ᴏɴ ✅" if get_file_on else "ᴏꜰꜰ ❌"
     current_time = await get_auto_delete_time()
-    text = f"🗑 <b>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>\nᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ: <b>{get_readable_time(current_time)}</b>"
+    
+    text = (
+        f"🗑 <b>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ & ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ</b>\n\n"
+        f"ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ: <b>{status}</b>\n"
+        f"ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ: <b>{get_readable_time(current_time)}</b>\n"
+        f"ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ ʙᴜᴛᴛᴏɴ: <b>{gf_status}</b>"
+    )
     markup = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="autodelete_on"), 
-            InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="autodelete_off")
+            InlineKeyboardButton("✅ ᴀᴜᴛᴏ ᴅᴇʟ ᴏɴ", callback_data="autodelete_on"), 
+            InlineKeyboardButton("❌ ᴀᴜᴛᴏ ᴅᴇʟ ᴏꜰꜰ", callback_data="autodelete_off")
+        ],
+        [
+            InlineKeyboardButton(f"♻️ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ: {gf_status}", callback_data="autodelete_toggle_gf")
         ],
         [
             InlineKeyboardButton("⏱ ᴄʜᴀɴɢᴇ ᴛɪᴍᴇʀ", callback_data="autodelete_set_time")
         ],
         [
-            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")
+            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
         ]
     ])
     await safe_edit(message, text, markup)
@@ -60,6 +75,13 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
     elif data == "autodelete_off":
         await set_auto_delete_status(False)
         await query.answer("❌ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
+        await render_autodelete_menu(query.message)
+
+    elif data == "autodelete_toggle_gf":
+        current_gf = await get_file_again_status()
+        await set_file_again_status(not current_gf)
+        status_word = "ᴇɴᴀʙʟᴇᴅ" if not current_gf else "ᴅɪꜱᴀʙʟᴇᴅ"
+        await query.answer(f"✅ 'ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ' {status_word}!", show_alert=True)
         await render_autodelete_menu(query.message)
         
     elif data == "autodelete_set_time":
@@ -87,7 +109,6 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
             return await render_autodelete_menu(query.message)
             
         await set_auto_delete_time(time_in_seconds)
-        
         msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ꜱᴇᴛ ᴛᴏ <b>{get_readable_time(time_in_seconds)}</b>.", reply_markup=back_keyboard)
         asyncio.create_task(delayed_delete(msg))
         await render_autodelete_menu(query.message)
