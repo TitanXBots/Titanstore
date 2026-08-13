@@ -9,7 +9,7 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
     user_id = query.from_user.id
     
     if await is_maintenance(user_id):
-        return await query.answer("🛠 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴏɴ. ɴᴏʀᴍᴀʟ ᴏᴘᴇʀᴀᴛɪᴏɴꜱ ᴀʀᴇ ᴛᴇᴍᴘᴏʀᴀʀɪʟʏ ᴘᴀᴜꜱᴇᴅ.", show_alert=True)
+        return await query.answer("🛠 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴏɴ.", show_alert=True)
         
     await query.answer()
     data = query.data
@@ -17,13 +17,8 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
 
     if data == "start":
         buttons = [
-            [
-                InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"), 
-                InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")
-            ],
-            [
-                InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")
-            ]
+            [InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"), InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")],
+            [InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")]
         ]
         return await safe_edit(query.message, START_MSG.format(first=first_name), InlineKeyboardMarkup(buttons))
 
@@ -31,70 +26,35 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
         if not await is_admin(user_id):
             return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ!", show_alert=True)
         return await safe_edit(query.message, "⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢ ᴘᴀɴᴇʟ", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), 
-                InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")
-            ],
-            [
-                InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ", callback_data="premium_menu"), 
-                InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu")
-            ],
-            [
-                InlineKeyboardButton("📁 ᴀᴅᴅ ᴄʜᴀɴɴᴇʟꜱ", callback_data="add_channels_menu"),
-                InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu")
-            ],
-            [
-                InlineKeyboardButton("🎁 ʀᴇꜰᴇʀʀᴀʟ ᴍᴇɴᴜ", callback_data="refer_menu")
-            ],
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")
-            ]
+            [InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")],
+            [InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ", callback_data="premium_menu"), InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu")],
+            [InlineKeyboardButton("📁 ᴀᴅᴅ ᴄʜᴀɴɴᴇʟꜱ", callback_data="add_channels_menu"), InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu")],
+            [InlineKeyboardButton("🎁 ʀᴇꜰᴇʀʀᴀʟ ᴍᴇɴᴜ", callback_data="refer_menu")],
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")]
         ]))
 
     elif data == "help":
         return await safe_edit(query.message, HELP_TXT.format(first=first_name), InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", url=f"tg://user?id={OWNER_ID}"), 
-                InlineKeyboardButton("💬 ᴄᴏᴍᴍᴀɴᴅꜱ", callback_data="commands")
-            ],
-            [
-                InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"), 
-                InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
-            ]
+            [InlineKeyboardButton("🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", url=f"tg://user?id={OWNER_ID}"), InlineKeyboardButton("💬 ᴄᴏᴍᴍᴀɴᴅꜱ", callback_data="commands")],
+            [InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"), InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")]
         ]))
 
     elif data == "commands":
         return await safe_edit(query.message, COMMANDS_TXT, InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="help")
-            ],
-            [
-                InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"), 
-                InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
-            ]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="help")],
+            [InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"), InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")]
         ]))
 
     elif data == "about":
         return await safe_edit(query.message, ABOUT_TXT.format(first=first_name), InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("📜 ᴅɪꜱᴄʟᴀɪᴍᴇʀ", callback_data="disclaimer"), 
-                InlineKeyboardButton("🔐 ꜱᴏᴜʀᴄᴇ", url="https://github.com/TitanXBots/FileStore-Bot")
-            ],
-            [
-                InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"), 
-                InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
-            ]
+            [InlineKeyboardButton("📜 ᴅɪꜱᴄʟᴀɪᴍᴇʀ", callback_data="disclaimer"), InlineKeyboardButton("🔐 ꜱᴏᴜʀᴄᴇ", url="https://github.com/TitanXBots/FileStore-Bot")],
+            [InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"), InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")]
         ]))
 
     elif data == "disclaimer":
         return await safe_edit(query.message, DISCLAIMER_TXT, InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="about")
-            ],
-            [
-                InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"), 
-                InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")
-            ]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="about")],
+            [InlineKeyboardButton("⚓ ʜᴏᴍᴇ", callback_data="start"), InlineKeyboardButton("⚡ ᴄʟᴏꜱᴇ", callback_data="close")]
         ]))
 
     elif data == "close":
