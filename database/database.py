@@ -141,8 +141,12 @@ async def add_premium(user_id: int, days: int):
     existing_user = await premium_collection.find_one({"_id": user_id})
     now = datetime.now(timezone.utc)
     
-    if existing_user and existing_user.get("is_premium") and existing_user.get("expires_at") > now:
-        expires_at = existing_user["expires_at"] + timedelta(days=days)
+    if existing_user and existing_user.get("is_premium") and existing_user.get("expires_at"):
+        current_expiry = existing_user["expires_at"].replace(tzinfo=timezone.utc)
+        if current_expiry > now:
+            expires_at = current_expiry + timedelta(days=days)
+        else:
+            expires_at = now + timedelta(days=days)
     else:
         expires_at = now + timedelta(days=days)
         
@@ -167,11 +171,14 @@ async def is_premium(user_id) -> bool:
         data = await premium_collection.find_one({"_id": uid})
         if data and data.get("is_premium"):
             expires_at = data.get("expires_at")
-            if expires_at and datetime.now(timezone.utc) > expires_at.replace(tzinfo=timezone.utc):
-                return True
-            else:
-                await remove_premium(uid)
-                return False
+            if expires_at:
+                expiry_dt = expires_at.replace(tzinfo=timezone.utc)
+                # Correct Logic: If current time is LESS than expiry time, user is active!
+                if datetime.now(timezone.utc) <= expiry_dt:
+                    return True
+                else:
+                    await remove_premium(uid)
+                    return False
         return False
     except (ValueError, TypeError): return False
 
