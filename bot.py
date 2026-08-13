@@ -7,14 +7,11 @@ import pyromod.listen
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 import pyrogram.utils
-from pyrogram.errors import FloodWait, UserIsBlocked, UserDeactivated
+from pyrogram.errors import UserIsBlocked, UserDeactivated
 
 pyrogram.utils.MIN_CHANNEL_ID = -1009999999999
 
-from config import (
-    API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN, TG_BOT_WORKERS,
-    PORT
-)
+from config import API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN, TG_BOT_WORKERS, PORT
 from database.database import premium_collection, remove_premium, get_global_db_channel, get_global_fs_channels, delete_tenant_config
 
 class Bot(Client):
@@ -60,7 +57,7 @@ class Bot(Client):
                         try:
                             await self.send_message(
                                 user_id, 
-                                f"⚠️ <b>ʀᴇᴍɪɴᴅᴇʀ:</b> ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ɪꜱ ᴄʟᴏꜱɪɴɢ ꜱᴏᴏɴ!\n\n"
+                                f"⚠️ <b>ʀᴇᴍɪɴᴅᴇʀ:</b> ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ɪꜱ ᴄʟᴏꜱɪɢ ꜱᴏᴏɴ!\n\n"
                                 f"<b>ᴇxᴘɪʀʏ ᴅᴀᴛᴇ:</b> {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC"
                             )
                             await premium_collection.update_one({"_id": user_id}, {"$set": {"notified": True}})
@@ -124,4 +121,3 @@ class Bot(Client):
     async def stop(self, *args):
         await super().stop()
         self.logger.info("Bot stopped.")
-        
