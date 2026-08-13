@@ -4,7 +4,7 @@ from config import START_MSG, HELP_TXT, COMMANDS_TXT, ABOUT_TXT, DISCLAIMER_TXT,
 from helper_func import safe_edit
 from database.database import is_admin, is_maintenance
 
-@Client.on_callback_query(filters.regex("^(start|help|commands|about|disclaimer|close)$"))
+@Client.on_callback_query(filters.regex("^(start|help|commands|about|disclaimer|close|admin_panel)$"))
 async def generic_cb_handler(client: Client, query: CallbackQuery):
     user_id = query.from_user.id
     
@@ -26,6 +26,30 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
             ]
         ]
         return await safe_edit(query.message, START_MSG.format(first=first_name), InlineKeyboardMarkup(buttons))
+
+    elif data == "admin_panel":
+        if not await is_admin(user_id):
+            return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ!", show_alert=True)
+        return await safe_edit(query.message, "⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢ ᴘᴀɴᴇʟ", InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), 
+                InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")
+            ],
+            [
+                InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ", callback_data="premium_menu"), 
+                InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu")
+            ],
+            [
+                InlineKeyboardButton("📁 ᴀᴅᴅ ᴄʜᴀɴɴᴇʟꜱ", callback_data="add_channels_menu"),
+                InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu")
+            ],
+            [
+                InlineKeyboardButton("🎁 ʀᴇꜰᴇʀʀᴀʟ ᴍᴇɴᴜ", callback_data="refer_menu")
+            ],
+            [
+                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")
+            ]
+        ]))
 
     elif data == "help":
         return await safe_edit(query.message, HELP_TXT.format(first=first_name), InlineKeyboardMarkup([
