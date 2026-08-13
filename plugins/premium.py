@@ -22,7 +22,7 @@ def get_premium_menu():
             InlineKeyboardButton("🗑 ʀᴇᴍᴏᴠᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="premium_remove_channels")
         ],
         [
-            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
+            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")
         ]
     ])
 
