@@ -20,7 +20,7 @@ async def delayed_delete(message, delay=7):
     try: await message.delete()
     except: pass
 
-@Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|getfileagain_menu|getfileagain_on|getfileagain_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|refer_menu|refer_on|refer_off|refer_set_points)$"))
+@Client.on_callback_query(filters.regex("^(settings|admin_panel|protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|getfileagain_menu|getfileagain_on|getfileagain_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|refer_menu|refer_on|refer_off|refer_set_points)$"))
 async def settings_cb(client: Client, query: CallbackQuery):
     user_id = query.from_user.id
     is_user_admin = await is_admin(user_id)
@@ -64,8 +64,12 @@ async def settings_cb(client: Client, query: CallbackQuery):
             
             buttons = []
             
+            # --- NEW FIX: SHOW BUTTON TO EVERYONE! ---
             if not is_prem:
+                text += "<i>ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ ᴛᴏ ʜᴏꜱᴛ ʏᴏᴜʀ ᴏᴡɴ ꜰɪʟᴇ ᴄʜᴀɴɴᴇʟꜱ.</i>"
                 buttons.append([InlineKeyboardButton("🍁 ᴄʜᴇᴄᴋ ᴀʟʟ ᴘʟᴀɴꜱ & ᴘʀɪᴄᴇꜱ 🍁", callback_data="buy_plans")])
+                # Show the button with a Lock to free users
+                buttons.append([InlineKeyboardButton("🔒 ꜱᴇᴛᴜᴘ ᴄʜᴀɴɴᴇʟꜱ", callback_data="user_connect_req")])
             
             if is_prem:
                 tenant = await get_tenant_config(user_id)
@@ -79,8 +83,6 @@ async def settings_cb(client: Client, query: CallbackQuery):
                 else:
                     text += "<i>ʏᴏᴜ ᴀʀᴇ ᴀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀ!\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ᴛᴏ ꜱᴇᴛᴜᴘ ʏᴏᴜʀ ᴏᴡɴ ꜰɪʟᴇ ꜱᴛᴏʀᴇ ᴄʜᴀɴɴᴇʟꜱ.</i>"
                     buttons.append([InlineKeyboardButton("🔌 ꜱᴇᴛᴜᴘ ᴄʜᴀɴɴᴇʟꜱ", callback_data="user_connect_req")])
-            else:
-                text += "<i>ᴄᴏɴᴛᴀᴄᴛ ᴛʜᴇ ᴏᴡɴᴇʀ ᴛᴏ ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ ᴀɴᴅ ʜᴏꜱᴛ ʏᴏᴜʀ ᴏᴡɴ ꜰɪʟᴇꜱ.</i>"
             
             buttons.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")])
             return await safe_edit(query.message, text, InlineKeyboardMarkup(buttons))
