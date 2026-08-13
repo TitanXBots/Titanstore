@@ -43,7 +43,6 @@ class Bot(Client):
                     
                     expires_at = expires_at.replace(tzinfo=timezone.utc)
                     
-                    # --- AUTO-REMOVE PREMIUM & CUSTOM CHANNELS ON EXPIRY ---
                     if now > expires_at:
                         await remove_premium(user_id)
                         await delete_tenant_config(user_id)
@@ -57,7 +56,6 @@ class Bot(Client):
                         except (UserIsBlocked, UserDeactivated): pass
                         except Exception as e: self.logger.error(f"Expiry notify error for {user_id}: {e}")
                     
-                    # --- SEND 24 HOUR WARNING ---
                     elif warning_time > expires_at and not user.get("notified", False):
                         try:
                             await self.send_message(
@@ -121,8 +119,6 @@ class Bot(Client):
             self.logger.warning(f"⚠️ Web Server failed to initialize: {e}")
 
         self.set_parse_mode(ParseMode.HTML)
-        
-        # Clean Startup Log
         self.logger.info(f"Bot Running..!\nUsername: @{self.username}")
 
     async def stop(self, *args):
