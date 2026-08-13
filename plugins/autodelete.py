@@ -37,7 +37,7 @@ async def render_autodelete_menu(message):
             InlineKeyboardButton("⏱ ᴄʜᴀɴɢᴇ ᴛɪᴍᴇʀ", callback_data="autodelete_set_time")
         ],
         [
-            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
+            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")
         ]
     ])
     await safe_edit(message, text, markup)
