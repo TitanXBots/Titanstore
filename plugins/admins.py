@@ -96,12 +96,12 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
             
         await remove_admin(uid)
         msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ʀᴇᴍᴏᴠᴇᴅ ꜰʀᴏᴍ ᴀᴅᴍɪɴ", reply_markup=keyboard)
-            asyncio.create_task(delayed_delete(msg))
-        return await safe_edit(query.message, "👨‍💻 ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_admin_menu())
+        asyncio.create_task(delayed_delete(msg))
+        await safe_edit(query.message, "👨‍💻 ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ", get_admin_menu())
 
     elif data == "admin_list":
         admins = await get_admins()
-        if not admins: return await safe_edit(query.message, "ɴᴏ ᴀᴅᴍɪɴꜱ ꜰᴏᴜɴْد.", InlineKeyboardMarkup([
+        if not admins: return await safe_edit(query.message, "ɴᴏ ᴀᴅᴍɪɴꜱ ꜰᴏᴜɴᴅ.", InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")
             ]
