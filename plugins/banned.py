@@ -21,7 +21,7 @@ def get_ban_menu():
             InlineKeyboardButton("📄 ʙᴀɴɴᴇᴅ ʟɪꜱᴛ", callback_data="ban_list")
         ],
         [
-            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="settings")
+            InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")
         ]
     ])
 
