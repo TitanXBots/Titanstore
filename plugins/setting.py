@@ -21,6 +21,7 @@ async def delayed_delete(message, delay=7):
 
 @Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|refer_menu|refer_on|refer_off|refer_set_points|add_channels_menu)$"))
 async def settings_cb(client: Client, query: CallbackQuery):
+    await query.answer()
     user_id = query.from_user.id
     is_user_admin = await is_admin(user_id)
     data = query.data
