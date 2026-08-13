@@ -24,6 +24,7 @@ async def plan_command(client: Client, message: Message):
     )
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("🍁 ᴄʜᴇᴄᴋ ᴀʟʟ ᴘʟᴀɴꜱ & ᴘʀɪᴄᴇꜱ 🍁", callback_data="view_prices")],
+        [InlineKeyboardButton("💎 CUSTOM PLAN 💎", callback_data="custom_plan")],
         [InlineKeyboardButton("🥤 ᴄʜᴇᴄᴋ ᴍʏ ᴘʟᴀɴ 🥤", callback_data="myplan")],
         [InlineKeyboardButton("« ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ", callback_data="start")]
     ])
@@ -99,6 +100,7 @@ async def plans_cb(client: Client, query: CallbackQuery):
         )
         keyboard = InlineKeyboardMarkup([
             [InlineKeyboardButton("🍁 ᴄʜᴇᴄᴋ ᴀʟʟ ᴘʟᴀɴꜱ & ᴘʀɪᴄᴇꜱ 🍁", callback_data="view_prices")],
+            [InlineKeyboardButton("💎 CUSTOM PLAN 💎", callback_data="custom_plan")],
             [InlineKeyboardButton("🥤 ᴄʜᴇᴄᴋ ᴍʏ ᴘʟᴀɴ 🥤", callback_data="myplan")],
             [InlineKeyboardButton("« ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ", callback_data="start")]
         ])
