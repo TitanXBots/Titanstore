@@ -37,7 +37,7 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
 
     elif data == "ban_user":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")]])
-        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ [ʀᴇᴀꜱᴏɴ]\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.", keyboard)
+        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ [ʀᴇᴀꜱᴏɴ]\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
         
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
@@ -66,7 +66,7 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
 
     elif data == "ban_unban_user":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")]])
-        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ\n\n/cancel - ᴄᴀɴᴄᴇʟ ᴛʜɪꜱ ᴘʀᴏᴄᴇꜱꜱ.", keyboard)
+        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
         
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
@@ -94,14 +94,10 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
     elif data == "ban_list":
         banned = await get_banned_users()
         if not banned: return await safe_edit(query.message, "ɴᴏ ʙᴀɴɴᴇᴅ ᴜꜱᴇʀꜱ ꜰᴏᴜɴᴅ.", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")
-            ]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")]
         ]))
         text = "\n".join([f"• {u['_id']} - {u.get('reason','ɴᴏ ʀᴇᴀꜱᴏɴ')}" for u in banned[:100]])
         return await safe_edit(query.message, f"🚫 ʙᴀɴɴᴇᴅ ᴜꜱᴇʀꜱ:\n\n{text}", InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")
-            ]
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")]
         ]))
         
