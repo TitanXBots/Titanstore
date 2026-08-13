@@ -3,7 +3,6 @@ import re
 import asyncio
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import UserNotParticipant, FloodWait, MessageNotModified
-from config import START_PIC
 from database.database import is_admin, is_owner, get_force_sub_status, get_global_fs_channels
 
 async def safe_edit(message, text, buttons=None):
