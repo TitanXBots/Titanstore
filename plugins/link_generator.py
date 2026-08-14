@@ -22,7 +22,12 @@ async def link_generator(client: Client, message: Message):
         base64_string = await encode(f"get-{msg_id * abs(db_chat_id)}")
         link = f"https://t.me/{client.username}?start={base64_string}"
         
-        text = f"<b>Here is your link</b>\n\n{link}"
+        text = (
+            "🎉 ʏᴏᴜʀ ꜱʜᴀʀᴇᴀʙʟᴇ ʟɪɴᴋ ʜᴀꜱ ʙᴇᴇɴ ɢᴇɴᴇʀᴀᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ!\n\n"
+            f"<code>{link}</code>\n\n"
+            "ᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ʙᴇɪɴɢ ᴘᴀʀᴛ ᴏꜰ ᴛɪᴛᴀɴᴄɪɴᴇᴘʟᴇx! 🚀\n\n"
+            "ᴡᴇ ᴛʀᴜʟʏ ᴀᴘᴘʀᴇᴄɪᴀᴛᴇ ʏᴏᴜʀ ꜱᴜᴘᴘᴏʀᴛ ᴀɴᴅ ʜᴏᴘᴇ ʏᴏᴜ ᴇɴᴊᴏʏ ᴜꜱɪɴɢ ᴏᴜʀ ʙᴏᴛ 🚀"
+        )
         markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Share URL ↗", url=f"https://t.me/share/url?url={link}")]])
         await message.reply_text(text, reply_markup=markup, disable_web_page_preview=True)
 
@@ -41,7 +46,12 @@ async def link_generator(client: Client, message: Message):
             base64_string = await encode(string)
             link = f"https://t.me/{client.username}?start={base64_string}"
             
-            text = f"<b>Here is your link</b>\n\n{link}"
+            text = (
+                "🎉 ʏᴏᴜʀ ʙᴀᴛᴄʜ ꜱʜᴀʀᴇᴀʙʟᴇ ʟɪɴᴋ ʜᴀꜱ ʙᴇᴇɴ ɢᴇɴᴇʀᴀᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ!\n\n"
+                f"<code>{link}</code>\n\n"
+                "ᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ʙᴇɪɴɢ ᴘᴀʀᴛ ᴏꜰ ᴛɪᴛᴀɴᴄɪɴᴇᴘʟᴇx! 🚀\n\n"
+                "ᴡᴇ ᴛʀᴜʟʏ ᴀᴘᴘʀᴇᴄɪᴀᴛᴇ ʏᴏᴜʀ ꜱᴜᴘᴘᴏʀᴛ ᴀɴᴅ ʜᴏᴘᴇ ʏᴏᴜ ᴇɴᴊᴏʏ ᴜꜱɪɴɢ ᴏᴜʀ ʙᴏᴛ 🚀"
+            )
             markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Share URL ↗", url=f"https://t.me/share/url?url={link}")]])
             await message.reply_text(text, reply_markup=markup, disable_web_page_preview=True)
         except Exception as e:
