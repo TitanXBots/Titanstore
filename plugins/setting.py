@@ -20,7 +20,11 @@ async def delayed_delete(message, delay=7):
 
 @Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|refer_menu|refer_on|refer_off|refer_set_points|add_channels_menu)$"))
 async def settings_cb(client: Client, query: CallbackQuery):
-    await query.answer()
+    try:
+        await query.answer()
+    except Exception:
+        pass
+
     user_id = query.from_user.id
     is_user_admin = await is_admin(user_id)
     data = query.data
@@ -71,7 +75,11 @@ async def settings_cb(client: Client, query: CallbackQuery):
             return await safe_edit(query.message, text, InlineKeyboardMarkup(buttons))
 
     if not is_user_admin:
-        return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
+        try:
+            await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
+        except Exception:
+            pass
+        return
 
     if data == "add_channels_menu":
         return await safe_edit(query.message, "📁 <b>ᴀᴅᴅ ᴄʜᴀɴɴᴇʟꜱ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴏɴꜰɪɢᴜʀᴇ ɢʟᴏʙᴀʟ ᴅᴀᴛᴀʙᴀꜱᴇ ᴀɴᴅ ꜰᴏʀᴄᴇ-ꜱᴜʙꜱᴄʀɪᴘᴛɪᴏɴ ᴄʜᴀɴɴᴇʟꜱ.", InlineKeyboardMarkup([
@@ -97,7 +105,10 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data == "refer_on":
         await set_refer_status(True)
-        await query.answer("✅ ʀᴇꜰᴇʀ ꜱʏꜱᴛᴇᴍ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
+        try:
+            await query.answer("✅ ʀᴇꜰᴇʀ ꜱʏꜱᴛᴇᴍ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
+        except Exception:
+            pass
         points = await get_refer_points()
         text = (
             f"🎁 <b>ʀᴇꜰᴇʀ & ᴇᴀʀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\n"
@@ -112,7 +123,10 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data == "refer_off":
         await set_refer_status(False)
-        await query.answer("❌ ʀᴇꜰᴇʀ ꜱʏꜱᴛᴇᴍ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
+        try:
+            await query.answer("❌ ʀᴇꜰᴇʀ ꜱʏꜱᴛᴇᴍ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
+        except Exception:
+            pass
         points = await get_refer_points()
         text = (
             f"🎁 <b>ʀᴇꜰᴇʀ & ᴇᴀʀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\n"
@@ -166,7 +180,10 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data == "protect_on":
         await set_protect_status(True)
-        await query.answer("✅ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
+        try:
+            await query.answer("✅ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
+        except Exception:
+            pass
         return await safe_edit(query.message, "🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏɴ ✅</b>", InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")], 
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
@@ -174,7 +191,10 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data == "protect_off":
         await set_protect_status(False)
-        await query.answer("❌ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
+        try:
+            await query.answer("❌ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
+        except Exception:
+            pass
         return await safe_edit(query.message, "🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏꜰꜰ ❌</b>", InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")], 
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
@@ -220,10 +240,16 @@ async def settings_cb(client: Client, query: CallbackQuery):
     elif data in ["global_fs_menu", "forcesub_on", "forcesub_off"]:
         if data == "forcesub_on":
             await set_force_sub_status(True)
-            await query.answer("✅ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
+            try:
+                await query.answer("✅ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
+            except Exception:
+                pass
         elif data == "forcesub_off":
             await set_force_sub_status(False)
-            await query.answer("❌ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
+            try:
+                await query.answer("❌ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
+            except Exception:
+                pass
 
         is_on = await get_force_sub_status()
         status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
