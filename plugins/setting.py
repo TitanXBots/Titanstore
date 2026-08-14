@@ -1,16 +1,14 @@
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from pyromod.exceptions import ListenerTimeout
 from config import START_PIC
-from helper_func import safe_edit, get_user_input, send_cancel_notification
+from helper_func import safe_edit, send_cancel_msg
 from database.database import (
-    is_admin, is_premium, get_tenant_config,
-    get_protect_status, set_protect_status, 
+    is_admin, get_protect_status, set_protect_status, 
     get_force_sub_status, set_force_sub_status,
     get_global_db_channel, set_global_db_channel,
-    get_global_fs_channels, set_global_fs_channels,
-    get_refer_status, set_refer_status, 
-    get_refer_points, set_refer_points
+    get_global_fs_channels, set_global_fs_channels
 )
 
 async def delayed_delete(message, delay=7):
@@ -18,7 +16,7 @@ async def delayed_delete(message, delay=7):
     try: await message.delete()
     except: pass
 
-@Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|refer_menu|refer_on|refer_off|refer_set_points|add_channels_menu)$"))
+@Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|add_channels_menu)$"))
 async def settings_cb(client: Client, query: CallbackQuery):
     try: await query.answer()
     except: pass
@@ -33,42 +31,18 @@ async def settings_cb(client: Client, query: CallbackQuery):
                 "⚙️ <b>ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ ᴘᴀɴᴇʟ</b>", 
                 InlineKeyboardMarkup([
                     [InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")],
-                    [InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ", callback_data="premium_menu"), InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu")],
-                    [InlineKeyboardButton("📁 ᴀᴅᴅ ᴄʜᴀɴɴᴇʟꜱ", callback_data="add_channels_menu"), InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu")],
-                    [InlineKeyboardButton("🎁 ʀᴇꜰᴇʀʀᴀʟ ᴍᴇɴᴜ", callback_data="refer_menu")],
+                    [InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu"), InlineKeyboardButton("📁 ᴀᴅᴅ ᴄʜᴀɴɴᴇʟꜱ", callback_data="add_channels_menu")],
+                    [InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu")],
                     [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")]
                 ])
             )
         else:
-            is_prem = await is_premium(user_id)
-            status = "💎 ᴘʀᴇᴍɪᴜᴍ" if is_prem else "🆓 ꜰʀᴇᴇ"
-            
             text = (
                 f"👤 <b>ᴜꜱᴇʀ ᴘʀᴏꜰɪʟᴇ & ꜱᴇᴛᴛɪɴɢꜱ</b>\n\n"
                 f"🆔 <b>ᴜꜱᴇʀ ɪᴅ:</b> <code>{user_id}</code>\n"
-                f"📊 <b>ꜱᴛᴀᴛᴜꜱ:</b> {status}\n\n"
+                f"📊 <b>ꜱᴛᴀᴛᴜꜱ:</b> 🆓 ꜰʀᴇᴇ\n\n"
             )
-            
-            buttons = []
-            if not is_prem:
-                text += "<i>ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ ᴛᴏ ʜᴏꜱᴛ ʏᴏᴜʀ ᴏᴡɴ ꜰɪʟᴇ ᴄʜᴀɴɴᴇʟꜱ.</i>"
-                buttons.append([InlineKeyboardButton("🍁 ᴄʜᴇᴄᴋ ᴀʟʟ ᴘʟᴀɴꜱ & ᴘʀɪᴄᴇꜱ 🍁", callback_data="buy_plans")])
-                buttons.append([InlineKeyboardButton("🔒 ꜱᴇᴛᴜᴘ ᴄʜᴀɴɴᴇʟꜱ", callback_data="user_connect_req")])
-            
-            if is_prem:
-                tenant = await get_tenant_config(user_id)
-                if tenant:
-                    fs_str = ", ".join([f"<code>{x}</code>" for x in tenant['fs_channels']])
-                    text += (
-                        f"📁 <b>ʏᴏᴜʀ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b> <code>{tenant['db_channel']}</code>\n"
-                        f"📢 <b>ʏᴏᴜʀ ꜰꜱ ᴄʜᴀɴɴᴇʟꜱ:</b> {fs_str}\n\n"
-                    )
-                    buttons.append([InlineKeyboardButton("🔌 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟꜱ", callback_data="user_connect_req")])
-                else:
-                    text += "<i>ʏᴏᴜ ᴀʀᴇ ᴀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀ!\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ᴛᴏ ꜱᴇᴛᴜᴘ ʏᴏᴜʀ ᴏᴡɴ ꜰɪʟᴇ ꜱᴛᴏʀᴇ ᴄʜᴀɴɴᴇʟꜱ.</i>"
-                    buttons.append([InlineKeyboardButton("🔌 ꜱᴇᴛᴜᴘ ᴄʜᴀɴɴᴇʟꜱ", callback_data="user_connect_req")])
-            
-            buttons.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")])
+            buttons = [[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")]]
             return await safe_edit(query.message, text, InlineKeyboardMarkup(buttons))
 
     if not is_user_admin:
@@ -81,82 +55,6 @@ async def settings_cb(client: Client, query: CallbackQuery):
             [InlineKeyboardButton("📁 ɢʟᴏʙᴀʟ ᴅʙ", callback_data="global_db_menu"), InlineKeyboardButton("📢 ɢʟᴏʙᴀʟ ꜰꜱ", callback_data="global_fs_menu")],
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
         ]))
-
-    elif data == "refer_menu":
-        is_on = await get_refer_status()
-        status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
-        points = await get_refer_points()
-        
-        text = (
-            f"🎁 <b>ʀᴇꜰᴇʀ & ᴇᴀʀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\n"
-            f"ᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>\n"
-            f"ᴘᴏɪɴᴛꜱ ᴘᴇʀ ʀᴇꜰᴇʀʀᴀʟ: <b>{points}</b>"
-        )
-        return await safe_edit(query.message, text, InlineKeyboardMarkup([
-            [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="refer_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="refer_off")],
-            [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴘᴏɪɴᴛꜱ", callback_data="refer_set_points")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
-        ]))
-
-    elif data == "refer_on":
-        await set_refer_status(True)
-        try: await query.answer("✅ ʀᴇꜰᴇʀ ꜱʏꜱᴛᴇᴍ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
-        except: pass
-        points = await get_refer_points()
-        text = (
-            f"🎁 <b>ʀᴇꜰᴇʀ & ᴇᴀʀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\n"
-            f"ᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏɴ ✅</b>\n"
-            f"ᴘᴏɪɴᴛꜱ ᴘᴇʀ ʀᴇꜰᴇʀʀᴀʟ: <b>{points}</b>"
-        )
-        return await safe_edit(query.message, text, InlineKeyboardMarkup([
-            [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="refer_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="refer_off")],
-            [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴘᴏɪɴᴛꜱ", callback_data="refer_set_points")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
-        ]))
-
-    elif data == "refer_off":
-        await set_refer_status(False)
-        try: await query.answer("❌ ʀᴇꜰᴇʀ ꜱʏꜱᴛᴇᴍ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
-        except: pass
-        points = await get_refer_points()
-        text = (
-            f"🎁 <b>ʀᴇꜰᴇʀ & ᴇᴀʀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\n"
-            f"ᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏꜰꜰ ❌</b>\n"
-            f"ᴘᴏɪɴᴛꜱ ᴘᴇʀ ʀᴇꜰᴇʀʀᴀʟ: <b>{points}</b>"
-        )
-        return await safe_edit(query.message, text, InlineKeyboardMarkup([
-            [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="refer_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="refer_off")],
-            [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴘᴏɪɴᴛꜱ", callback_data="refer_set_points")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
-        ]))
-
-    elif data == "refer_set_points":
-        back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="refer_menu")]])
-        res_type, res_msg = await get_user_input(client, query, "<b>ꜱᴇɴᴅ ɴᴇᴡ ᴘᴏɪɴᴛꜱ ᴘᴇʀ ʀᴇꜰᴇʀʀᴀʟ (ᴇ.ɢ., 10, 20)\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
-        if res_type != "message":
-            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="refer_menu")]]))
-            return await safe_edit(query.message, "🎁 <b>ʀᴇꜰᴇʀ & ᴇᴀʀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]]))
-
-        text_input = res_msg.text or ""
-        try: await res_msg.delete()
-        except: pass
-
-        if not text_input or text_input.lower() == "/cancel":
-            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="refer_menu")]]))
-            return await safe_edit(query.message, "🎁 <b>ʀᴇꜰᴇʀ & ᴇᴀʀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]]))
-
-        try:
-            new_pts = int(text_input)
-            if new_pts < 0: raise ValueError
-        except Exception:
-            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ <b>ɪɴᴠᴀʟɪᴅ ɪɴᴘᴜᴛ!</b>", reply_markup=back_keyboard)
-            asyncio.create_task(delayed_delete(msg))
-            return await safe_edit(query.message, "🎁 <b>ʀᴇꜰᴇʀ & ᴇᴀʀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]]))
-
-        await set_refer_points(new_pts)
-        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ <b>ʀᴇꜰᴇʀʀᴀʟ ᴘᴏɪɴᴛꜱ ᴜᴘᴅᴀᴛᴇᴅ:</b> <code>{new_pts}</code>", reply_markup=back_keyboard)
-        asyncio.create_task(delayed_delete(msg))
-        return await safe_edit(query.message, "🎁 <b>ʀᴇꜰᴇʀ & ᴇᴀʀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]]))
 
     elif data == "protect_menu":
         is_on = await get_protect_status()
@@ -202,17 +100,18 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data == "global_db_set":
         back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_db_menu")]])
-        res_type, res_msg = await get_user_input(client, query, "<b>ꜱᴇɴᴅ ɴᴇᴡ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ɪᴅ (ᴍᴜꜱᴛ ꜱᴛᴀʀᴛ ᴡɪᴛʜ -100)\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
-        if res_type != "message":
-            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_db_menu")]]))
-            return await safe_edit(query.message, "📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="add_channels_menu")]]))
+        await safe_edit(query.message, "<b>ꜱᴇɴᴅ ɴᴇᴡ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ɪᴅ (ᴍᴜꜱᴛ ꜱᴛᴀʀᴛ ᴡɪᴛʜ -100)\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
+        try:
+            input_msg = await client.listen(query.message.chat.id, timeout=60)
+        except ListenerTimeout:
+            return await safe_edit(query.message, "📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", back_keyboard)
 
-        text_input = res_msg.text or ""
-        try: await res_msg.delete()
+        text_input = input_msg.text or ""
+        try: await input_msg.delete()
         except: pass
 
         if not text_input or text_input.lower() == "/cancel":
-            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_db_menu")]]))
+            await send_cancel_msg(client, query.message.chat.id)
             return await safe_edit(query.message, "📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="add_channels_menu")]]))
 
         try:
@@ -256,17 +155,18 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data == "global_fs_set":
         back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_fs_menu")]])
-        res_type, res_msg = await get_user_input(client, query, "<b>ꜱᴇɴᴅ ɴᴇᴡ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟ ɪᴅꜱ (ꜱᴘᴀᴄᴇ ꜱᴇᴘᴀʀᴀᴛᴇᴅ, ᴏʀ 0 ᴛᴏ ᴄʟᴇᴀʀ)\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
-        if res_type != "message":
-            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_fs_menu")]]))
-            return await safe_edit(query.message, "📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_fs_menu")]]))
+        await safe_edit(query.message, "<b>ꜱᴇɴᴅ ɴᴇᴡ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟ ɪᴅꜱ (ꜱᴘᴀᴄᴇ ꜱᴇᴘᴀʀᴀᴛᴇᴅ, ᴏʀ 0 ᴛᴏ ᴄʟᴇᴀʀ)\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
+        try:
+            input_msg = await client.listen(query.message.chat.id, timeout=60)
+        except ListenerTimeout:
+            return await safe_edit(query.message, "📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ</b>", back_keyboard)
 
-        text_input = res_msg.text or ""
-        try: await res_msg.delete()
+        text_input = input_msg.text or ""
+        try: await input_msg.delete()
         except: pass
 
         if not text_input or text_input.lower() == "/cancel":
-            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_fs_menu")]]))
+            await send_cancel_msg(client, query.message.chat.id)
             return await safe_edit(query.message, "📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_fs_menu")]]))
 
         new_channels = []
