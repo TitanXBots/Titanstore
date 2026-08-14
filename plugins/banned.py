@@ -2,8 +2,8 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from pyromod.exceptions import ListenerTimeout
-from helper_func import safe_edit, send_cancel_msg
-from database.database import is_admin, ban_user, unban_user, get_banned_users
+from helper_func import safe_edit
+from database.database import is_admin, ban_user, unban_user, get_banned_users, is_user_banned
 
 def get_ban_menu():
     return InlineKeyboardMarkup([
@@ -46,14 +46,16 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
         except: pass
         
         if not text or text.lower() == "/cancel":
-            await send_cancel_msg(client, query.message.chat.id)
-            return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
+            return await safe_edit(query.message, "❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>\n\n🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
             
         parts = text.split(maxsplit=1)
         if not parts[0].isdigit(): 
             return await safe_edit(query.message, "❌ <b>ɪɴᴠᴀʟɪᴅ ɪᴅ!</b>\n\nᴘʟᴇᴀꜱᴇ ꜱᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴜꜱᴇʀ ɪᴅ.", keyboard)
             
         uid = int(parts[0])
+        if await is_user_banned(uid):
+            return await safe_edit(query.message, f"⚠️ <b>ᴜꜱᴇʀ <code>{uid}</code> ɪꜱ ᴀʟʀᴇᴀᴅʏ ʙᴀɴɴᴇᴅ!</b>", get_ban_menu())
+
         reason = parts[1] if len(parts) > 1 else "ɴᴏ ʀᴇᴀꜱᴏɴ"
         await ban_user(uid, reason)
         return await safe_edit(query.message, f"✅ <b>ᴜꜱᴇʀ <code>{uid}</code> ʙᴀɴɴᴇᴅ!</b>\n\nʀᴇᴀꜱᴏɴ: <code>{reason}</code>", get_ban_menu())
@@ -71,13 +73,15 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
         except: pass
         
         if not text or text.lower() == "/cancel":
-            await send_cancel_msg(client, query.message.chat.id)
-            return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
+            return await safe_edit(query.message, "❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>\n\n🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
             
         if not text.isdigit(): 
             return await safe_edit(query.message, "❌ <b>ɪɴᴠᴀʟɪᴅ ɪᴅ!</b>\n\nᴘʟᴇᴀꜱᴇ ꜱᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴜꜱᴇʀ ɪᴅ.", keyboard)
             
         uid = int(text)
+        if not await is_user_banned(uid):
+            return await safe_edit(query.message, f"⚠️ <b>ᴜꜱᴇʀ <code>{uid}</code> ɪꜱ ɴᴏᴛ ʙᴀɴɴᴇᴅ!</b>", get_ban_menu())
+
         await unban_user(uid)
         return await safe_edit(query.message, f"✅ <b>ᴜꜱᴇʀ <code>{uid}</code> ᴜɴʙᴀɴɴᴇᴅ!</b>", get_ban_menu())
 
