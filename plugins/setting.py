@@ -2,7 +2,7 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from pyromod.exceptions import ListenerTimeout
-from helper_func import safe_edit, send_cancel_msg
+from helper_func import safe_edit
 from database.database import (
     is_admin, get_protect_status, set_protect_status, 
     get_force_sub_status, set_force_sub_status,
@@ -64,6 +64,13 @@ async def settings_cb(client: Client, query: CallbackQuery):
         ]))
 
     elif data == "protect_on":
+        if await get_protect_status():
+            try: await query.answer("⚠️ Protect content is already enabled!", show_alert=True)
+            except: pass
+            return await safe_edit(query.message, "🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏɴ ✅</b>", InlineKeyboardMarkup([
+                [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")], 
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            ]))
         await set_protect_status(True)
         try: await query.answer("✅ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
         except: pass
@@ -73,6 +80,13 @@ async def settings_cb(client: Client, query: CallbackQuery):
         ]))
 
     elif data == "protect_off":
+        if not await get_protect_status():
+            try: await query.answer("⚠️ Protect content is already disabled!", show_alert=True)
+            except: pass
+            return await safe_edit(query.message, "🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏꜰꜰ ❌</b>", InlineKeyboardMarkup([
+                [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")], 
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+            ]))
         await set_protect_status(False)
         try: await query.answer("❌ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
         except: pass
@@ -105,14 +119,17 @@ async def settings_cb(client: Client, query: CallbackQuery):
         except: pass
 
         if not text_input or text_input.lower() == "/cancel":
-            await send_cancel_msg(client, query.message.chat.id)
-            return await safe_edit(query.message, "📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="add_channels_menu")]]))
+            return await safe_edit(query.message, "❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>\n\n📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="add_channels_menu")]]))
 
         try:
             new_id = int(text_input)
             if not str(new_id).startswith("-100"): raise ValueError
         except Exception:
             return await safe_edit(query.message, "❌ <b>ɪɴᴠᴀʟɪᴅ ɪᴅ!</b>\n\nᴍᴜꜱᴛ ꜱᴛᴀʀᴛ ᴡɪᴛʜ -100.", back_keyboard)
+
+        current_db = await get_global_db_channel()
+        if new_id == current_db:
+            return await safe_edit(query.message, f"⚠️ <b>ᴛʜɪꜱ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛ ᴅʙ ᴄʜᴀɴɴᴇʟ!</b>\n\nᴄᴜʀʀᴇɴᴛ ᴅʙ: <code>{current_db}</code>", InlineKeyboardMarkup([[InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ", callback_data="global_db_set")], [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="add_channels_menu")]]))
 
         await set_global_db_channel(new_id)
         current_db = await get_global_db_channel()
@@ -127,13 +144,21 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data in ["global_fs_menu", "forcesub_on", "forcesub_off"]:
         if data == "forcesub_on":
-            await set_force_sub_status(True)
-            try: await query.answer("✅ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
-            except: pass
+            if await get_force_sub_status():
+                try: await query.answer("⚠️ Force sub is already enabled!", show_alert=True)
+                except: pass
+            else:
+                await set_force_sub_status(True)
+                try: await query.answer("✅ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
+                except: pass
         elif data == "forcesub_off":
-            await set_force_sub_status(False)
-            try: await query.answer("❌ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
-            except: pass
+            if not await get_force_sub_status():
+                try: await query.answer("⚠️ Force sub is already disabled!", show_alert=True)
+                except: pass
+            else:
+                await set_force_sub_status(False)
+                try: await query.answer("❌ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
+                except: pass
 
         is_on = await get_force_sub_status()
         status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
@@ -164,8 +189,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         except: pass
 
         if not text_input or text_input.lower() == "/cancel":
-            await send_cancel_msg(client, query.message.chat.id)
-            return await safe_edit(query.message, "📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_fs_menu")]]))
+            return await safe_edit(query.message, "❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>\n\n📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_fs_menu")]]))
 
         new_channels = []
         if text_input.strip() != "0":
@@ -180,7 +204,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
         fs_str = "\n".join([f"• <code>{ch}</code>" for ch in new_channels]) if new_channels else "ɴᴏɴᴇ"
         text = (
-            f"✅ <b>ꜰꜱ ᴄʜᴀɴɴᴇʟꜱ ᴜᴘᴅᴀᴛᴇᴅ ꜱUᴄᴄᴇꜱꜱꜰᴜʟʟʏ!</b>\n\n"
+            f"✅ <b>ꜰꜱ ᴄʜᴀɴɴᴇʟꜱ ᴜᴘᴅᴀᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ!</b>\n\n"
             f"ᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: {status}\n\n"
             f"ᴄᴜʀʀᴇɴᴛ ᴄʜᴀɴɴᴇʟꜱ:\n{fs_str}"
         )
