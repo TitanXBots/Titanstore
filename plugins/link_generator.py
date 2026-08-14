@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import Message
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from helper_func import encode, get_message_id
 from database.database import is_admin, get_global_db_channel
 
@@ -21,7 +21,10 @@ async def link_generator(client: Client, message: Message):
         
         base64_string = await encode(f"get-{msg_id * abs(db_chat_id)}")
         link = f"https://t.me/{client.username}?start={base64_string}"
-        await message.reply_text(f"✅ <b>ʜᴇʀᴇ ɪꜱ ʏᴏᴜʀ ʟɪɴᴋ:</b>\n\n<code>{link}</code>")
+        
+        text = f"<b>Here is your link</b>\n\n{link}"
+        markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Share URL ↗", url=f"https://t.me/share/url?url={link}")]])
+        await message.reply_text(text, reply_markup=markup, disable_web_page_preview=True)
 
     elif cmd == "batch":
         try:
@@ -37,7 +40,10 @@ async def link_generator(client: Client, message: Message):
             string = f"batch-{first_id * abs(db_chat_id)}-{last_id * abs(db_chat_id)}"
             base64_string = await encode(string)
             link = f"https://t.me/{client.username}?start={base64_string}"
-            await message.reply_text(f"✅ <b>ʜᴇʀᴇ ɪꜱ ʏᴏᴜʀ ʙᴀᴛᴄʜ ʟɪɴᴋ:</b>\n\n<code>{link}</code>")
+            
+            text = f"<b>Here is your link</b>\n\n{link}"
+            markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Share URL ↗", url=f"https://t.me/share/url?url={link}")]])
+            await message.reply_text(text, reply_markup=markup, disable_web_page_preview=True)
         except Exception as e:
             await message.reply_text(f"❌ <b>ᴇʀʀᴏʀ:</b> {e}")
             
