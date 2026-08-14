@@ -2,7 +2,7 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from config import START_PIC
-from helper_func import safe_edit, get_readable_time, get_user_input
+from helper_func import safe_edit, get_readable_time, get_user_input, send_cancel_notification
 from database.database import (
     is_admin, get_auto_delete_status, set_auto_delete_status, 
     get_auto_delete_time, set_auto_delete_time,
@@ -58,16 +58,12 @@ async def render_autodelete_menu(message):
 
 @Client.on_callback_query(filters.regex(r"^autodelete_"))
 async def autodelete_callbacks(client: Client, query: CallbackQuery):
-    try:
-        await query.answer()
-    except Exception:
-        pass
+    try: await query.answer()
+    except: pass
 
     if not await is_admin(query.from_user.id): 
-        try:
-            await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
-        except Exception:
-            pass
+        try: await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
+        except: pass
         return
     
     data = query.data
@@ -77,40 +73,37 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
         
     elif data == "autodelete_on":
         await set_auto_delete_status(True)
-        try:
-            await query.answer("✅ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
-        except Exception:
-            pass
+        try: await query.answer("✅ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
+        except: pass
         await render_autodelete_menu(query.message)
         
     elif data == "autodelete_off":
         await set_auto_delete_status(False)
-        try:
-            await query.answer("❌ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
-        except Exception:
-            pass
+        try: await query.answer("❌ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
+        except: pass
         await render_autodelete_menu(query.message)
 
     elif data == "autodelete_toggle_gf":
         current_gf = await get_file_again_status()
         await set_file_again_status(not current_gf)
         status_word = "ᴇɴᴀʙʟᴇᴅ" if not current_gf else "ᴅɪꜱᴀʙʟᴇᴅ"
-        try:
-            await query.answer(f"✅ 'ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ' {status_word}!", show_alert=True)
-        except Exception:
-            pass
+        try: await query.answer(f"✅ 'ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ' {status_word}!", show_alert=True)
+        except: pass
         await render_autodelete_menu(query.message)
         
     elif data == "autodelete_set_time":
         back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="autodelete_menu")]])
         res_type, res_msg = await get_user_input(client, query, "<b>ꜱᴇɴᴅ ᴍᴇ ᴀ ᴛɪᴍᴇ ɪɴ ʟɪᴋᴇ ᴛʜɪꜱ - 1ʜ ᴏʀ 15ᴍ\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
-        if res_type != "message": return await render_autodelete_menu(query.message)
+        if res_type != "message":
+            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="autodelete_menu")]]))
+            return await render_autodelete_menu(query.message)
         
         text = res_msg.text or ""
         try: await res_msg.delete()
         except: pass
             
         if not text or text.lower() == "/cancel":
+            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="autodelete_menu")]]))
             return await render_autodelete_menu(query.message)
             
         time_in_seconds = parse_time(text)
