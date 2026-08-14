@@ -6,7 +6,8 @@ from database.database import is_admin, is_maintenance
 
 @Client.on_callback_query(filters.regex("^(start|help|commands|about|disclaimer|close|admin_panel)$"))
 async def generic_cb_handler(client: Client, query: CallbackQuery):
-    await query.answer()
+    try: await query.answer()
+    except: pass
     user_id = query.from_user.id
     
     if await is_maintenance(user_id):
