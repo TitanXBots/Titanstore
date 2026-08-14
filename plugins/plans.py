@@ -76,6 +76,8 @@ async def myplan_command(client: Client, message: Message):
 
 @Client.on_callback_query(filters.regex("^(buy_plans|view_prices|custom_plan|close_menu|plan_home|myplan)$"))
 async def plans_cb(client: Client, query: CallbackQuery):
+    try: await query.answer()
+    except: pass
     user_id = query.from_user.id
     first_name = query.from_user.first_name or "User"
     data = query.data
