@@ -64,17 +64,11 @@ async def settings_cb(client: Client, query: CallbackQuery):
         ]))
 
     elif data == "protect_on":
-        if await get_protect_status():
-            status_note = "⚠️ <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴇɴᴀʙʟᴇᴅ!</b>"
-        else:
-            await set_protect_status(True)
-            status_note = "✅ <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴇɴᴀʙʟᴇᴅ!</b>"
-        
+        await set_protect_status(True)
         is_on = await get_protect_status()
         status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
         text = (
             f"🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\n"
-            f"{status_note}\n\n"
             f"ᴘʀᴇᴠᴇɴᴛꜱ ᴜꜱᴇʀꜱ ꜰʀᴏᴍ ꜰᴏʀᴡᴀʀᴅɪɴɢ, ꜱᴀᴠɪɴɢ, ᴏʀ ᴄᴏᴘʏɪɴɢ ꜰɪʟᴇꜱ.\n\n"
             f"ᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>"
         )
@@ -84,17 +78,11 @@ async def settings_cb(client: Client, query: CallbackQuery):
         ]))
 
     elif data == "protect_off":
-        if not await get_protect_status():
-            status_note = "⚠️ <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴅɪꜱᴀʙʟᴇᴅ!</b>"
-        else:
-            await set_protect_status(False)
-            status_note = "❌ <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴅɪꜱᴀʙʟᴇᴅ!</b>"
-        
+        await set_protect_status(False)
         is_on = await get_protect_status()
         status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
         text = (
             f"🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\n"
-            f"{status_note}\n\n"
             f"ᴘʀᴇᴠᴇɴᴛꜱ ᴜꜱᴇʀꜱ ꜰʀᴏᴍ ꜰᴏʀᴡᴀʀᴅɪɴɢ, ꜱᴀᴠɪɴɢ, ᴏʀ ᴄᴏᴘʏɪɴɢ ꜰɪʟᴇꜱ.\n\n"
             f"ᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>"
         )
@@ -151,19 +139,10 @@ async def settings_cb(client: Client, query: CallbackQuery):
         ]))
 
     elif data in ["global_fs_menu", "forcesub_on", "forcesub_off"]:
-        status_note = ""
         if data == "forcesub_on":
-            if await get_force_sub_status():
-                status_note = "⚠️ <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴇɴᴀʙʟᴇᴅ!</b>\n\n"
-            else:
-                await set_force_sub_status(True)
-                status_note = "✅ <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴇɴᴀʙʟᴇᴅ!</b>\n\n"
+            await set_force_sub_status(True)
         elif data == "forcesub_off":
-            if not await get_force_sub_status():
-                status_note = "⚠️ <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴅɪꜱᴀʙʟᴇᴅ!</b>\n\n"
-            else:
-                await set_force_sub_status(False)
-                status_note = "❌ <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴅɪꜱᴀʙʟᴇᴅ!</b>\n\n"
+            await set_force_sub_status(False)
 
         is_on = await get_force_sub_status()
         status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
@@ -172,7 +151,6 @@ async def settings_cb(client: Client, query: CallbackQuery):
         
         text = (
             f"📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\n"
-            f"{status_note}"
             f"ᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>\n\n"
             f"ᴄᴜʀʀᴇɴᴛ ᴄʜᴀɴɴᴇʟꜱ:\n{fs_str}"
         )
