@@ -1,9 +1,8 @@
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from pyromod.exceptions import ListenerTimeout
 from config import START_PIC
-from helper_func import safe_edit
+from helper_func import safe_edit, get_user_input
 from database.database import (
     is_admin, is_premium, get_tenant_config,
     get_protect_status, set_protect_status, 
@@ -30,7 +29,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         if is_user_admin:
             return await safe_edit(
                 query.message, 
-                "⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢ ᴘᴀɴᴇʟ", 
+                "⚙️ <b>ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ ᴘᴀɴᴇʟ</b>", 
                 InlineKeyboardMarkup([
                     [InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")],
                     [InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ", callback_data="premium_menu"), InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu")],
@@ -128,14 +127,12 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data == "refer_set_points":
         back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="refer_menu")]])
-        await safe_edit(query.message, "<b>ꜱᴇɴᴅ ɴᴇᴡ ᴘᴏɪɴᴛꜱ ᴘᴇʀ ʀᴇꜰᴇʀʀᴀʟ (ᴇ.ɢ., 10, 20)\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
-        try:
-            input_msg = await client.listen(query.message.chat.id, timeout=60)
-        except ListenerTimeout:
+        res_type, res_msg = await get_user_input(client, query, "<b>ꜱᴇɴᴅ ɴᴇᴡ ᴘᴏɪɴᴛꜱ ᴘᴇʀ ʀᴇꜰᴇʀʀᴀʟ (ᴇ.ɢ., 10, 20)\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
+        if res_type != "message":
             return await safe_edit(query.message, "🎁 <b>ʀᴇꜰᴇʀ & ᴇᴀʀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]]))
 
-        text_input = input_msg.text or ""
-        try: await input_msg.delete()
+        text_input = res_msg.text or ""
+        try: await res_msg.delete()
         except: pass
 
         if not text_input or text_input.lower() == "/cancel":
@@ -145,7 +142,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
             new_pts = int(text_input)
             if new_pts < 0: raise ValueError
         except Exception:
-            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ <b>ɪɴᴠᴀʟɪᴅ ɪɴᴘᴜᴛ!</b> ᴍᴜꜱᴛ ʙᴇ ᴀ ᴘᴏꜱɪᴛɪᴠᴇ ɴᴜᴍʙᴇʀ.", reply_markup=back_keyboard)
+            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ <b>ɪɴᴠᴀʟɪᴅ ɪɴᴘᴜᴛ!</b>", reply_markup=back_keyboard)
             asyncio.create_task(delayed_delete(msg))
             return await safe_edit(query.message, "🎁 <b>ʀᴇꜰᴇʀ & ᴇᴀʀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]]))
 
@@ -196,24 +193,22 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data == "global_db_set":
         back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_db_menu")]])
-        await safe_edit(query.message, "<b>ꜱᴇɴᴅ ɴᴇᴡ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ɪᴅ (ᴍᴜꜱᴛ ꜱᴛᴀʀᴛ ᴡɪᴛʜ -100)\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
-        try:
-            input_msg = await client.listen(query.message.chat.id, timeout=60)
-        except ListenerTimeout:
-            return await safe_edit(query.message, "📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", back_keyboard)
+        res_type, res_msg = await get_user_input(client, query, "<b>ꜱᴇɴᴅ ɴᴇᴡ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ɪᴅ (ᴍᴜꜱᴛ ꜱᴛᴀʀᴛ ᴡɪᴛʜ -100)\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
+        if res_type != "message":
+            return await safe_edit(query.message, "📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="add_channels_menu")]]))
 
-        text_input = input_msg.text or ""
-        try: await input_msg.delete()
+        text_input = res_msg.text or ""
+        try: await res_msg.delete()
         except: pass
 
         if not text_input or text_input.lower() == "/cancel":
-            return await safe_edit(query.message, "📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", back_keyboard)
+            return await safe_edit(query.message, "📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="add_channels_menu")]]))
 
         try:
             new_id = int(text_input)
             if not str(new_id).startswith("-100"): raise ValueError
         except Exception:
-            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ <b>ɪɴᴠᴀʟɪᴅ ɪᴅ!</b> ᴍᴜꜱᴛ ʙᴇ ᴀ ɴᴜᴍʙᴇʀ ꜱᴛᴀʀᴛɪɴɢ ᴡɪᴛʜ -100.", reply_markup=back_keyboard)
+            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ <b>ɪɴᴠᴀʟɪᴅ ɪᴅ!</b>", reply_markup=back_keyboard)
             asyncio.create_task(delayed_delete(msg))
             return await safe_edit(query.message, "📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", back_keyboard)
 
@@ -248,18 +243,16 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data == "global_fs_set":
         back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_fs_menu")]])
-        await safe_edit(query.message, "<b>ꜱᴇɴᴅ ɴᴇᴡ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟ ɪᴅꜱ (ꜱᴘᴀᴄᴇ ꜱᴇᴘᴀʀᴀᴛᴇᴅ, ᴏʀ 0 ᴛᴏ ᴄʟᴇᴀʀ)\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
-        try:
-            input_msg = await client.listen(query.message.chat.id, timeout=60)
-        except ListenerTimeout:
-            return await safe_edit(query.message, "📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ</b>", back_keyboard)
+        res_type, res_msg = await get_user_input(client, query, "<b>ꜱᴇɴᴅ ɴᴇᴡ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟ ɪᴅꜱ (ꜱᴘᴀᴄᴇ ꜱᴇᴘᴀʀᴀᴛᴇᴅ, ᴏʀ 0 ᴛᴏ ᴄʟᴇᴀʀ)\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
+        if res_type != "message":
+            return await safe_edit(query.message, "📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_fs_menu")]]))
 
-        text_input = input_msg.text or ""
-        try: await input_msg.delete()
+        text_input = res_msg.text or ""
+        try: await res_msg.delete()
         except: pass
 
         if not text_input or text_input.lower() == "/cancel":
-            return await safe_edit(query.message, "📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ</b>", back_keyboard)
+            return await safe_edit(query.message, "📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ</b>", InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_fs_menu")]]))
 
         new_channels = []
         if text_input.strip() != "0":
