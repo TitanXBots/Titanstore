@@ -2,7 +2,7 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from config import START_PIC, OWNER_ID
-from helper_func import safe_edit, get_user_input
+from helper_func import safe_edit, get_user_input, send_cancel_notification
 from database.database import is_admin, add_admin, remove_admin, get_admins
 
 async def delayed_delete(message, delay=7):
@@ -26,16 +26,11 @@ def get_admin_menu():
 
 @Client.on_callback_query(filters.regex(r"^admin_(menu|add|remove|list)$"))
 async def admin_callbacks(client: Client, query: CallbackQuery):
-    try:
-        await query.answer()
-    except Exception:
-        pass
-
+    try: await query.answer()
+    except: pass
     if not await is_admin(query.from_user.id): 
-        try:
-            await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴ ᴍᴇɴᴜ ɪꜱ ʀᴇꜱᴛʀɪᴄᴛᴇᴅ!", show_alert=True)
-        except Exception:
-            pass
+        try: await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴ ᴍᴇɴᴜ ɪꜱ ʀᴇꜱᴛʀɪᴄᴛᴇᴅ!", show_alert=True)
+        except: pass
         return
     
     data = query.data
@@ -46,13 +41,16 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
     elif data == "admin_add":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]])
         res_type, res_msg = await get_user_input(client, query, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ᴀᴅᴅ ᴀꜱ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
-        if res_type != "message": return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
+        if res_type != "message":
+            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]]))
+            return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
         
         text = res_msg.text or ""
         try: await res_msg.delete()
         except: pass
         
         if not text or text.lower() == "/cancel":
+            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]]))
             return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
             
         if not text.isdigit(): 
@@ -74,13 +72,16 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
     elif data == "admin_remove":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]])
         res_type, res_msg = await get_user_input(client, query, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴍᴏᴠᴇ ꜰʀᴏᴍ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
-        if res_type != "message": return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
+        if res_type != "message":
+            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]]))
+            return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
         
         text = res_msg.text or ""
         try: await res_msg.delete()
         except: pass
         
         if not text or text.lower() == "/cancel":
+            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]]))
             return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
             
         if not text.isdigit(): 
@@ -108,4 +109,5 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
         return await safe_edit(query.message, f"👨‍💻 <b>ᴀᴅᴍɪɴ ʟɪꜱᴛ:</b>\n\n{text}", InlineKeyboardMarkup([
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]
         ]))
+        
         
