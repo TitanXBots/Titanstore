@@ -1,72 +1,54 @@
-import urllib.parse
+import math
 from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from pyromod.exceptions import ListenerTimeout
-
+from pyrogram.types import Message
 from helper_func import encode, get_message_id
-from database.database import is_premium, get_tenant_config, get_global_db_channel
+from database.database import is_admin, get_global_db_channel, get_tenant_config
 
-@Client.on_message(filters.private & filters.command('batch'))
-async def batch(client: Client, message: Message):
-    user_id = message.from_user.id
-    if not await is_premium(user_id): 
-        return await message.reply_text("⚠️ <b>ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ:</b> ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀɴᴅ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱ ᴄᴀɴ ɢᴇɴᴇʀᴀᴛᴇ ʙᴀᴛᴄʜ ʟɪɴᴋꜱ.")
-
-    tenant = await get_tenant_config(user_id)
-    global_db = await get_global_db_channel()
-    expected_db_channel = tenant["db_channel"] if tenant else global_db
-    owner_id = user_id if tenant else 0
-
-    while True:
-        try:
-            first_message = await client.ask(chat_id=user_id, text="ꜰᴏʀᴡᴀʀᴅ ꜰɪʀꜱᴛ ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ\nᴏʀ ꜱᴇɴᴅ ᴅʙ ᴘᴏꜱᴛ ʟɪɴᴋ", filters=(filters.forwarded | filters.text), timeout=60)
-        except ListenerTimeout: return
-        f_msg_id = await get_message_id(client, first_message, expected_db_channel)
-        if f_msg_id: break
-        await first_message.reply_text("❌ ɪɴᴠᴀʟɪᴅ ᴍᴇꜱꜱᴀɢᴇ (ɴᴏᴛ ꜰʀᴏᴍ ʏᴏᴜʀ ᴀᴘᴘʀᴏᴠᴇᴅ ᴅʙ ᴄʜᴀɴɴᴇʟ)")
-
-    while True:
-        try:
-            second_message = await client.ask(chat_id=user_id, text="ꜰᴏʀᴡᴀʀᴅ ʟᴀꜱᴛ ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ\nᴏʀ ꜱᴇɴᴅ ᴅʙ ᴘᴏꜱᴛ ʟɪɴᴋ", filters=(filters.forwarded | filters.text), timeout=60)
-        except ListenerTimeout: return
-        s_msg_id = await get_message_id(client, second_message, expected_db_channel)
-        if s_msg_id: break
-        await second_message.reply_text("❌ ɪɴᴠᴀʟɪᴅ ᴍᴇꜱꜱᴀɢᴇ (ɴᴏᴛ ꜰʀᴏᴍ ʏᴏᴜʀ ᴀᴘᴘʀᴏᴠᴇᴅ ᴅʙ ᴄʜᴀɴɴᴇʟ)")
-
-    if f_msg_id > s_msg_id:
-        f_msg_id, s_msg_id = s_msg_id, f_msg_id
-
-    string = f"get-{owner_id}-{f_msg_id * abs(expected_db_channel)}-{s_msg_id * abs(expected_db_channel)}"
-    base64_string = await encode(string)
-    link = f"https://t.me/{client.username}?start={base64_string}"
-    
-    share_url = urllib.parse.quote(link)
-    keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 ꜱʜᴀʀᴇ ᴜʀʟ", url=f"https://telegram.me/share/url?url={share_url}")]])
-    await second_message.reply_text(f"<b>ʜᴇʀᴇ ɪꜱ ʏᴏᴜʀ ʙᴀᴛᴄʜ ʟɪɴᴋ:</b>\n\n{link}", reply_markup=keyboard)
-
-@Client.on_message(filters.private & filters.command('genlink'))
+@Client.on_message(filters.command(["genlink", "batch"]) & filters.private)
 async def link_generator(client: Client, message: Message):
     user_id = message.from_user.id
-    if not await is_premium(user_id): 
-        return await message.reply_text("⚠️ <b>ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ:</b> ᴏɴʟʏ ᴀᴅᴍɪɴꜱ ᴀɴᴅ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱ ᴄᴀɴ ɢᴇɴᴇʀᴀᴛᴇ ʟɪɴᴋꜱ.")
+    if not await is_admin(user_id):
+        # Allow tenants if they are premium
+        tenant = await get_tenant_config(user_id)
+        if not tenant:
+            return await message.reply_text("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ! ᴀᴅᴍɪɴꜱ ᴏʀ ᴘʀᴇᴍɪᴜᴍ ᴛᴇɴᴀɴᴛꜱ ᴏɴʟʏ.")
 
-    tenant = await get_tenant_config(user_id)
-    global_db = await get_global_db_channel()
-    expected_db_channel = tenant["db_channel"] if tenant else global_db
-    owner_id = user_id if tenant else 0
+    db_chat_id = get_global_db_channel()
+    if user_id != client.owner_id if hasattr(client, 'owner_id') else True:
+        tenant = await get_tenant_config(user_id)
+        if tenant:
+            db_chat_id = tenant["db_channel"]
 
-    while True:
+    cmd = message.command[0]
+
+    if cmd == "genlink":
+        r_msg = await client.ask(message.chat.id, "<b>ꜰᴏʀᴡᴀʀᴅ ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ʏᴏᴜʀ ᴅʙ ᴄʜᴀɴɴᴇʟ (ᴏʀ ꜱᴇɴᴅ ʟɪɴᴋ):</b>", timeout=60)
+        if not r_msg: return
+        msg_id = await get_message_id(client, r_msg, db_chat_id)
+        if not msg_id:
+            return await message.reply_text("❌ <b>ɪɴᴠᴀʟɪᴅ ᴍᴇꜱꜱᴀɢᴇ!</b> ᴍᴜꜱᴛ ʙᴇ ꜰᴏʀᴡᴀʀᴅᴇᴅ ꜰʀᴏᴍ ᴛʜᴇ ᴄᴏʀʀᴇᴄᴛ ᴅʙ ᴄʜᴀɴɴᴇʟ.")
+        
+        owner_prefix = f"_{user_id}_" if user_id != client.owner_id else ""
+        base64_string = await encode(f"get{owner_prefix}-{msg_id * abs(db_chat_id)}")
+        link = f"https://t.me/{client.username}?start={base64_string}"
+        await message.reply_text(f"✅ <b>ʜᴇʀᴇ ɪꜱ ʏᴏᴜʀ ʟɪɴᴋ:</b>\n\n<code>{link}</code>")
+
+    elif cmd == "batch":
         try:
-            channel_message = await client.ask(chat_id=user_id, text="ꜰᴏʀᴡᴀʀᴅ ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ\nᴏʀ ꜱᴇɴᴅ ᴅʙ ᴘᴏꜱᴛ ʟɪɴᴋ", filters=(filters.forwarded | filters.text), timeout=60)
-        except ListenerTimeout: return
-        msg_id = await get_message_id(client, channel_message, expected_db_channel)
-        if msg_id: break
-        await channel_message.reply_text("❌ ɪɴᴠᴀʟɪᴅ ᴍᴇꜱꜱᴀɢᴇ (ɴᴏᴛ ꜰʀᴏᴍ ʏᴏᴜʀ ᴀᴘᴘʀᴏᴠᴇᴅ ᴅʙ ᴄʜᴀɴɴᴇʟ)")
-
-    base64_string = await encode(f"get-{owner_id}-{msg_id * abs(expected_db_channel)}")
-    link = f"https://t.me/{client.username}?start={base64_string}"
-    
-    share_url = urllib.parse.quote(link)
-    keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 ꜱʜᴀʀᴇ ᴜʀʟ", url=f"https://telegram.me/share/url?url={share_url}")]])
-    await channel_message.reply_text(f"<b>ʜᴇʀᴇ ɪꜱ ʏᴏᴜʀ ʟɪɴᴋ:</b>\n\n{link}", reply_markup=keyboard)
-    
+            first_msg = await client.ask(message.chat.id, "<b>ꜰᴏʀᴡᴀʀᴅ ᴛʜᴇ *ꜰɪʀꜱᴛ* ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴛʜᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b>", timeout=60)
+            first_id = await get_message_id(client, first_msg, db_chat_id)
+            
+            second_msg = await client.ask(message.chat.id, "<b>ꜰᴏʀᴡᴀʀᴅ ᴛʜᴇ *ʟᴀꜱᴛ* ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴛʜᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b>", timeout=60)
+            last_id = await get_message_id(client, second_msg, db_chat_id)
+            
+            if not first_id or not last_id:
+                return await message.reply_text("❌ <b>ɪɴᴠᴀʟɪᴅ ᴍᴇꜱꜱᴀɢᴇꜱ!</b>")
+                
+            owner_prefix = f"_{user_id}_" if user_id != client.owner_id else ""
+            string = f"batch{owner_prefix}-{first_id * abs(db_chat_id)}-{last_id * abs(db_chat_id)}"
+            base64_string = await encode(string)
+            link = f"https://t.me/{client.username}?start={base64_string}"
+            await message.reply_text(f"✅ <b>ʜᴇʀᴇ ɪꜱ ʏᴏᴜʀ ʙᴀᴛᴄʜ ʟɪɴᴋ:</b>\n\n<code>{link}</code>")
+        except Exception as e:
+            await message.reply_text(f"❌ <b>ᴇʀʀᴏʀ:</b> {e}")
+            
