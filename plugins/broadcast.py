@@ -1,57 +1,39 @@
 import asyncio
+import time
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserDeactivated
-from database.database import is_admin, get_all_users
+from database.database import get_all_users, is_admin
 
 @Client.on_message(filters.command("broadcast") & filters.private)
-async def broadcast_command(client: Client, message: Message):
+async def broadcast_handler(client: Client, message: Message):
     if not await is_admin(message.from_user.id):
-        return await message.reply_text("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!")
+        return await message.reply_text("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ!")
         
     if not message.reply_to_message:
-        return await message.reply_text("ᴘʟᴇᴀꜱᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ ʙʀᴏᴀᴅᴄᴀꜱᴛ ɪᴛ.")
+        return await message.reply_text("<b>ᴘʟᴇᴀꜱᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ ʙʀᴏᴀᴅᴄᴀꜱᴛ.</b>")
         
     users = await get_all_users()
-    b_msg = await message.reply_text(f"📡 ʙʀᴏᴀᴅᴄᴀꜱᴛɪɴɢ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ {len(users)} ᴜꜱᴇʀꜱ. ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ...")
+    broadcast_msg = message.reply_to_message
     
-    total = len(users)
-    successful = 0
-    blocked = 0
-    deleted = 0
-    unsuccessful = 0
+    status_msg = await message.reply_text("<b>📢 ʙʀᴏᴀᴅᴄᴀꜱᴛ ɪɴ ᴘʀᴏɢʀᴇꜱꜱ...</b>")
+    start_time = time.time()
+    
+    success, failed, total = 0, 0, len(users)
     
     for user_id in users:
         try:
-            await message.reply_to_message.copy(user_id)
-            successful += 1
-            await asyncio.sleep(0.1)
-        except FloodWait as e:
-            await asyncio.sleep(e.value)
-            try:
-                await message.reply_to_message.copy(user_id)
-                successful += 1
-            except UserIsBlocked: blocked += 1
-            except (UserDeactivated, InputUserDeactivated): deleted += 1
-            except Exception: unsuccessful += 1
-        except UserIsBlocked: blocked += 1
-        except (UserDeactivated, InputUserDeactivated): deleted += 1
-        except Exception: unsuccessful += 1
-            
-    status = f"""
-<b>📢 ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</b>
-
-<b>ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ:</b> <code>{total}</code>
-<b>ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ:</b> <code>{successful}</code>
-<b>ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ:</b> <code>{blocked}</code>
-<b>ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ:</b> <code>{deleted}</code>
-<b>ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ:</b> <code>{unsuccessful}</code>
-"""
-
-    await b_msg.edit_text(status)
-    await asyncio.sleep(30)
-    try: 
-        await b_msg.delete()
-    except Exception: 
-        pass
+            await broadcast_msg.copy(chat_id=user_id)
+            success += 1
+        except Exception:
+            failed += 1
+        await asyncio.sleep(0.1)
         
+    elapsed = time.time() - start_time
+    await status_msg.edit_text(
+        f"<b>📢 ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ!</b>\n\n"
+        f"👥 <b>ᴛᴏᴛᴀʟ:</b> <code>{total}</code>\n"
+        f"✅ <b>ꜱᴜᴄᴄᴇꜱꜱ:</b> <code>{success}</code>\n"
+        f"❌ <b>ꜰᴀɪʟᴇᴅ:</b> <code>{failed}</code>\n"
+        f"⏱ <b>ᴛɪᴍᴇ:</b> <code>{int(elapsed)}s</code>"
+    )
+    
