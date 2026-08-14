@@ -6,14 +6,12 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from pyrogram.errors import FloodWait
 
 from config import FORCE_PIC, FORCE_MSG, LOG_CHANNEL_ID, START_PIC, START_MSG
-from helper_func import subscribed, decode, get_messages, get_readable_time, safe_edit
+from helper_func import subscribed, decode, get_messages, get_readable_time
 from database.database import (
     is_user_present, add_user, is_user_banned, get_ban_reason, 
-    is_maintenance, is_admin, get_auto_delete_status, get_protect_status,
-    get_auto_delete_time, get_tenant_config, get_file_again_status, get_force_sub_status,
-    get_global_db_channel, get_global_fs_channels,
-    add_points, get_points, deduct_points, add_premium,
-    get_refer_status, get_refer_points
+    is_maintenance, get_auto_delete_status, get_protect_status,
+    get_auto_delete_time, get_file_again_status, get_force_sub_status,
+    get_global_db_channel, get_global_fs_channels
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -40,18 +38,8 @@ async def delete_files(messages, client, main_message, payload, timer):
 async def handle_file_delivery(client, user_id, message_or_query, payload):
     try:
         argument = (await decode(payload)).split("-")
-        owner_id = 0
-        
-        if len(argument) >= 3: owner_id = int(argument[1])
-        
         db_chat_id = await get_global_db_channel()
         fs_channels = await get_global_fs_channels()
-        
-        if owner_id != 0:
-            tenant = await get_tenant_config(owner_id)
-            if tenant:
-                db_chat_id = tenant["db_channel"]
-                fs_channels = tenant["fs_channels"]
 
         if len(argument) == 2: 
             ids = range(int(argument[1]) // abs(db_chat_id), (int(argument[1]) // abs(db_chat_id)) + 1)
@@ -130,41 +118,8 @@ async def start_command(client: Client, message: Message):
 
     payload = raw_text.split(" ", 1)[1] if len(raw_text.split()) > 1 else None
 
-    referred_by = 0
-    if payload and (payload.startswith("ref_") or payload.startswith("reff_")):
-        try:
-            referred_by = int(payload.split("_")[1])
-            if referred_by == user_id: 
-                referred_by = 0
-        except Exception:
-            pass
-
     if not await is_user_present(user_id):
-        await add_user(user_id, first_name, username, referred_by)
-        is_refer_active = await get_refer_status()
-        
-        if referred_by != 0:
-            if is_refer_active:
-                refer_points_amt = await get_refer_points()
-                await add_points(referred_by, refer_points_amt)
-                current_points = await get_points(referred_by)
-                
-                try:
-                    await client.send_message(
-                        referred_by, 
-                        f"🎉 <b>ɴᴇᴡ ʀᴇꜰᴇʀʀᴀʟ!</b>\n\n{message.from_user.mention} joined using your link!\n🎁 <b>You earned {refer_points_amt} points!</b>\n📊 <b>Total Points:</b> {current_points}/100"
-                    )
-                    
-                    if current_points >= 100: 
-                        await add_premium(referred_by, 30)
-                        await deduct_points(referred_by, 100)
-                        await client.send_message(
-                            referred_by, 
-                            "💎 <b>ᴍɪʟᴇꜱᴛᴏɴᴇ ʀᴇᴀᴄʜᴇᴅ!</b>\n\nYou accumulated 100 points and have been granted <b>1 Mᴏɴᴛʜ ᴏꜰ Pʀᴇᴍɪᴜᴍ Aᴄᴄᴇꜱꜱ!</b>"
-                        )
-                except Exception:
-                    pass
-
+        await add_user(user_id, first_name, username)
         NEW_USER_TXT = "#New_User {}\n\n≈ ɪᴅ:- <code>{}</code>\n≈ ɴᴀᴍᴇ:- {}"
         try: await client.send_message(LOG_CHANNEL_ID, NEW_USER_TXT.format(message.from_user.mention, user_id, first_name))
         except: pass
@@ -172,7 +127,7 @@ async def start_command(client: Client, message: Message):
     if await is_maintenance(user_id):
         return await message.reply_text("🛠 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴏɴ. ɴᴏʀᴍᴀʟ ᴏᴘᴇʀᴀᴛɪᴏɴꜱ ᴀʀᴇ ᴛᴇᴍᴘᴏʀᴀʀɪʟʏ ᴘᴀᴜꜱᴇᴅ.")
 
-    if payload and not (payload.startswith("ref_") or payload.startswith("reff_")):
+    if payload:
         return await handle_file_delivery(client, user_id, message, payload)
 
     if await get_force_sub_status() and not await subscribed(client, message):
@@ -206,7 +161,8 @@ async def start_command(client: Client, message: Message):
 
 @Client.on_callback_query(filters.regex(r"^refresh_"))
 async def refresh_cb(client: Client, query: CallbackQuery):
-    await query.answer()
+    try: await query.answer()
+    except: pass
     first_name = query.from_user.first_name or "User"
     payload = query.data.split("_", 1)[1]
     
