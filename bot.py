@@ -1,18 +1,17 @@
 import sys
 import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from aiohttp import web
 from plugins.web_server import web_server
 import pyromod.listen
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 import pyrogram.utils
-from pyrogram.errors import UserIsBlocked, UserDeactivated
 
 pyrogram.utils.MIN_CHANNEL_ID = -1009999999999
 
 from config import API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN, TG_BOT_WORKERS, PORT
-from database.database import premium_collection, remove_premium, get_global_db_channel, get_global_fs_channels, delete_tenant_config
+from database.database import get_global_db_channel, get_global_fs_channels
 
 class Bot(Client):
     def __init__(self):
@@ -26,55 +25,11 @@ class Bot(Client):
         )
         self.logger = LOGGER(__name__)
 
-    async def premium_expiry_task(self):
-        while True:
-            try:
-                now = datetime.now(timezone.utc)
-                warning_time = now + timedelta(days=1)
-                
-                cursor = premium_collection.find({"is_premium": True})
-                async for user in cursor:
-                    user_id = user["_id"]
-                    expires_at = user.get("expires_at")
-                    if not expires_at: continue
-                    
-                    expires_at = expires_at.replace(tzinfo=timezone.utc)
-                    
-                    if now > expires_at:
-                        await remove_premium(user_id)
-                        await delete_tenant_config(user_id)
-                        try:
-                            await self.send_message(
-                                user_id, 
-                                f"⚠️ <b>ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ʜᴀꜱ ᴇɴᴅᴇᴅ.</b>\n\n"
-                                f"ʏᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴅᴀᴛᴀʙᴀꜱᴇ & ꜰꜱ ᴄʜᴀɴɴᴇʟꜱ ʜᴀᴠᴇ ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ.\n"
-                                f"ᴇxᴘɪʀᴇᴅ ᴏɴ: <code>{expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC</code>"
-                            )
-                        except (UserIsBlocked, UserDeactivated): pass
-                        except Exception as e: self.logger.error(f"Expiry notify error for {user_id}: {e}")
-                    
-                    elif warning_time > expires_at and not user.get("notified", False):
-                        try:
-                            await self.send_message(
-                                user_id, 
-                                f"⚠️ <b>ʀᴇᴍɪɴᴅᴇʀ:</b> ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ɪꜱ ᴇxᴘɪʀɪɴɢ ꜱᴏᴏɴ!\n\n"
-                                f"<b>ᴇxᴘɪʀʏ ᴅᴀᴛᴇ:</b> <code>{expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC</code>"
-                            )
-                            await premium_collection.update_one({"_id": user_id}, {"$set": {"notified": True}})
-                        except (UserIsBlocked, UserDeactivated): pass
-                        except Exception as e: self.logger.error(f"Warning notify error for {user_id}: {e}")
-            except Exception as e:
-                self.logger.error(f"Premium check error: {e}")
-            await asyncio.sleep(3600) 
-
     async def start(self):
         await super().start()
         me = await self.get_me()
         self.uptime = datetime.now(timezone.utc)
         self.username = me.username
-        
-        asyncio.create_task(self.premium_expiry_task())
-        self.logger.info("✅ Premium Expiry Monitor started.")
 
         self.invitelinks = {}
         async def get_invite(channel_id, key_name, label):
