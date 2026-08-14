@@ -2,18 +2,12 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from pyromod.exceptions import ListenerTimeout
-from config import START_PIC
 from helper_func import safe_edit, get_readable_time, send_cancel_msg
 from database.database import (
     is_admin, get_auto_delete_status, set_auto_delete_status, 
     get_auto_delete_time, set_auto_delete_time,
     get_file_again_status, set_file_again_status
 )
-
-async def delayed_delete(message, delay=7):
-    await asyncio.sleep(delay)
-    try: await message.delete()
-    except: pass
 
 def parse_time(time_str: str) -> int:
     time_str = time_str.lower().strip()
@@ -94,7 +88,7 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
         
     elif data == "autodelete_set_time":
         back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="autodelete_menu")]])
-        await safe_edit(query.message, "<b>ꜱᴇɴᴅ ᴍᴇ ᴀ ᴛɪᴍᴇ ɪɴ ʟɪᴋᴇ ᴛʜɪꜱ - 1ʜ ᴏʀ 15ᴍ\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
+        await safe_edit(query.message, "⏱ <b>ꜱᴇᴛ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ</b>\n\nꜱᴇɴᴅ ᴍᴇ ᴀ ᴛɪᴍᴇ ɪɴ ʟɪᴋᴇ ᴛʜɪꜱ - <code>1h</code> ᴏʀ <code>15m</code>\n\n/cancel - ᴄᴀɴᴄᴇʟ.", back_keyboard)
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
         except ListenerTimeout:
@@ -110,12 +104,8 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
             
         time_in_seconds = parse_time(text)
         if time_in_seconds < 10: 
-            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ <b>ɪɴᴠᴀʟɪᴅ ꜰᴏʀᴍᴀᴛ!</b> ᴜꜱᴇ <code>1h</code>, <code>15m</code>, ᴏʀ <code>30s</code>.", reply_markup=back_keyboard)
-            asyncio.create_task(delayed_delete(msg))
-            return await render_autodelete_menu(query.message)
+            return await safe_edit(query.message, "❌ <b>ɪɴᴠᴀʟɪᴅ ꜰᴏʀᴍᴀᴛ!</b>\n\nᴜꜱᴇ <code>1h</code>, <code>15m</code>, ᴏʀ <code>30s</code>.", back_keyboard)
             
         await set_auto_delete_time(time_in_seconds)
-        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ꜱᴇᴛ ᴛᴏ <b>{get_readable_time(time_in_seconds)}</b>.", reply_markup=back_keyboard)
-        asyncio.create_task(delayed_delete(msg))
         await render_autodelete_menu(query.message)
         
