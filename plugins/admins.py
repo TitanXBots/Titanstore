@@ -1,8 +1,9 @@
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from pyromod.exceptions import ListenerTimeout
 from config import START_PIC, OWNER_ID
-from helper_func import safe_edit, get_user_input, send_cancel_notification
+from helper_func import safe_edit, send_cancel_msg
 from database.database import is_admin, add_admin, remove_admin, get_admins
 
 async def delayed_delete(message, delay=7):
@@ -40,17 +41,18 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
 
     elif data == "admin_add":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]])
-        res_type, res_msg = await get_user_input(client, query, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ᴀᴅᴅ ᴀꜱ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
-        if res_type != "message":
-            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]]))
-            return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
-        
-        text = res_msg.text or ""
-        try: await res_msg.delete()
+        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ᴀᴅᴅ ᴀꜱ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
+        try:
+            input_msg = await client.listen(query.message.chat.id, timeout=60)
+        except ListenerTimeout:
+            return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!\n\n👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
+            
+        text = input_msg.text or ""
+        try: await input_msg.delete()
         except: pass
         
         if not text or text.lower() == "/cancel":
-            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]]))
+            await send_cancel_msg(client, query.message.chat.id)
             return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
             
         if not text.isdigit(): 
@@ -71,17 +73,18 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
 
     elif data == "admin_remove":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]])
-        res_type, res_msg = await get_user_input(client, query, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴍᴏᴠᴇ ꜰʀᴏᴍ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
-        if res_type != "message":
-            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]]))
-            return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
-        
-        text = res_msg.text or ""
-        try: await res_msg.delete()
+        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴍᴏᴠᴇ ꜰʀᴏᴍ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
+        try:
+            input_msg = await client.listen(query.message.chat.id, timeout=60)
+        except ListenerTimeout:
+            return await safe_edit(query.message, "⌛ ᴛɪᴍᴇᴏᴜᴛ!\n\n👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
+            
+        text = input_msg.text or ""
+        try: await input_msg.delete()
         except: pass
         
         if not text or text.lower() == "/cancel":
-            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]]))
+            await send_cancel_msg(client, query.message.chat.id)
             return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
             
         if not text.isdigit(): 
@@ -109,5 +112,4 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
         return await safe_edit(query.message, f"👨‍💻 <b>ᴀᴅᴍɪɴ ʟɪꜱᴛ:</b>\n\n{text}", InlineKeyboardMarkup([
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]
         ]))
-        
         
