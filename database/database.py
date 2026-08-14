@@ -13,7 +13,6 @@ premium_collection = database["premium_users"]
 settings_collection = database["settings"]
 tenant_collection = database["tenant_configs"]
 
-# --- GLOBAL DYNAMIC CHANNELS FUNCTIONS ---
 async def get_global_db_channel() -> int:
     data = await settings_collection.find_one({"_id": "global_db_channel"})
     return data.get("channel_id", CHANNEL_ID) if data else CHANNEL_ID
@@ -31,7 +30,6 @@ async def get_global_fs_channels() -> list:
 async def set_global_fs_channels(fs_channels: list):
     await settings_collection.update_one({"_id": "global_fs_channels"}, {"$set": {"channels": fs_channels}}, upsert=True)
 
-# --- SAAS TENANT FUNCTIONS ---
 async def save_tenant_request(user_id: int, db_channel: int, fs_channels: list):
     await tenant_collection.update_one(
         {"_id": user_id},
@@ -55,7 +53,6 @@ async def get_pending_tenants():
 async def delete_tenant_config(user_id: int):
     await tenant_collection.delete_one({"_id": user_id})
 
-# --- USER FUNCTIONS ---
 async def is_user_present(user_id: int) -> bool:
     return await user_data.find_one({"_id": user_id}) is not None
 
@@ -76,7 +73,6 @@ async def add_user(user_id: int, first_name=None, username=None, referred_by: in
             {"$set": {"first_name": first_name, "username": username}}
         )
 
-# --- REFERRAL & POINTS FUNCTIONS ---
 async def add_points(user_id: int, points: int):
     await user_data.update_one({"_id": user_id}, {"$inc": {"points": points}}, upsert=True)
 
@@ -113,7 +109,6 @@ async def get_banned_users():
     cursor = banned_users.find({"is_banned": True})
     return await cursor.to_list(length=None)
 
-# --- ADMIN & PREMIUM FUNCTIONS ---
 async def add_admin(user_id: int):
     await admins_collection.update_one({"_id": user_id}, {"$set": {"is_admin": True}}, upsert=True)
 
@@ -181,7 +176,6 @@ async def is_premium(user_id) -> bool:
         return False
     except (ValueError, TypeError): return False
 
-# --- SETTINGS FUNCTIONS ---
 async def is_maintenance(user_id: int) -> bool:
     if await is_admin(user_id): return False
     data = await maintenance_collection.find_one({"_id": "maintenance"})
@@ -222,7 +216,6 @@ async def get_file_again_status() -> bool:
 async def set_file_again_status(status: bool):
     await settings_collection.update_one({"_id": "get_file_again"}, {"$set": {"status": status}}, upsert=True)
 
-# --- REFERRAL SETTINGS ---
 async def get_refer_status() -> bool:
     data = await settings_collection.find_one({"_id": "refer_status"})
     return data.get("status", True) if data else True
