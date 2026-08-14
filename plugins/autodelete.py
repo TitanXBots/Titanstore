@@ -21,18 +21,15 @@ def parse_time(time_str: str) -> int:
         return int(time_str)
     return 0
 
-async def render_autodelete_menu(message, status_text=None):
+async def render_autodelete_menu(message):
     is_on = await get_auto_delete_status()
     get_file_on = await get_file_again_status()
     status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
     gf_status = "ᴏɴ ✅" if get_file_on else "ᴏꜰꜰ ❌"
     current_time = await get_auto_delete_time()
     
-    text = "🗑 <b>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ & ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ</b>\n\n"
-    if status_text:
-        text += f"{status_text}\n\n"
-    
-    text += (
+    text = (
+        f"🗑 <b>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ & ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ</b>\n\n"
         f"ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ: <b>{status}</b>\n"
         f"ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ: <b>{get_readable_time(current_time)}</b>\n"
         f"ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ ʙᴜᴛᴛᴏɴ: <b>{gf_status}</b>"
@@ -71,26 +68,21 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
     elif data == "autodelete_on":
         try: await query.answer()
         except: pass
-        if await get_auto_delete_status():
-            return await render_autodelete_menu(query.message, "⚠️ <b>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴇɴᴀʙʟᴇᴅ!</b>")
         await set_auto_delete_status(True)
-        await render_autodelete_menu(query.message, "✅ <b>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴇɴᴀʙʟᴇᴅ!</b>")
+        await render_autodelete_menu(query.message)
         
     elif data == "autodelete_off":
         try: await query.answer()
         except: pass
-        if not await get_auto_delete_status():
-            return await render_autodelete_menu(query.message, "⚠️ <b>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴅɪꜱᴀʙʟᴇᴅ!</b>")
         await set_auto_delete_status(False)
-        await render_autodelete_menu(query.message, "❌ <b>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴅɪꜱᴀʙʟᴇᴅ!</b>")
+        await render_autodelete_menu(query.message)
 
     elif data == "autodelete_toggle_gf":
         current_gf = await get_file_again_status()
         await set_file_again_status(not current_gf)
         try: await query.answer()
         except: pass
-        status_word = "ᴇɴᴀʙʟᴇᴅ" if not current_gf else "ᴅɪꜱᴀʙʟᴇᴅ"
-        await render_autodelete_menu(query.message, f"✅ <b>'ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ' {status_word}!</b>")
+        await render_autodelete_menu(query.message)
         
     elif data == "autodelete_set_time":
         try: await query.answer()
@@ -113,8 +105,8 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
             
         time_in_seconds = parse_time(text)
         if time_in_seconds < 10: 
-            return await render_autodelete_menu(query.message, "❌ <b>ɪɴᴠᴀʟɪᴅ ꜰᴏʀᴍᴀᴛ!</b> ᴜꜱᴇ <code>1h</code>, <code>15m</code>, ᴏʀ <code>30s</code>.")
+            return await render_autodelete_menu(query.message)
             
         await set_auto_delete_time(time_in_seconds)
-        await render_autodelete_menu(query.message, f"✅ <b>ᴛɪᴍᴇʀ ᴜᴘᴅᴀᴛᴇᴅ ᴛᴏ {get_readable_time(time_in_seconds)}!</b>")
+        await render_autodelete_menu(query.message)
         
