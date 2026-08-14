@@ -58,9 +58,17 @@ async def render_autodelete_menu(message):
 
 @Client.on_callback_query(filters.regex(r"^autodelete_"))
 async def autodelete_callbacks(client: Client, query: CallbackQuery):
-    await query.answer()
+    try:
+        await query.answer()
+    except Exception:
+        pass
+
     if not await is_admin(query.from_user.id): 
-        return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
+        try:
+            await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
+        except Exception:
+            pass
+        return
     
     data = query.data
 
@@ -69,19 +77,28 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
         
     elif data == "autodelete_on":
         await set_auto_delete_status(True)
-        await query.answer("✅ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
+        try:
+            await query.answer("✅ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
+        except Exception:
+            pass
         await render_autodelete_menu(query.message)
         
     elif data == "autodelete_off":
         await set_auto_delete_status(False)
-        await query.answer("❌ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
+        try:
+            await query.answer("❌ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
+        except Exception:
+            pass
         await render_autodelete_menu(query.message)
 
     elif data == "autodelete_toggle_gf":
         current_gf = await get_file_again_status()
         await set_file_again_status(not current_gf)
         status_word = "ᴇɴᴀʙʟᴇᴅ" if not current_gf else "ᴅɪꜱᴀʙʟᴇᴅ"
-        await query.answer(f"✅ 'ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ' {status_word}!", show_alert=True)
+        try:
+            await query.answer(f"✅ 'ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ' {status_word}!", show_alert=True)
+        except Exception:
+            pass
         await render_autodelete_menu(query.message)
         
     elif data == "autodelete_set_time":
