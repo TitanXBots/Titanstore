@@ -2,7 +2,7 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from config import START_PIC
-from helper_func import safe_edit, get_user_input
+from helper_func import safe_edit, get_user_input, send_cancel_notification
 from database.database import is_admin, ban_user, unban_user, get_banned_users
 
 async def delayed_delete(message, delay=7):
@@ -26,16 +26,11 @@ def get_ban_menu():
 
 @Client.on_callback_query(filters.regex(r"^ban_(menu|user|unban_user|list)$"))
 async def ban_callbacks(client: Client, query: CallbackQuery):
-    try:
-        await query.answer()
-    except Exception:
-        pass
-
+    try: await query.answer()
+    except: pass
     if not await is_admin(query.from_user.id): 
-        try:
-            await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ʙᴀɴ ᴍᴇɴᴜ ɪꜱ ʀᴇꜱᴛʀɪᴄᴛᴇᴅ!", show_alert=True)
-        except Exception:
-            pass
+        try: await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ʙᴀɴ ᴍᴇɴᴜ ɪꜱ ʀᴇꜱᴛʀɪᴄᴛᴇᴅ!", show_alert=True)
+        except: pass
         return
     
     data = query.data
@@ -46,13 +41,16 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
     elif data == "ban_user":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")]])
         res_type, res_msg = await get_user_input(client, query, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ [ʀᴇᴀꜱᴏɴ]\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
-        if res_type != "message": return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
+        if res_type != "message":
+            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")]]))
+            return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
         
         text = res_msg.text or ""
         try: await res_msg.delete()
         except: pass
         
         if not text or text.lower() == "/cancel":
+            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")]]))
             return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
             
         parts = text.split(maxsplit=1)
@@ -71,13 +69,16 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
     elif data == "ban_unban_user":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")]])
         res_type, res_msg = await get_user_input(client, query, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
-        if res_type != "message": return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
+        if res_type != "message":
+            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")]]))
+            return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
         
         text = res_msg.text or ""
         try: await res_msg.delete()
         except: pass
         
         if not text or text.lower() == "/cancel":
+            await send_cancel_notification(client, query, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")]]))
             return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
             
         if not text.isdigit(): 
