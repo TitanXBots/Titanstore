@@ -25,8 +25,8 @@ async def link_generator(client: Client, message: Message):
         text = (
             "🎉 ʏᴏᴜʀ ꜱʜᴀʀᴇᴀʙʟᴇ ʟɪɴᴋ ʜᴀꜱ ʙᴇᴇɴ ɢᴇɴᴇʀᴀᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ!\n\n"
             f"<code>{link}</code>\n\n"
-            "ᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ʙᴇɪɴɢ ᴘᴀʀᴛ ᴏꜰ ᴛɪᴛᴀɴᴄɪɴᴇᴘʟᴇx! 🚀\n\n"
-            "ᴡᴇ ᴛʀᴜʟʏ ᴀᴘᴘʀᴇᴄɪᴀᴛᴇ ʏᴏᴜʀ ꜱᴜᴘᴘᴏʀᴛ ᴀɴᴅ ʜᴏᴘᴇ ʏᴏᴜ ᴇɴᴊᴏʏ ᴜꜱɪɴɢ ᴏᴜʀ ʙᴏᴛ 🚀"
+            "🔗 ꜱʜᴀʀᴇ ʏᴏᴜʀ ʟɪɴᴋ ᴜꜱɪɴɢ ᴛʜᴇ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ.\n\n"
+            "ᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ʙᴇɪɴɢ ᴘᴀʀᴛ ᴏꜰ ᴛɪᴛᴀɴᴄɪɴᴇᴘʟᴇx! ᴡᴇ ᴛʀᴜʟʏ ᴀᴘᴘʀᴇᴄɪᴀᴛᴇ ʏᴏᴜʀ ꜱᴜᴘᴘᴏʀᴛ ᴀɴᴅ ʜᴏᴘᴇ ʏᴏᴜ ᴇɴᴊᴏʏ ᴜꜱɪɴɢ ᴏᴜʀ ʙᴏᴛ! 🚀"
         )
         markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Share URL ↗", url=f"https://t.me/share/url?url={link}")]])
         await message.reply_text(text, reply_markup=markup, disable_web_page_preview=True)
@@ -49,8 +49,8 @@ async def link_generator(client: Client, message: Message):
             text = (
                 "🎉 ʏᴏᴜʀ ʙᴀᴛᴄʜ ꜱʜᴀʀᴇᴀʙʟᴇ ʟɪɴᴋ ʜᴀꜱ ʙᴇᴇɴ ɢᴇɴᴇʀᴀᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ!\n\n"
                 f"<code>{link}</code>\n\n"
-                "ᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ʙᴇɪɴɢ ᴘᴀʀᴛ ᴏꜰ ᴛɪᴛᴀɴᴄɪɴᴇᴘʟᴇx! 🚀\n\n"
-                "ᴡᴇ ᴛʀᴜʟʏ ᴀᴘᴘʀᴇᴄɪᴀᴛᴇ ʏᴏᴜʀ ꜱᴜᴘᴘᴏʀᴛ ᴀɴᴅ ʜᴏᴘᴇ ʏᴏᴜ ᴇɴᴊᴏʏ ᴜꜱɪɴɢ ᴏᴜʀ ʙᴏᴛ 🚀"
+                "🔗 ꜱʜᴀʀᴇ ʏᴏᴜʀ ʟɪɴᴋ ᴜꜱɪɴɢ ᴛʜᴇ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ.\n\n"
+                "ᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ʙᴇɪɴɢ ᴘᴀʀᴛ ᴏꜰ ᴛɪᴛᴀɴᴄɪɴᴇᴘʟᴇx! ᴡᴇ ᴛʀᴜʟʏ ᴀᴘᴘʀᴇᴄɪᴀᴛᴇ ʏᴏᴜʀ ꜱᴜᴘᴘᴏʀᴛ ᴀɴᴅ ʜᴏᴘᴇ ʏᴏᴜ ᴇɴᴊᴏʏ ᴜꜱɪɴɢ ᴏᴜʀ ʙᴏᴛ! 🚀"
             )
             markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Share URL ↗", url=f"https://t.me/share/url?url={link}")]])
             await message.reply_text(text, reply_markup=markup, disable_web_page_preview=True)
