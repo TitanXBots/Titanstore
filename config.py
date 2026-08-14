@@ -36,17 +36,17 @@ TG_BOT_WORKERS = get_env_int("TG_BOT_WORKERS", 4)
 START_PIC = os.environ.get("START_PIC", "https://i.ibb.co/7xBNgdvj/x.jpg")
 FORCE_PIC = os.environ.get("FORCE_PIC", "https://i.ibb.co/7xBNgdvj/x.jpg")
 
-HELP_TXT = "<b>ᴛʜɪꜱ ɪꜱ ᴀ ꜰɪʟᴇꜱᴛᴏʀᴇ ʙᴏᴛ ᴡᴏʀᴋ ꜰᴏʀ @TitanCineplex\n\n✯ ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅꜱ\n├/start : ꜱᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ\n├/about : ᴏᴜʀ ɪɴꜰᴏʀᴍᴀᴛɪᴏɴ\n└/help : ʜᴇʟᴘ ʀᴇʟᴀᴛᴇᴅ ʙᴏᴛ\n\nꜱɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴏɴ ʟɪɴᴋ ᴀɴᴅ ꜱᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ ᴊᴏɪɴ 🫵 ᴄʜᴀɴɴᴇʟꜱ ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ ᴛʜᴀᴛꜱ ɪᴛ.....!</b>"
-ABOUT_TXT = "<b>✯ ᴄʀᴇᴀᴛᴏʀ : <a href=https://t.me/TitanXBots>ᎩᎪᏚʜཛ</a>\n✯ ʟᴀɴɢᴜᴀɢᴇ : <a href=https://www.python.org>ᴘʏᴛʜᴏɴ3</a>\n✯ ʟɪʙʀᴀʀʏ : <a href='https://docs.pyrogram.org/'>ᴘʏʀᴏɢʀᴀᴍ</a>\n✯ ꜱᴏᴜʀᴄᴇ ᴄᴏᴅᴇ : ᴘʀɪᴠᴀᴛᴇ\n✯ ᴜᴘᴅᴀᴛᴇꜱ ᴄʜᴀɴɴᴇʟ : <a href=https://t.me/TitanXBots>ᴛɪᴛᴀɴxʙᴏᴛꜱ</a>\n✯ ꜱᴜᴘᴘᴏʀᴛ : <a href=https://t.me/TitanMattersSupport>ᴛɪᴛᴀɴ ɢʀᴏᴜ𝗣</a></b>"
-COMMANDS_TXT = "<b>🤖 ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅꜱ ᴍᴇɴᴜ</b>\n\n• /start - ɪɴɪᴛɪᴀʟɪᴢᴇ ᴛʜᴇ ʙᴏᴛ\n• /help - ᴅɪꜱᴘʟᴀʏ ꜱᴜᴘᴘᴏʀᴛ ʜᴇʟᴘ ᴏᴘᴛɪᴏɴꜱ\n• /about - ᴅɪꜱᴘʟᴀʏ ʙᴏᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ\n\n<b>ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅꜱ:</b>\n• /users - ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ ᴄᴏᴜɴᴛ\n• /broadcast - ꜱᴇɴᴅ ᴄᴏᴘʏ ʙʀᴏᴀᴅᴄᴀꜱᴛꜱ\n• /batch - ᴍᴜʟᴛɪ-ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴏʀ\n• /genlink - ꜱɪɴɢʟᴇ-ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴏʀ\n• /maintenance - ᴛᴏɢɢʟᴇ ꜱʏꜱᴛᴇᴍ ᴅᴏᴡɴ-ᴛɪᴍᴇ"
-DISCLAIMER_TXT = "<b>⚠️ ᴅɪꜱᴄʟᴀɪᴍᴇʀ ɴᴏᴛɪᴄᴇ</b>\n\nᴛʜɪꜱ ʙᴏᴛ ɪꜱ ꜱᴛʀɪᴄᴛʟʏ ᴍᴇᴀɴᴛ ꜰᴏʀ ꜱʜᴀʀɪɴɢ ᴘᴇʀꜱᴏɴᴀᆯ ꜱᴛᴏʀᴀɢᴇ ꜰɪʟᴇꜱ. ᴄᴏɴᴛᴇɴᴛ ᴅɪꜱᴛʀɪʙᴜᴛᴇᴅ ᴠɪᴀ ᴛʜɪʀᴅ-ᴘᴀʀᴛʏ ꜱᴛᴏʀᴀɢᴇ ᴄʜᴀɴɴᴇʟꜱ ɪꜱ ɪɴᴅᴇᴘᴇɴᴅᴇɴᴛ ᴏꜰ ᴛʜᴇ ᴅᴇᴠᴇʟᴏᴘᴇʀ ɪɴꜰʀᴀꜱᴛʀᴜᴄᴛᴜʀᴇ. ᴄᴏᴍᴘʟɪᴀɴᴄᴇ ᴡɪᴛʜ ᴄᴏᴘʏʀɪɢʜᴛ ʟᴇɢɪꜱʟᴀᴛɪᴏɴ ʀᴇᴍᴀɪɴꜱ ᴛʜᴇ ᴜꜱᴇʀ'ꜱ ᴇxᴘʟɪᴄɪᴛ ʀᴇꜱᴘᴏɴꜱɪʙɪʟɪྟʏ."
-START_MSG = os.environ.get("START_MESSAGE", "ʜᴇʟʟᴏ {first}\n\nɪ ᴄᴀɴ ꜱᴛᴏʀᴇ ᴘʀɪᴠᴀᴛᴇ ꜰɪʟᴇꜱ ɪɴ ꜱᴘᴇᴄɪꜰɪᴇᴅ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ᴏᴛʜᴇʀ ᴜꜱᴇʀꜱ ᴄᴀɴ ᴀᴄᴄᴇꜱꜱ ɪᴛ ꜰʀᴏᴍ ꜱᴘᴇᴄɪᴀʟ ʟɪɴᴋ.")
-FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", "ʜᴇʟʟᴏ {first}\n\n<b>ʏᴏᴜ ɴᴇᴇᴅ ᴛᴏ ᴊᴏɪɴ ɪɴ ᴍʏ ᴄʜᴀɴɴᴇʟ/ɢʀᴏᴜᴘ ᴛᴏ ᴜꜱᴇ ᴍᴇ\n\nᴋɪɴᴅʟʏ ᴘʟᴇᴀꜱᴇ ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟꜱ</b>")
+HELP_TXT = "<b>🚀 ᴛʜɪꜱ ɪꜱ ᴀ ᴘᴏᴡᴇʀꜰᴜʟ ꜰɪʟᴇꜱᴛᴏʀᴇ ʙᴏᴛ\n\n✯ ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅꜱ\n├ /start : ɪɴɪᴛɪᴀʟɪᴢᴇ ᴛʜᴇ ʙᴏᴛ\n├ /about : ʙᴏᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ\n├ /plan : ᴠɪᴇᴡ ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴꜱ\n├ /myplan : ᴄʜᴇᴄᴋ ᴀᴄᴄᴏᴜɴᴛ ꜱᴛᴀᴛᴜꜱ\n└ /refer : ᴇᴀʀɴ ꜰʀᴇᴇ ᴘʀᴇᴍɪᴜᴍ\n\n💡 ꜱɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴀɴʏ ꜰɪʟᴇ ʟɪɴᴋ ᴀɴᴅ ᴊᴏɪɴ ᴛʜᴇ ʀᴇǫᴜɪʀᴇᴅ ᴄʜᴀɴɴᴇʟꜱ ᴛᴏ ᴀᴄᴄᴇꜱꜱ ʏᴏᴜʀ ᴄᴏɴᴛᴇɴᴛ!</b>"
+ABOUT_TXT = "<b>✯ ᴄʀᴇᴀᴛᴏʀ : <a href=https://t.me/TitanXBots>ᎩᎪᏚʜཛ</a>\n✯ ʟᴀɴɢᴜᴀɢᴇ : <a href=https://www.python.org>ᴘʏᴛʜᴏɴ3</a>\n✯ ʟɪʙʀᴀʀʏ : <a href='https://docs.pyrogram.org/'>ᴘʏʀᴏɢʀᴀᴍ</a>\n✯ ꜱᴏᴜʀᴄᴇ ᴄᴏᴅᴇ : ᴘʀɪᴠᴀᴛᴇ\n✯ ᴜᴘᴅᴀᴛᴇꜱ : <a href=https://t.me/TitanXBots>ᴛɪᴛᴀɴxʙᴏᴛꜱ</a>\n✯ ꜱᴜᴘᴘᴏʀᴛ : <a href=https://t.me/TitanMattersSupport>ᴛɪᴛᴀɴ ɢʀᴏᴜᴘ</a></b>"
+COMMANDS_TXT = "<b>🤖 ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅꜱ ᴍᴇɴᴜ</b>\n\n• /start - ɪɴɪᴛɪᴀʟɪᴢᴇ ᴛʜᴇ ʙᴏᴛ\n• /help - ᴅɪꜱᴘʟᴀʏ ꜱᴜᴘᴘᴏʀᴛ ᴏᴘᴛɪᴏɴꜱ\n• /about - ᴅɪꜱᴘʟᴀʏ ᴍᴇᴛᴀᴅᴀᴛᴀ\n• /plan - ᴠɪᴇᴡ ᴘʀᴇᴍɪᴜᴍ ᴛɪᴇʀꜱ\n• /myplan - ᴄʜᴇᴄᴋ ꜱᴜʙꜱᴄʀɪᴘᴛɪᴏɴ\n• /refer - ɪɴᴠɪᴛᴇ & ᴇᴀʀɴ ᴘᴏɪɴᴛꜱ\n\n<b>👑 ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅꜱ:</b>\n• /users - ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ ᴄᴏᴜɴᴛ\n• /broadcast - ꜱᴇɴᴅ ʙʀᴏᴀᴅᴄᴀꜱᴛꜱ\n• /batch - ᴍᴜʟᴛɪ-ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴏʀ\n• /genlink - ꜱɪɴɢʟᴇ-ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴏʀ\n• /maintenance - ᴛᴏɢɢʟᴇ ᴅᴏᴡɴ-ᴛɪᴍᴇ"
+DISCLAIMER_TXT = "<b>⚠️ ᴅɪꜱᴄʟᴀɪᴍᴇʀ ɴᴏᴛɪᴄᴇ</b>\n\nᴛʜɪꜱ ʙᴏᴛ ɪꜱ ꜱᴛʀɪᴄᴛʟʏ ᴍᴇᴀɴᴛ ꜰᴏʀ ꜱʜᴀʀɪɴɢ ᴘᴇʀꜱᴏɴᴀʟ ꜱᴛᴏʀᴀɢᴇ ꜰɪʟᴇꜱ. ᴄᴏɴᴛᴇɴᴛ ᴅɪꜱᴛʀɪʙᴜᴛᴇᴅ ᴠɪᴀ ᴛʜɪʀᴅ-ᴘᴀʀᴛʏ ꜱᴛᴏʀᴀɢᴇ ᴄʜᴀɴɴᴇʟꜱ ɪꜱ ɪɴᴅᴇᴘᴇɴᴅᴇɴᴛ ᴏꜰ ᴛʜᴇ ᴅᴇᴠᴇʟᴏᴘᴇʀ ɪɴꜰʀᴀꜱᴛʀᴜᴄᴛᴜʀᴇ. ᴄᴏᴍᴘʟɪᴀɴᴄᴇ ᴡɪᴛʜ ᴄᴏᴘʏʀɪɢʜᴛ ʟᴇɢɪꜱʟᴀᴛɪᴏɴ ʀᴇᴍᴀɪɴꜱ ᴛʜᴇ ᴜꜱᴇʀ'ꜱ ᴇxᴘʟɪᴄɪᴛ ʀᴇꜱᴘᴏɴꜱɪʙɪʟɪᴛʏ."
+START_MSG = os.environ.get("START_MESSAGE", "👋 ʜᴇʟʟᴏ <b>{first}</b>,\n\n🚀 ɪ ᴄᴀɴ ꜱᴛᴏʀᴇ ᴘʀɪᴠᴀᴛᴇ ꜰɪʟᴇꜱ ɪɴ ꜱᴘᴇᴄɪꜰɪᴇᴅ ᴄʜᴀɴɴᴇʟꜱ ᴀɴᴅ ᴘʀᴏᴠɪᴅᴇ ꜱᴇᴄᴜʀᴇ ᴀᴄᴄᴇꜱꜱ ʟɪɴᴋꜱ.")
+FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", "👋 ʜᴇʟʟᴏ <b>{first}</b>,\n\n<b>⚠️ ʏᴏᴜ ɴᴇᴇᴅ ᴛᴏ ᴊᴏɪɴ ᴏᴜʀ ᴜᴘᴅᴀᴛᴇꜱ ᴄʜᴀɴɴᴇʟꜱ ᴛᴏ ᴜꜱᴇ ᴍᴇ!\n\nᴋɪɴᴅʟʏ ᴊᴏɪɴ ʙᴇʟᴏᴡ ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ 👇</b>")
 
 CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", None)
 
-BOT_STATS_TEXT = "<b>ʙᴏᴛ ᴜᴘᴛɪᴍᴇ</b>\n{uptime}"
-USER_REPLY_TEXT = "👋 ʜᴇʏ ꜰʀɪᴇɴᴅ, 🚫 ᴅᴏɴ'ᴛ ꜱᴇɴᴅ ᴀɴʏ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ ᴍᴇ ᴅɪʀᴇᴄᴛʟʏ. ɪ'ᴍ ᴏɴʟʏ ᴀ ꜰɪʟᴇ ꜱᴛᴏʀᴇ ʙᴏᴛ!"
+BOT_STATS_TEXT = "<b>📊 ʙᴏᴛ ᴜᴘᴛɪᴍᴇ</b>\n<code>{uptime}</code>"
+USER_REPLY_TEXT = "👋 ʜᴇʏ ꜰʀɪᴇɴᴅ,\n\n🚫 ᴘʟᴇᴀꜱᴇ ᴅᴏ ɴᴏᴛ ꜱᴇɴᴅ ᴅɪʀᴇᴄᴛ ᴍᴇꜱꜱᴀɢᴇꜱ. ɪ ᴀᴍ ᴀ ꜰɪʟᴇ ꜱᴛᴏʀᴇ ʙᴏᴛ!"
 LOG_FILE_NAME = "filesharingbot.txt"
 
 logging.basicConfig(
