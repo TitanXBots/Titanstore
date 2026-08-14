@@ -20,9 +20,7 @@ async def safe_edit(message, text, buttons=None):
 
 async def subscribed(client, message, custom_channels=None) -> bool:
     if not message.from_user: return True
-    
-    if not await get_force_sub_status(): 
-        return True
+    if not await get_force_sub_status(): return True
 
     user_id = message.from_user.id
     if await is_admin(user_id) or await is_owner(user_id): return True
@@ -109,7 +107,6 @@ async def get_user_input(client, message_or_query, text, reply_markup, timeout=6
     async def callback_handler(c, q):
         if not future.done():
             future.set_result(("callback", q))
-        # Allow propagation so normal menu handlers render the target back screen
 
     client.add_handler(message_handler, group=-1)
     client.add_handler(callback_handler, group=-1)
