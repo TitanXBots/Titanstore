@@ -11,7 +11,7 @@ def get_env_int(env_key, default_value):
             return default_value
     return default_value
 
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "7518120538:AAGokj9_rnUXPxJ0hq4FbSCOKguRuzUSLiM") 
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8879317604:AAGy1bEfrjzeAMeBmBBKFA-WfcgtZcQQOKE") 
 APP_ID = get_env_int("APP_ID", 12293838)
 API_HASH = os.environ.get("API_HASH", "cf8c7db0d609148786e7ca5c706909bd")
 
@@ -23,7 +23,7 @@ PORT = get_env_int("PORT", 8080)
 ADMINS_STR = os.environ.get("ADMINS", "5356695781")
 ADMINS = [int(x) for x in ADMINS_STR.split(",") if x.strip().isdigit()]
 
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://TITANBOTS:TITANBOTS@cluster0.yagdfyt.mongodb.net/?appName=Cluster0")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://TITANCINEPLEX:TITANCINEPLEX@cluster0.pzecgto.mongodb.net/?appName=Cluster0")
 DB_NAME = os.environ.get("DATABASE_NAME", "TitanBot")
 
 FORCE_SUB_CHANNEL_1 = get_env_int("FORCE_SUB_CHANNEL_1", -1002071945738)
@@ -36,9 +36,9 @@ TG_BOT_WORKERS = get_env_int("TG_BOT_WORKERS", 4)
 START_PIC = os.environ.get("START_PIC", "https://i.ibb.co/7xBNgdvj/x.jpg")
 FORCE_PIC = os.environ.get("FORCE_PIC", "https://i.ibb.co/7xBNgdvj/x.jpg")
 
-HELP_TXT = "<b>🚀 ᴛʜɪꜱ ɪꜱ ᴀ ᴘᴏᴡᴇʀꜰᴜʟ ꜰɪʟᴇꜱᴛᴏʀᴇ ʙᴏᴛ\n\n✯ ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅꜱ\n├ /start : ɪɴɪᴛɪᴀʟɪᴢᴇ ᴛʜᴇ ʙᴏᴛ\n├ /about : ʙᴏᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ\n├ /plan : ᴠɪᴇᴡ ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴꜱ\n├ /myplan : ᴄʜᴇᴄᴋ ᴀᴄᴄᴏᴜɴᴛ ꜱᴛᴀᴛᴜꜱ\n└ /refer : ᴇᴀʀɴ ꜰʀᴇᴇ ᴘʀᴇᴍɪᴜᴍ\n\n💡 ꜱɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴀɴʏ ꜰɪʟᴇ ʟɪɴᴋ ᴀɴᴅ ᴊᴏɪɴ ᴛʜᴇ ʀᴇǫᴜɪʀᴇᴅ ᴄʜᴀɴɴᴇʟꜱ ᴛᴏ ᴀᴄᴄᴇꜱꜱ ʏᴏᴜʀ ᴄᴏɴᴛᴇɴᴛ!</b>"
+HELP_TXT = "<b>🚀 ᴛʜɪꜱ ɪꜱ ᴀ ᴘᴏᴡᴇʀꜰᴜʟ ꜰɪʟᴇꜱᴛᴏʀᴇ ʙᴏᴛ\n\n✯ ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅꜱ\n├ /start : ɪɴɪᴛɪᴀʟɪᴢᴇ ᴛʜᴇ ʙᴏᴛ\n├ /about : ʙᴏᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ\n└ /help : ʜᴇʟᴘ ᴍᴇɴᴜ\n\n💡 ꜱɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴀɴʏ ꜰɪʟᴇ ʟɪɴᴋ ᴀɴᴅ ᴊᴏɪɴ ᴛʜᴇ ʀᴇǫᴜɪʀᴇᴅ ᴄʜᴀɴɴᴇʟꜱ ᴛᴏ ᴀᴄᴄᴇꜱꜱ ʏᴏᴜʀ ᴄᴏɴᴛᴇɴᴛ!</b>"
 ABOUT_TXT = "<b>✯ ᴄʀᴇᴀᴛᴏʀ : <a href=https://t.me/TitanXBots>ᎩᎪᏚʜཛ</a>\n✯ ʟᴀɴɢᴜᴀɢᴇ : <a href=https://www.python.org>ᴘʏᴛʜᴏɴ3</a>\n✯ ʟɪʙʀᴀʀʏ : <a href='https://docs.pyrogram.org/'>ᴘʏʀᴏɢʀᴀᴍ</a>\n✯ ꜱᴏᴜʀᴄᴇ ᴄᴏᴅᴇ : ᴘʀɪᴠᴀᴛᴇ\n✯ ᴜᴘᴅᴀᴛᴇꜱ : <a href=https://t.me/TitanXBots>ᴛɪᴛᴀɴxʙᴏᴛꜱ</a>\n✯ ꜱᴜᴘᴘᴏʀᴛ : <a href=https://t.me/TitanMattersSupport>ᴛɪᴛᴀɴ ɢʀᴏᴜᴘ</a></b>"
-COMMANDS_TXT = "<b>🤖 ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅꜱ ᴍᴇɴᴜ</b>\n\n• /start - ɪɴɪᴛɪᴀʟɪᴢᴇ ᴛʜᴇ ʙᴏᴛ\n• /help - ᴅɪꜱᴘʟᴀʏ ꜱᴜᴘᴘᴏʀᴛ ᴏᴘᴛɪᴏɴꜱ\n• /about - ᴅɪꜱᴘʟᴀʏ ᴍᴇᴛᴀᴅᴀᴛᴀ\n• /plan - ᴠɪᴇᴡ ᴘʀᴇᴍɪᴜᴍ ᴛɪᴇʀꜱ\n• /myplan - ᴄʜᴇᴄᴋ ꜱᴜʙꜱᴄʀɪᴘᴛɪᴏɴ\n• /refer - ɪɴᴠɪᴛᴇ & ᴇᴀʀɴ ᴘᴏɪɴᴛꜱ\n\n<b>👑 ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅꜱ:</b>\n• /users - ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ ᴄᴏᴜɴᴛ\n• /broadcast - ꜱᴇɴᴅ ʙʀᴏᴀᴅᴄᴀꜱᴛꜱ\n• /batch - ᴍᴜʟᴛɪ-ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴏʀ\n• /genlink - ꜱɪɴɢʟᴇ-ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴏʀ\n• /maintenance - ᴛᴏɢɢʟᴇ ᴅᴏᴡɴ-ᴛɪᴍᴇ"
+COMMANDS_TXT = "<b>🤖 ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅꜱ ᴍᴇɴᴜ</b>\n\n• /start - ɪɴɪᴛɪᴀʟɪᴢᴇ ᴛʜᴇ ʙᴏᴛ\n• /help - ᴅɪꜱᴘʟᴀʏ ꜱᴜᴘᴘᴏʀᴛ ᴏᴘᴛɪᴏɴꜱ\n• /about - ᴅɪꜱᴘʟᴀʏ ᴍᴇᴛᴀᴅᴀᴛᴀ\n\n<b>👑 ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅꜱ:</b>\n• /users - ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ ᴄᴏᴜɴᴛ\n• /broadcast - ꜱᴇɴᴅ ʙʀᴏᴀᴅᴄᴀꜱᴛꜱ\n• /batch - ᴍᴜʟᴛɪ-ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴏʀ\n• /genlink - ꜱɪɴɢʟᴇ-ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴏʀ\n• /maintenance - ᴛᴏɢɢʟᴇ ᴅᴏᴡɴ-ᴛɪᴍᴇ"
 DISCLAIMER_TXT = "<b>⚠️ ᴅɪꜱᴄʟᴀɪᴍᴇʀ ɴᴏᴛɪᴄᴇ</b>\n\nᴛʜɪꜱ ʙᴏᴛ ɪꜱ ꜱᴛʀɪᴄᴛʟʏ ᴍᴇᴀɴᴛ ꜰᴏʀ ꜱʜᴀʀɪɴɢ ᴘᴇʀꜱᴏɴᴀʟ ꜱᴛᴏʀᴀɢᴇ ꜰɪʟᴇꜱ. ᴄᴏɴᴛᴇɴᴛ ᴅɪꜱᴛʀɪʙᴜᴛᴇᴅ ᴠɪᴀ ᴛʜɪʀᴅ-ᴘᴀʀᴛʏ ꜱᴛᴏʀᴀɢᴇ ᴄʜᴀɴɴᴇʟꜱ ɪꜱ ɪɴᴅᴇᴘᴇɴᴅᴇɴᴛ ᴏꜰ ᴛʜᴇ ᴅᴇᴠᴇʟᴏᴘᴇʀ ɪɴꜰʀᴀꜱᴛʀᴜᴄᴛᴜʀᴇ. ᴄᴏᴍᴘʟɪᴀɴᴄᴇ ᴡɪᴛʜ ᴄᴏᴘʏʀɪɢʜᴛ ʟᴇɢɪꜱʟᴀᴛɪᴏɴ ʀᴇᴍᴀɪɴꜱ ᴛʜᴇ ᴜꜱᴇʀ'ꜱ ᴇxᴘʟɪᴄɪᴛ ʀᴇꜱᴘᴏɴꜱɪʙɪʟɪᴛʏ."
 START_MSG = os.environ.get("START_MESSAGE", "👋 ʜᴇʟʟᴏ <b>{first}</b>,\n\n🚀 ɪ ᴄᴀɴ ꜱᴛᴏʀᴇ ᴘʀɪᴠᴀᴛᴇ ꜰɪʟᴇꜱ ɪɴ ꜱᴘᴇᴄɪꜰɪᴇᴅ ᴄʜᴀɴɴᴇʟꜱ ᴀɴᴅ ᴘʀᴏᴠɪᴅᴇ ꜱᴇᴄᴜʀᴇ ᴀᴄᴄᴇꜱꜱ ʟɪɴᴋꜱ.")
 FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", "👋 ʜᴇʟʟᴏ <b>{first}</b>,\n\n<b>⚠️ ʏᴏᴜ ɴᴇᴇᴅ ᴛᴏ ᴊᴏɪɴ ᴏᴜʀ ᴜᴘᴅᴀᴛᴇꜱ ᴄʜᴀɴɴᴇʟꜱ ᴛᴏ ᴜꜱᴇ ᴍᴇ!\n\nᴋɪɴᴅʟʏ ᴊᴏɪɴ ʙᴇʟᴏᴡ ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ 👇</b>")
@@ -61,5 +61,5 @@ logging.basicConfig(
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 def LOGGER(name: str) -> logging.Logger:
-    return logging.getLogger(name)
+    return logging.Logger(name)
     
