@@ -2,14 +2,8 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from pyromod.exceptions import ListenerTimeout
-from config import START_PIC
 from helper_func import safe_edit, send_cancel_msg
 from database.database import is_admin, ban_user, unban_user, get_banned_users
-
-async def delayed_delete(message, delay=7):
-    await asyncio.sleep(delay)
-    try: await message.delete()
-    except: pass
 
 def get_ban_menu():
     return InlineKeyboardMarkup([
@@ -41,7 +35,7 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
 
     elif data == "ban_user":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")]])
-        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ [ʀᴇᴀꜱᴏɴ]\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
+        await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴜꜱᴇʀ</b>\n\nꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ [ʀᴇᴀꜱᴏɴ]\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
         except ListenerTimeout:
@@ -57,20 +51,16 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
             
         parts = text.split(maxsplit=1)
         if not parts[0].isdigit(): 
-            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ɪᴅ", reply_markup=keyboard)
-            asyncio.create_task(delayed_delete(msg))
-            return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
+            return await safe_edit(query.message, "❌ <b>ɪɴᴠᴀʟɪᴅ ɪᴅ!</b>\n\nᴘʟᴇᴀꜱᴇ ꜱᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴜꜱᴇʀ ɪᴅ.", keyboard)
             
         uid = int(parts[0])
         reason = parts[1] if len(parts) > 1 else "ɴᴏ ʀᴇᴀꜱᴏɴ"
         await ban_user(uid, reason)
-        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ʙᴀɴɴᴇᴅ", reply_markup=keyboard)
-        asyncio.create_task(delayed_delete(msg))
-        return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
+        return await safe_edit(query.message, f"✅ <b>ᴜꜱᴇʀ <code>{uid}</code> ʙᴀɴɴᴇᴅ!</b>\n\nʀᴇᴀꜱᴏɴ: <code>{reason}</code>", get_ban_menu())
 
     elif data == "ban_unban_user":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="ban_menu")]])
-        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
+        await safe_edit(query.message, "✅ <b>ᴜɴʙᴀɴ ᴜꜱᴇʀ</b>\n\nꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
         except ListenerTimeout:
@@ -85,15 +75,11 @@ async def ban_callbacks(client: Client, query: CallbackQuery):
             return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
             
         if not text.isdigit(): 
-            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ɪᴅ", reply_markup=keyboard)
-            asyncio.create_task(delayed_delete(msg))
-            return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
+            return await safe_edit(query.message, "❌ <b>ɪɴᴠᴀʟɪᴅ ɪᴅ!</b>\n\nᴘʟᴇᴀꜱᴇ ꜱᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴜꜱᴇʀ ɪᴅ.", keyboard)
             
         uid = int(text)
         await unban_user(uid)
-        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ᴜɴʙᴀɴɴᴇᴅ", reply_markup=keyboard)
-        asyncio.create_task(delayed_delete(msg))
-        return await safe_edit(query.message, "🚫 <b>ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_ban_menu())
+        return await safe_edit(query.message, f"✅ <b>ᴜꜱᴇʀ <code>{uid}</code> ᴜɴʙᴀɴɴᴇᴅ!</b>", get_ban_menu())
 
     elif data == "ban_list":
         banned = await get_banned_users()
