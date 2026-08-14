@@ -3,24 +3,12 @@ import re
 import asyncio
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import UserNotParticipant, FloodWait, MessageNotModified
-from config import START_PIC
 from database.database import is_admin, is_owner, get_force_sub_status, get_global_fs_channels
 
 async def delayed_delete(message, delay=7):
     await asyncio.sleep(delay)
     try: await message.delete()
     except: pass
-
-async def send_cancel_msg(client, chat_id):
-    try:
-        msg = await client.send_photo(
-            chat_id=chat_id,
-            photo=START_PIC,
-            caption="❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>\n\nThe current operation has been successfully aborted."
-        )
-        asyncio.create_task(delayed_delete(msg, 7))
-    except Exception:
-        pass
 
 async def safe_edit(message, text, buttons=None):
     try:
@@ -96,9 +84,13 @@ def get_readable_time(seconds: int) -> str:
     hours, seconds = divmod(seconds, 3600)
     minutes, seconds = divmod(seconds, 60)
     res = []
-    if days: res.append(f"{days}d")
-    if hours: res.append(f"{hours}h")
-    if minutes: res.append(f"{minutes}m")
-    if seconds or not res: res.append(f"{seconds}s")
+    if days: 
+        res.append(f"{days} Day" if days == 1 else f"{days} Days")
+    if hours: 
+        res.append(f"{hours} Hour" if hours == 1 else f"{hours} Hours")
+    if minutes: 
+        res.append(f"{minutes} Minute" if minutes == 1 else f"{minutes} Minutes")
+    if seconds or not res: 
+        res.append(f"{seconds} Second" if seconds == 1 else f"{seconds} Seconds")
     return " ".join(res)
     
