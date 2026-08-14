@@ -47,8 +47,8 @@ class Bot(Client):
                             await self.send_message(
                                 user_id, 
                                 f"⚠️ <b>ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ʜᴀꜱ ᴇɴᴅᴇᴅ.</b>\n\n"
-                                f"ʏᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴅᴀᴛᴀʙᴀꜱᴇ ᴀɴᴅ ꜰᴏʀᴄᴇ-ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʀᴇᴍᴏᴠᴇᴅ ꜰʀᴏᴍ ᴛʜᴇ ʙᴏᴛ.\n"
-                                f"ɪᴛ ᴏꜰꜰɪᴄɪᴀʟʟʏ ᴄʟᴏꜱᴇᴅ ᴏɴ: {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC"
+                                f"ʏᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴅᴀᴛᴀʙᴀꜱᴇ & ꜰꜱ ᴄʜᴀɴɴᴇʟꜱ ʜᴀᴠᴇ ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ.\n"
+                                f"ᴇxᴘɪʀᴇᴅ ᴏɴ: <code>{expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC</code>"
                             )
                         except (UserIsBlocked, UserDeactivated): pass
                         except Exception as e: self.logger.error(f"Expiry notify error for {user_id}: {e}")
@@ -57,8 +57,8 @@ class Bot(Client):
                         try:
                             await self.send_message(
                                 user_id, 
-                                f"⚠️ <b>ʀᴇᴍɪɴᴅᴇʀ:</b> ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ɪꜱ ᴄʟᴏꜱɪɢ ꜱᴏᴏɴ!\n\n"
-                                f"<b>ᴇxᴘɪʀʏ ᴅᴀᴛᴇ:</b> {expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC"
+                                f"⚠️ <b>ʀᴇᴍɪɴᴅᴇʀ:</b> ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ɪꜱ ᴇxᴘɪʀɪɴɢ ꜱᴏᴏɴ!\n\n"
+                                f"<b>ᴇxᴘɪʀʏ ᴅᴀᴛᴇ:</b> <code>{expires_at.strftime('%Y-%m-%d %H:%M:%S')} UTC</code>"
                             )
                             await premium_collection.update_one({"_id": user_id}, {"$set": {"notified": True}})
                         except (UserIsBlocked, UserDeactivated): pass
