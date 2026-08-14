@@ -1,8 +1,10 @@
 import base64
 import re
 import asyncio
+from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import UserNotParticipant, FloodWait, MessageNotModified
+from pyrogram.types import CallbackQuery
 from database.database import is_admin, is_owner, get_force_sub_status, get_global_fs_channels
 
 async def safe_edit(message, text, buttons=None):
@@ -86,4 +88,40 @@ def get_readable_time(seconds: int) -> str:
     if minutes: res.append(f"{minutes}m")
     if seconds or not res: res.append(f"{seconds}s")
     return " ".join(res)
+
+async def get_user_input(client, message_or_query, text, reply_markup, timeout=60):
+    chat_id = message_or_query.message.chat.id if isinstance(message_or_query, CallbackQuery) else message_or_query.chat.id
+    user_id = message_or_query.from_user.id
     
+    msg_to_edit = message_or_query.message if isinstance(message_or_query, CallbackQuery) else message_or_query
+    await safe_edit(msg_to_edit, text, reply_markup)
+    
+    loop = asyncio.get_running_loop()
+    future = loop.create_future()
+    
+    @client.on_message(filters.chat(chat_id) & filters.user(user_id), group=-1)
+    async def message_handler(c, m):
+        if not future.done():
+            future.set_result(("message", m))
+        m.stop_propagation()
+
+    @client.on_callback_query(filters.user(user_id), group=-1)
+    async def callback_handler(c, q):
+        if not future.done():
+            future.set_result(("callback", q))
+        # Allow propagation so normal menu handlers render the target back screen
+
+    client.add_handler(message_handler, group=-1)
+    client.add_handler(callback_handler, group=-1)
+
+    try:
+        result_type, result_obj = await asyncio.wait_for(future, timeout=timeout)
+        return result_type, result_obj
+    except asyncio.TimeoutError:
+        return "timeout", None
+    finally:
+        try: client.remove_handler(message_handler, group=-1)
+        except: pass
+        try: client.remove_handler(callback_handler, group=-1)
+        except: pass
+            
