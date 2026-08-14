@@ -6,12 +6,12 @@ from database.database import is_admin, is_maintenance
 
 @Client.on_callback_query(filters.regex("^(start|help|commands|about|disclaimer|close|admin_panel)$"))
 async def generic_cb_handler(client: Client, query: CallbackQuery):
+    await query.answer()
     user_id = query.from_user.id
     
     if await is_maintenance(user_id):
         return await query.answer("🛠 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴏɴ.", show_alert=True)
         
-    await query.answer()
     data = query.data
     first_name = query.from_user.first_name or "User"
 
@@ -25,7 +25,7 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
     elif data == "admin_panel":
         if not await is_admin(user_id):
             return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ!", show_alert=True)
-        return await safe_edit(query.message, "⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢ ᴘᴀɴᴇʟ", InlineKeyboardMarkup([
+        return await safe_edit(query.message, "⚙️ <b>ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ ᴘᴀɴᴇʟ</b>", InlineKeyboardMarkup([
             [InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")],
             [InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ", callback_data="premium_menu"), InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu")],
             [InlineKeyboardButton("📁 ᴀᴅᴅ ᴄʜᴀɴɴᴇʟꜱ", callback_data="add_channels_menu"), InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu")],
