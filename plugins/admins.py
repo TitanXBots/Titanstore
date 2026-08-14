@@ -2,14 +2,9 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from pyromod.exceptions import ListenerTimeout
-from config import START_PIC, OWNER_ID
+from config import OWNER_ID
 from helper_func import safe_edit, send_cancel_msg
 from database.database import is_admin, add_admin, remove_admin, get_admins
-
-async def delayed_delete(message, delay=7):
-    await asyncio.sleep(delay)
-    try: await message.delete()
-    except: pass
 
 def get_admin_menu():
     return InlineKeyboardMarkup([
@@ -41,7 +36,7 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
 
     elif data == "admin_add":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]])
-        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ᴀᴅᴅ ᴀꜱ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
+        await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴅ ᴀᴅᴍɪɴ</b>\n\nꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ᴀᴅᴅ ᴀꜱ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
         except ListenerTimeout:
@@ -56,24 +51,18 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
             return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
             
         if not text.isdigit(): 
-            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ɪᴅ", reply_markup=keyboard)
-            asyncio.create_task(delayed_delete(msg))
-            return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
+            return await safe_edit(query.message, "❌ <b>ɪɴᴠᴀʟɪᴅ ɪᴅ!</b>\n\nᴘʟᴇᴀꜱᴇ ꜱᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴜꜱᴇʀ ɪᴅ.", keyboard)
             
         uid = int(text)
         if uid == int(OWNER_ID): 
-            msg = await query.message.reply_photo(photo=START_PIC, caption="⚠️ ᴏᴡɴᴇʀ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴀᴅᴍɪɴ", reply_markup=keyboard)
-            asyncio.create_task(delayed_delete(msg))
-            return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
+            return await safe_edit(query.message, "⚠️ <b>ᴏᴡɴᴇʀ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴀᴅᴍɪɴ!</b>", keyboard)
             
         await add_admin(uid)
-        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ᴀᴅᴅᴇᴅ ᴀꜱ ᴀᴅᴍɪɴ", reply_markup=keyboard)
-        asyncio.create_task(delayed_delete(msg))
-        return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
+        return await safe_edit(query.message, f"✅ <b>ꜱᴜᴄᴄᴇꜱꜱ!</b>\n\nᴜꜱᴇʀ <code>{uid}</code> ʜᴀꜱ ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴀꜱ ᴀᴅᴍɪɴ.", get_admin_menu())
 
     elif data == "admin_remove":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_menu")]])
-        await safe_edit(query.message, "ꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴍᴏᴠᴇ ꜰʀᴏᴍ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
+        await safe_edit(query.message, "👨‍💻 <b>ʀᴇᴍᴏᴠᴇ ᴀᴅᴍɪɴ</b>\n\nꜱᴇɴᴅ ᴜꜱᴇʀ_ɪᴅ ᴛᴏ ʀᴇᴍᴏᴠᴇ ꜰʀᴏᴍ ᴀᴅᴍɪɴ\n\n/cancel - ᴄᴀɴᴄᴇʟ.", keyboard)
         try:
             input_msg = await client.listen(query.message.chat.id, timeout=60)
         except ListenerTimeout:
@@ -88,20 +77,14 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
             return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
             
         if not text.isdigit(): 
-            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ ɪɴᴠᴀʟɪᴅ ɪᴅ", reply_markup=keyboard)
-            asyncio.create_task(delayed_delete(msg))
-            return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
+            return await safe_edit(query.message, "❌ <b>ɪɴᴠᴀʟɪᴅ ɪᴅ!</b>\n\nᴘʟᴇᴀꜱᴇ ꜱᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴜꜱᴇʀ ɪᴅ.", keyboard)
             
         uid = int(text)
         if uid == int(OWNER_ID): 
-            msg = await query.message.reply_photo(photo=START_PIC, caption="❌ ᴄᴀɴɴᴏᴛ ʀᴇᴍᴏᴠᴇ ᴏᴡɴᴇʀ", reply_markup=keyboard)
-            asyncio.create_task(delayed_delete(msg))
-            return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
+            return await safe_edit(query.message, "❌ <b>ᴄᴀɴɴᴏᴛ ʀᴇᴍᴏᴠᴇ ᴏᴡɴᴇʀ!</b>", keyboard)
             
         await remove_admin(uid)
-        msg = await query.message.reply_photo(photo=START_PIC, caption=f"✅ ᴜꜱᴇʀ {uid} ʀᴇᴍᴏᴠᴇᴅ ꜰʀᴏᴍ ᴀᴅᴍɪɴ", reply_markup=keyboard)
-        asyncio.create_task(delayed_delete(msg))
-        return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
+        return await safe_edit(query.message, f"✅ <b>ꜱᴜᴄᴄᴇꜱꜱ!</b>\n\nᴜꜱᴇʀ <code>{uid}</code> ʜᴀꜱ ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ ꜰʀᴏᴍ ᴀᴅᴍɪɴꜱ.", get_admin_menu())
 
     elif data == "admin_list":
         admins = await get_admins()
