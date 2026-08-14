@@ -2,7 +2,7 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from pyromod.exceptions import ListenerTimeout
-from helper_func import safe_edit
+from helper_func import safe_edit, send_cancel_msg
 from database.database import (
     is_admin, get_protect_status, set_protect_status, 
     get_force_sub_status, set_force_sub_status,
@@ -65,32 +65,40 @@ async def settings_cb(client: Client, query: CallbackQuery):
 
     elif data == "protect_on":
         if await get_protect_status():
-            try: await query.answer("⚠️ Protect content is already enabled!", show_alert=True)
-            except: pass
-            return await safe_edit(query.message, "🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏɴ ✅</b>", InlineKeyboardMarkup([
-                [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")], 
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
-            ]))
-        await set_protect_status(True)
-        try: await query.answer("✅ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
-        except: pass
-        return await safe_edit(query.message, "🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏɴ ✅</b>", InlineKeyboardMarkup([
+            status_note = "⚠️ <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴇɴᴀʙʟᴇᴅ!</b>"
+        else:
+            await set_protect_status(True)
+            status_note = "✅ <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴇɴᴀʙʟᴇᴅ!</b>"
+        
+        is_on = await get_protect_status()
+        status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
+        text = (
+            f"🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\n"
+            f"{status_note}\n\n"
+            f"ᴘʀᴇᴠᴇɴᴛꜱ ᴜꜱᴇʀꜱ ꜰʀᴏᴍ ꜰᴏʀᴡᴀʀᴅɪɴɢ, ꜱᴀᴠɪɴɢ, ᴏʀ ᴄᴏᴘʏɪɴɢ ꜰɪʟᴇꜱ.\n\n"
+            f"ᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>"
+        )
+        return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")], 
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
         ]))
 
     elif data == "protect_off":
         if not await get_protect_status():
-            try: await query.answer("⚠️ Protect content is already disabled!", show_alert=True)
-            except: pass
-            return await safe_edit(query.message, "🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏꜰꜰ ❌</b>", InlineKeyboardMarkup([
-                [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")], 
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
-            ]))
-        await set_protect_status(False)
-        try: await query.answer("❌ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
-        except: pass
-        return await safe_edit(query.message, "🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>ᴏꜰꜰ ❌</b>", InlineKeyboardMarkup([
+            status_note = "⚠️ <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴅɪꜱᴀʙʟᴇᴅ!</b>"
+        else:
+            await set_protect_status(False)
+            status_note = "❌ <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴅɪꜱᴀʙʟᴇᴅ!</b>"
+        
+        is_on = await get_protect_status()
+        status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
+        text = (
+            f"🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\n"
+            f"{status_note}\n\n"
+            f"ᴘʀᴇᴠᴇɴᴛꜱ ᴜꜱᴇʀꜱ ꜰʀᴏᴍ ꜰᴏʀᴡᴀʀᴅɪɴɢ, ꜱᴀᴠɪɴɢ, ᴏʀ ᴄᴏᴘʏɪɴɢ ꜰɪʟᴇꜱ.\n\n"
+            f"ᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>"
+        )
+        return await safe_edit(query.message, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")], 
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
         ]))
@@ -143,22 +151,19 @@ async def settings_cb(client: Client, query: CallbackQuery):
         ]))
 
     elif data in ["global_fs_menu", "forcesub_on", "forcesub_off"]:
+        status_note = ""
         if data == "forcesub_on":
             if await get_force_sub_status():
-                try: await query.answer("⚠️ Force sub is already enabled!", show_alert=True)
-                except: pass
+                status_note = "⚠️ <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴇɴᴀʙʟᴇᴅ!</b>\n\n"
             else:
                 await set_force_sub_status(True)
-                try: await query.answer("✅ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴇɴᴀʙʟᴇᴅ!", show_alert=True)
-                except: pass
+                status_note = "✅ <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴇɴᴀʙʟᴇᴅ!</b>\n\n"
         elif data == "forcesub_off":
             if not await get_force_sub_status():
-                try: await query.answer("⚠️ Force sub is already disabled!", show_alert=True)
-                except: pass
+                status_note = "⚠️ <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴅɪꜱᴀʙʟᴇᴅ!</b>\n\n"
             else:
                 await set_force_sub_status(False)
-                try: await query.answer("❌ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴅɪꜱᴀʙʟᴇᴅ!", show_alert=True)
-                except: pass
+                status_note = "❌ <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴅɪꜱᴀʙʟᴇᴅ!</b>\n\n"
 
         is_on = await get_force_sub_status()
         status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
@@ -167,6 +172,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         
         text = (
             f"📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\n"
+            f"{status_note}"
             f"ᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>\n\n"
             f"ᴄᴜʀʀᴇɴᴛ ᴄʜᴀɴɴᴇʟꜱ:\n{fs_str}"
         )
