@@ -1,9 +1,8 @@
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from pyromod.exceptions import ListenerTimeout
 from config import START_PIC
-from helper_func import safe_edit, get_readable_time
+from helper_func import safe_edit, get_readable_time, get_user_input
 from database.database import (
     is_admin, get_auto_delete_status, set_auto_delete_status, 
     get_auto_delete_time, set_auto_delete_time,
@@ -87,20 +86,14 @@ async def autodelete_callbacks(client: Client, query: CallbackQuery):
         
     elif data == "autodelete_set_time":
         back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="autodelete_menu")]])
-        await safe_edit(query.message, "<b>ꜱᴇɴᴅ ᴍᴇ ᴀ ᴛɪᴍᴇ ɪɴ ʟɪᴋᴇ ᴛʜɪꜱ - 1ʜ ᴏʀ 15ᴍ\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
+        res_type, res_msg = await get_user_input(client, query, "<b>ꜱᴇɴᴅ ᴍᴇ ᴀ ᴛɪᴍᴇ ɪɴ ʟɪᴋᴇ ᴛʜɪꜱ - 1ʜ ᴏʀ 15ᴍ\n\n/cancel - ᴄᴀɴᴄᴇʟ.</b>", back_keyboard)
+        if res_type != "message": return await render_autodelete_menu(query.message)
         
-        try:
-            input_msg = await client.listen(query.message.chat.id, timeout=60)
-        except ListenerTimeout:
-            await query.answer("⌛ ᴛɪᴍᴇᴏᴜᴛ!", show_alert=True)
-            return await render_autodelete_menu(query.message)
-        
-        text = input_msg.text or ""
-        try: await input_msg.delete()
+        text = res_msg.text or ""
+        try: await res_msg.delete()
         except: pass
             
         if not text or text.lower() == "/cancel":
-            await query.answer("❌ ᴄᴀɴᴄᴇʟʟᴇᴅ!", show_alert=True)
             return await render_autodelete_menu(query.message)
             
         time_in_seconds = parse_time(text)
