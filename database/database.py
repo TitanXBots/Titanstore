@@ -1,5 +1,4 @@
 import motor.motor_asyncio
-from datetime import datetime, timedelta, timezone
 from config import DB_URI, DB_NAME, OWNER_ID, ADMINS, CHANNEL_ID, FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4
 
 dbclient = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
@@ -9,9 +8,7 @@ user_data = database["users"]
 banned_users = database["banned_users"]
 admins_collection = database["admins"]
 maintenance_collection = database["maintenance"]
-premium_collection = database["premium_users"]
 settings_collection = database["settings"]
-tenant_collection = database["tenant_configs"]
 
 async def get_global_db_channel() -> int:
     data = await settings_collection.find_one({"_id": "global_db_channel"})
@@ -30,58 +27,22 @@ async def get_global_fs_channels() -> list:
 async def set_global_fs_channels(fs_channels: list):
     await settings_collection.update_one({"_id": "global_fs_channels"}, {"$set": {"channels": fs_channels}}, upsert=True)
 
-async def save_tenant_request(user_id: int, db_channel: int, fs_channels: list):
-    await tenant_collection.update_one(
-        {"_id": user_id},
-        {"$set": {"db_channel": db_channel, "fs_channels": fs_channels, "status": "pending"}},
-        upsert=True
-    )
-
-async def update_tenant_status(user_id: int, status: str):
-    await tenant_collection.update_one({"_id": user_id}, {"$set": {"status": status}})
-
-async def get_tenant_config(user_id: int):
-    return await tenant_collection.find_one({"_id": user_id, "status": "approved"})
-
-async def get_tenant_by_db(db_channel: int):
-    return await tenant_collection.find_one({"db_channel": db_channel, "status": "approved"})
-
-async def get_pending_tenants():
-    cursor = tenant_collection.find({"status": "pending"})
-    return await cursor.to_list(length=None)
-
-async def delete_tenant_config(user_id: int):
-    await tenant_collection.delete_one({"_id": user_id})
-
 async def is_user_present(user_id: int) -> bool:
     return await user_data.find_one({"_id": user_id}) is not None
 
-async def add_user(user_id: int, first_name=None, username=None, referred_by: int = 0):
+async def add_user(user_id: int, first_name=None, username=None):
     user = await user_data.find_one({"_id": user_id})
     if not user:
         await user_data.insert_one({
             "_id": user_id,
             "first_name": first_name,
-            "username": username,
-            "joined_at": datetime.now(timezone.utc),
-            "referred_by": referred_by,
-            "points": 0
+            "username": username
         })
     else:
         await user_data.update_one(
             {"_id": user_id},
             {"$set": {"first_name": first_name, "username": username}}
         )
-
-async def add_points(user_id: int, points: int):
-    await user_data.update_one({"_id": user_id}, {"$inc": {"points": points}}, upsert=True)
-
-async def get_points(user_id: int) -> int:
-    user = await user_data.find_one({"_id": user_id})
-    return user.get("points", 0) if user else 0
-
-async def deduct_points(user_id: int, points: int):
-    await user_data.update_one({"_id": user_id}, {"$inc": {"points": -points}})
 
 async def get_all_users():
     cursor = user_data.find({}, {"_id": 1})
@@ -132,50 +93,6 @@ async def is_admin(user_id) -> bool:
         return data is not None and data.get("is_admin", False)
     except (ValueError, TypeError): return False
 
-async def add_premium(user_id: int, days: int):
-    existing_user = await premium_collection.find_one({"_id": user_id})
-    now = datetime.now(timezone.utc)
-    
-    if existing_user and existing_user.get("is_premium") and existing_user.get("expires_at"):
-        current_expiry = existing_user["expires_at"].replace(tzinfo=timezone.utc)
-        if current_expiry > now:
-            expires_at = current_expiry + timedelta(days=days)
-        else:
-            expires_at = now + timedelta(days=days)
-    else:
-        expires_at = now + timedelta(days=days)
-        
-    await premium_collection.update_one(
-        {"_id": user_id}, 
-        {"$set": {"is_premium": True, "expires_at": expires_at, "notified": False}}, 
-        upsert=True
-    )
-
-async def remove_premium(user_id: int):
-    await premium_collection.delete_one({"_id": user_id})
-
-async def get_premium_users():
-    cursor = premium_collection.find({}, {"_id": 1})
-    users = await cursor.to_list(length=None)
-    return [user["_id"] for user in users]
-
-async def is_premium(user_id) -> bool:
-    if await is_admin(user_id): return True
-    try:
-        uid = int(user_id)
-        data = await premium_collection.find_one({"_id": uid})
-        if data and data.get("is_premium"):
-            expires_at = data.get("expires_at")
-            if expires_at:
-                expiry_dt = expires_at.replace(tzinfo=timezone.utc)
-                if datetime.now(timezone.utc) <= expiry_dt:
-                    return True
-                else:
-                    await remove_premium(uid)
-                    return False
-        return False
-    except (ValueError, TypeError): return False
-
 async def is_maintenance(user_id: int) -> bool:
     if await is_admin(user_id): return False
     data = await maintenance_collection.find_one({"_id": "maintenance"})
@@ -215,18 +132,4 @@ async def get_file_again_status() -> bool:
 
 async def set_file_again_status(status: bool):
     await settings_collection.update_one({"_id": "get_file_again"}, {"$set": {"status": status}}, upsert=True)
-
-async def get_refer_status() -> bool:
-    data = await settings_collection.find_one({"_id": "refer_status"})
-    return data.get("status", True) if data else True
-
-async def set_refer_status(status: bool):
-    await settings_collection.update_one({"_id": "refer_status"}, {"$set": {"status": status}}, upsert=True)
-
-async def get_refer_points() -> int:
-    data = await settings_collection.find_one({"_id": "refer_points"})
-    return data.get("points", 10) if data else 10
-
-async def set_refer_points(points: int):
-    await settings_collection.update_one({"_id": "refer_points"}, {"$set": {"points": points}}, upsert=True)
     
