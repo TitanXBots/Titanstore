@@ -47,8 +47,7 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
         except: pass
         
         if not text or text.lower() == "/cancel":
-            await send_cancel_msg(client, query.message.chat.id)
-            return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
+            return await safe_edit(query.message, "❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>\n\n👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
             
         if not text.isdigit(): 
             return await safe_edit(query.message, "❌ <b>ɪɴᴠᴀʟɪᴅ ɪᴅ!</b>\n\nᴘʟᴇᴀꜱᴇ ꜱᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴜꜱᴇʀ ɪᴅ.", keyboard)
@@ -56,6 +55,9 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
         uid = int(text)
         if uid == int(OWNER_ID): 
             return await safe_edit(query.message, "⚠️ <b>ᴏᴡɴᴇʀ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴀᴅᴍɪɴ!</b>", keyboard)
+
+        if await is_admin(uid):
+            return await safe_edit(query.message, f"⚠️ <b>ᴜꜱᴇʀ <code>{uid}</code> ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴀɴ ᴀᴅᴍɪɴ!</b>", get_admin_menu())
             
         await add_admin(uid)
         return await safe_edit(query.message, f"✅ <b>ꜱᴜᴄᴄᴇꜱꜱ!</b>\n\nᴜꜱᴇʀ <code>{uid}</code> ʜᴀꜱ ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴀꜱ ᴀᴅᴍɪɴ.", get_admin_menu())
@@ -73,8 +75,7 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
         except: pass
         
         if not text or text.lower() == "/cancel":
-            await send_cancel_msg(client, query.message.chat.id)
-            return await safe_edit(query.message, "👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
+            return await safe_edit(query.message, "❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>\n\n👨‍💻 <b>ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", get_admin_menu())
             
         if not text.isdigit(): 
             return await safe_edit(query.message, "❌ <b>ɪɴᴠᴀʟɪᴅ ɪᴅ!</b>\n\nᴘʟᴇᴀꜱᴇ ꜱᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴜꜱᴇʀ ɪᴅ.", keyboard)
@@ -82,6 +83,9 @@ async def admin_callbacks(client: Client, query: CallbackQuery):
         uid = int(text)
         if uid == int(OWNER_ID): 
             return await safe_edit(query.message, "❌ <b>ᴄᴀɴɴᴏᴛ ʀᴇᴍᴏᴠᴇ ᴏᴡɴᴇʀ!</b>", keyboard)
+
+        if not await is_admin(uid):
+            return await safe_edit(query.message, f"⚠️ <b>ᴜꜱᴇʀ <code>{uid}</code> ɪꜱ ɴᴏᴛ ᴀɴ ᴀᴅᴍɪɴ!</b>", get_admin_menu())
             
         await remove_admin(uid)
         return await safe_edit(query.message, f"✅ <b>ꜱᴜᴄᴄᴇꜱꜱ!</b>\n\nᴜꜱᴇʀ <code>{uid}</code> ʜᴀꜱ ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ ꜰʀᴏᴍ ᴀᴅᴍɪɴꜱ.", get_admin_menu())
