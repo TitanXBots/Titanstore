@@ -10,6 +10,10 @@ async def delayed_delete(message, delay=7):
     try: await message.delete()
     except: pass
 
+async def send_cancel_msg(client, chat_id):
+    # Safe fallback dummy function to prevent import errors
+    pass
+
 async def safe_edit(message, text, buttons=None):
     try:
         if message.photo or message.video or message.document:
