@@ -4,8 +4,25 @@ import asyncio
 from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import UserNotParticipant, FloodWait, MessageNotModified
-from pyrogram.types import CallbackQuery
+from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from config import START_PIC
 from database.database import is_admin, is_owner, get_force_sub_status, get_global_fs_channels
+
+async def delayed_delete(message, delay=7):
+    await asyncio.sleep(delay)
+    try: await message.delete()
+    except: pass
+
+async def send_cancel_notification(client, query, reply_markup):
+    try:
+        cancel_msg = await query.message.reply_photo(
+            photo=START_PIC,
+            caption="❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>\n\nThe current operation has been successfully aborted.",
+            reply_markup=reply_markup
+        )
+        asyncio.create_task(delayed_delete(cancel_msg, delay=7))
+    except Exception:
+        pass
 
 async def safe_edit(message, text, buttons=None):
     try:
