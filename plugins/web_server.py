@@ -2,7 +2,7 @@ from aiohttp import web
 
 async def web_server():
     app = web.Application()
-    app.router.add('GET', '/', index)
+    app.router.add_get('/', index)
     return app
 
 async def index(request):
