@@ -5,8 +5,8 @@ from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import FloodWait
 
-from config import FORCE_PIC, FORCE_MSG, LOG_CHANNEL_ID, START_PIC, START_MSG, CHANNEL_ID, FORCE_SUB_CHANNEL_1, FORCE_SUB_CHANNEL_2, FORCE_SUB_CHANNEL_3, FORCE_SUB_CHANNEL_4
-from helper_func import subscribed, decode, get_messages, get_readable_time
+from config import FORCE_PIC, FORCE_MSG, LOG_CHANNEL_ID, START_PIC, START_MSG
+from helper_func import subscribed, decode, get_messages, get_readable_time, safe_edit
 from database.database import (
     is_user_present, add_user, is_user_banned, get_ban_reason, 
     is_maintenance, is_admin, get_auto_delete_status, get_protect_status,
@@ -17,6 +17,25 @@ from database.database import (
 )
 
 logging.basicConfig(level=logging.INFO)
+
+async def delete_files(messages, client, main_message, payload, timer):
+    await asyncio.sleep(timer)
+    for msg in messages:
+        try: await client.delete_messages(chat_id=msg.chat.id, message_ids=msg.id)
+        except: pass
+        
+    show_button = await get_file_again_status()
+    
+    try: 
+        text_content = "✅ <b>ʏᴏᴜʀ ꜰɪʟᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ.</b>"
+        markup = None
+        
+        if show_button:
+            text_content += "\n👇 ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ᴛᴏ ɢᴇᴛ ɪᴛ ᴀɢᴀɪɴ."
+            markup = InlineKeyboardMarkup([[InlineKeyboardButton("♻️ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ", url=f"https://t.me/{client.username}?start={payload}")]])
+            
+        await main_message.edit_text(text=text_content, reply_markup=markup)
+    except: pass
 
 async def handle_file_delivery(client, user_id, message_or_query, payload):
     try:
@@ -111,7 +130,6 @@ async def start_command(client: Client, message: Message):
 
     payload = raw_text.split(" ", 1)[1] if len(raw_text.split()) > 1 else None
 
-    # --- REFERRAL LOGIC FIX ---
     referred_by = 0
     if payload and (payload.startswith("ref_") or payload.startswith("reff_")):
         try:
@@ -123,7 +141,6 @@ async def start_command(client: Client, message: Message):
 
     if not await is_user_present(user_id):
         await add_user(user_id, first_name, username, referred_by)
-        
         is_refer_active = await get_refer_status()
         
         if referred_by != 0:
@@ -135,7 +152,7 @@ async def start_command(client: Client, message: Message):
                 try:
                     await client.send_message(
                         referred_by, 
-                        f"🎉 <b>Nᴇᴡ Rᴇꜰᴇʀʀᴀʟ!</b>\n\n{message.from_user.mention} joined using your link!\n🎁 <b>You earned {refer_points_amt} points!</b>\n📊 <b>Total Points:</b> {current_points}/100"
+                        f"🎉 <b>ɴᴇᴡ ʀᴇꜰᴇʀʀᴀʟ!</b>\n\n{message.from_user.mention} joined using your link!\n🎁 <b>You earned {refer_points_amt} points!</b>\n📊 <b>Total Points:</b> {current_points}/100"
                     )
                     
                     if current_points >= 100: 
@@ -143,20 +160,12 @@ async def start_command(client: Client, message: Message):
                         await deduct_points(referred_by, 100)
                         await client.send_message(
                             referred_by, 
-                            "💎 <b>Mɪʟᴇꜱᴛᴏɴᴇ Rᴇᴀᴄʜᴇᴅ!</b>\n\nYou accumulated 100 points and have automatically been granted <b>1 Mᴏɴᴛʜ ᴏꜰ Pʀᴇᴍɪᴜᴍ Aᴄᴄᴇꜱꜱ!</b> 100 points have been deducted."
+                            "💎 <b>ᴍɪʟᴇꜱᴛᴏɴᴇ ʀᴇᴀᴄʜᴇᴅ!</b>\n\nYou accumulated 100 points and have been granted <b>1 Mᴏɴᴛʜ ᴏꜰ Pʀᴇᴍɪᴜᴍ Aᴄᴄᴇꜱꜱ!</b>"
                         )
                 except Exception:
                     pass
-            else:
-                try:
-                    await client.send_message(
-                        referred_by, 
-                        f"⚠️ <b>Nᴏᴛɪᴄᴇ:</b> {message.from_user.mention} joined using your referral link, but the <b>Referral System is currently disabled</b> by the Admin. No points were awarded for this invite."
-                    )
-                except Exception:
-                    pass
 
-        NEW_USER_TXT = """#New_User {}\n\n≈ ɪᴅ:- <code>{}</code>\n≈ ɴᴀᴍᴇ:- {}"""
+        NEW_USER_TXT = "#New_User {}\n\n≈ ɪᴅ:- <code>{}</code>\n≈ ɴᴀᴍᴇ:- {}"
         try: await client.send_message(LOG_CHANNEL_ID, NEW_USER_TXT.format(message.from_user.mention, user_id, first_name))
         except: pass
 
@@ -166,7 +175,6 @@ async def start_command(client: Client, message: Message):
     if payload and not (payload.startswith("ref_") or payload.startswith("reff_")):
         return await handle_file_delivery(client, user_id, message, payload)
 
-    # Force Sub logic
     if await get_force_sub_status() and not await subscribed(client, message):
         fs_channels = await get_global_fs_channels()
         buttons = []
@@ -198,6 +206,7 @@ async def start_command(client: Client, message: Message):
 
 @Client.on_callback_query(filters.regex(r"^refresh_"))
 async def refresh_cb(client: Client, query: CallbackQuery):
+    await query.answer()
     first_name = query.from_user.first_name or "User"
     payload = query.data.split("_", 1)[1]
     
@@ -208,31 +217,10 @@ async def refresh_cb(client: Client, query: CallbackQuery):
     if await get_force_sub_status() and not await subscribed(client, query):
         return await query.answer("❌ ʏᴏᴜ ʜᴀᴠᴇɴ'ᴛ ᴊᴏɪɴᴇᴅ ᴀʟʟ ᴄʜᴀɴɴᴇʟꜱ ʏᴇᴛ!", show_alert=True)
         
-    await query.answer("✅ ʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴊᴏɪɴᴇᴅ!", show_alert=True)
     await query.message.delete()
-    
     btn = [
         [InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"), InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")],
         [InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")]
     ]
     await client.send_photo(chat_id=query.from_user.id, photo=START_PIC, caption=START_MSG.format(first=first_name), reply_markup=InlineKeyboardMarkup(btn))
-
-
-async def delete_files(messages, client, main_message, payload, timer):
-    await asyncio.sleep(timer)
-    for msg in messages:
-        try: await client.delete_messages(chat_id=msg.chat.id, message_ids=msg.id)
-        except: pass
-        
-    show_button = await get_file_again_status()
     
-    try: 
-        text_content = "✅ <b>ʏᴏᴜʀ ꜰɪʟᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ.</b>"
-        markup = None
-        
-        if show_button:
-            text_content += "\n👇 ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ᴛᴏ ɢᴇᴛ ɪᴛ ᴀɢᴀɪɴ."
-            markup = InlineKeyboardMarkup([[InlineKeyboardButton("♻️ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ", url=f"https://t.me/{client.username}?start={payload}")]])
-            
-        await main_message.edit_text(text=text_content, reply_markup=markup)
-    except: pass
