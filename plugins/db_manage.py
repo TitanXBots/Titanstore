@@ -35,6 +35,7 @@ async def confirm_delall_cb(client: Client, query):
         
     try:
         await db.media.drop()
+        await db.files.drop()
         await safe_edit(query.message, "✅ <b>ꜱᴜᴄᴄᴇꜱꜱ!</b> ᴀʟʟ ꜰɪʟᴇꜱ ʜᴀᴠᴇ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ ꜰʀᴏᴍ ᴛʜᴇ ᴅᴀᴛᴀʙᴀꜱᴇ.")
     except Exception as e:
         await safe_edit(query.message, f"❌ <b>ᴇʀʀᴏʀ ᴅᴇʟᴇᴛɪɴɢ ꜰɪʟᴇꜱ:</b> {e}")
@@ -64,20 +65,47 @@ async def delete_specific_file(client: Client, message: Message):
         return await message.reply_text("❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>")
 
     try:
-        # Build a flexible query to match either file_id or message_id (as string or int)
-        query_conditions = [{"file_id": text}]
-        try:
-            int_val = int(text)
-            query_conditions.append({"message_id": int_val})
-        except ValueError:
-            pass
+        val_int = int(text)
+    except ValueError:
+        val_int = None
+    val_str = str(text)
 
-        result = await db.media.delete_one({"$or": query_conditions})
-        
-        if result.deleted_count > 0:
-            await message.reply_text(f"✅ <b>ꜱᴜᴄᴄᴇꜱꜱ!</b> ꜰɪʟᴇ ᴡɪᴛʜ ɪᴅ/ᴍꜱɢ <code>{text}</code> ʜᴀꜱ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ.")
-        else:
-            await message.reply_text(f"❌ <b>ɴᴏᴛ ꜰᴏᴜɴᴅ!</b> ɴᴏ ꜰɪʟᴇ ᴍᴀᴛᴄʜɪɴɢ <code>{text}</code> ᴡᴀꜱ ꜰᴏᴜɴᴅ ɪɴ ᴛʜᴇ ᴅᴀᴛᴀʙᴀꜱᴇ.")
-    except Exception as e:
-        await message.reply_text(f"❌ <b>ᴇʀʀᴏʀ:</b> {e}")
+    # Build flexible query covering all common database field naming conventions
+    conditions = [{"file_id": val_str}]
+    if val_int is not None:
+        conditions.extend([
+            {"message_id": val_int},
+            {"message_id": val_str},
+            {"id": val_int},
+            {"id": val_str},
+            {"msg_id": val_int},
+            {"msg_id": val_str}
+        ])
+    else:
+        conditions.extend([
+            {"message_id": val_str},
+            {"id": val_str},
+            {"msg_id": val_str}
+        ])
+
+    query = {"$or": conditions}
+
+    deleted_count = 0
+    # Search and delete from both 'media' and 'files' collections
+    try:
+        res_media = await db.media.delete_many(query)
+        deleted_count += res_media.deleted_count
+    except:
+        pass
+
+    try:
+        res_files = await db.files.delete_many(query)
+        deleted_count += res_files.deleted_count
+    except:
+        pass
+
+    if deleted_count > 0:
+        await message.reply_text(f"✅ <b>ꜱᴜᴄᴄᴇꜱꜱ!</b> ᴅᴇʟᴇᴛᴇᴅ <code>{deleted_count}</code> ʀᴇᴄᴏʀᴅ(ꜱ) ᴍᴀᴛᴄʜɪɴɢ <code>{text}</code>.")
+    else:
+        await message.reply_text(f"❌ <b>ɴᴏᴛ ꜰᴏᴜɴᴅ!</b> ɴᴏ ꜰɪʟᴇ ᴍᴀᴛᴄʜɪɴɢ <code>{text}</code> ᴡᴀꜱ ꜰᴏᴜɴᴅ ɪɴ ᴛʜᴇ ᴅᴀᴛᴀʙᴀꜱᴇ.")
         
