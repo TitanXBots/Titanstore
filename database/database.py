@@ -3,12 +3,14 @@ from config import DB_URI, DB_NAME, OWNER_ID, ADMINS, CHANNEL_ID, FORCE_SUB_CHAN
 
 dbclient = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
 database = dbclient[DB_NAME]
+db = database  # Added compatibility alias for plugins importing 'db'
 
 user_data = database["users"]
 banned_users = database["banned_users"]
 admins_collection = database["admins"]
 maintenance_collection = database["maintenance"]
 settings_collection = database["settings"]
+media_col = database["media"]
 
 async def get_global_db_channel() -> int:
     data = await settings_collection.find_one({"_id": "global_db_channel"})
