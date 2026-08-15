@@ -1,9 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from pyrogram.enums import ParseMode
-from config import LOG_CHANNEL_ID
-from helper_func import encode
-from database.database import get_global_db_channel, is_admin
+from database.database import get_global_db_channel, db
 
 @Client.on_message(filters.channel & ~filters.forwarded)
 async def channel_post_handler(client: Client, message: Message):
@@ -12,27 +9,25 @@ async def channel_post_handler(client: Client, message: Message):
     if message.chat.id != db_chat_id:
         return
 
+    # Automatically indexes incoming media files from your database channel silently without log spam
     if message.media:
-        media_type = message.media.value
-        msg_id = message.id
+        media = getattr(message, message.media.value)
+        file_id = getattr(media, "file_id", None)
+        file_unique_id = getattr(media, "file_unique_id", None)
+        file_name = getattr(media, "file_name", "Media")
         
-        base64_string = await encode(f"get-{msg_id * abs(db_chat_id)}")
-        link = f"https://t.me/{client.username}?start={base64_string}"
-        
-        reply_markup = message.reply_markup
-        
-        text = (
-            f"<b>📁 ɴᴇᴡ ꜰɪʟᴇ ᴀᴅᴅᴇᴅ!</b>\n\n"
-            f"<b>≈ ꜰɪʟᴇ ɴᴀᴍᴇ:</b> <code>{getattr(message, media_type).file_name if getattr(message, media_type, None) else 'Media'}</code>\n"
-            f"<b>≈ ꜱʜᴀʀᴇ ʟɪɴᴋ:</b> <code>{link}</code>"
-        )
-        
-        try:
-            await client.send_message(
-                LOG_CHANNEL_ID,
-                text,
-                disable_web_page_preview=True
+        if file_id:
+            await db.media.update_one(
+                {"message_id": message.id},
+                {
+                    "$set": {
+                        "file_id": file_id,
+                        "file_unique_id": file_unique_id,
+                        "file_name": file_name,
+                        "message_id": message.id,
+                        "chat_id": message.chat.id
+                    }
+                },
+                upsert=True
             )
-        except Exception:
-            pass
             
