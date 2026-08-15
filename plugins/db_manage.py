@@ -20,7 +20,7 @@ async def delete_all_files(client: Client, message: Message):
     
     await message.reply_text(
         "⚠️ <b>ᴡᴀʀɴɪɴɢ:</b> ʏᴏᴜ ᴀʀᴇ ᴀʙᴏᴜᴛ ᴛᴏ ᴅᴇʟᴇᴛᴇ <b>ᴀʟʟ ꜰɪʟᴇꜱ</b> ꜰʀᴏᴍ ᴛʜᴇ ᴅᴀᴛᴀʙᴀꜱᴇ!\n\n"
-        "ᴛʜɪꜱ ᴀᴄᴛɪᴏɴ ᴄᴀɴɴᴏⵜ ʙᴇ ᴜɴᴅᴏɴᴇ. ᴀʀᴇ ʏᴏᴜ ꜱᴜʀᴇ?",
+        "ᴛʜɪꜱ ᴀᴄᴛɪᴏɴ ᴄᴀɴɴᴏᴛ ʙᴇ ᴜɴᴅᴏɴᴇ. ᴀʀᴇ ʏᴏᴜ ꜱᴜʀᴇ?",
         reply_markup=keyboard
     )
 
