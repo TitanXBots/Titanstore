@@ -49,7 +49,7 @@ async def delete_specific_file(client: Client, message: Message):
         ask_msg = await client.ask(
             message.chat.id, 
             "🗑 <b>ᴅᴇʟᴇᴛᴇ ꜱᴘᴇᴄɪꜰɪᴄ ꜰɪʟᴇ</b>\n\n"
-            "ꜱᴇɴᴅ ᴛʜᴇ ꜰɪʟᴇ ɪᴅ ᴏʀ ᴍᴇꜱꜱᴀɢᴇ ɪᴅ ᴛᴏ ᴅᴇʟᴇᴛᴇ ɪᴛ ꜰʀᴏᴍ ᴛʜᴇ ᴅᴀᴛᴀʙᴀꜱᴇ.\n\n"
+            "ꜱᴇɴᴅ ᴛʜᴇ <b>ꜰɪʟᴇ ɪᴅ</b> ᴏʀ <b>ᴍᴇꜱꜱᴀɢᴇ ɪᴅ</b> (ᴇ.ɢ., <code>781</code>) ᴛᴏ ᴅᴇʟᴇᴛᴇ ɪᴛ ꜰʀᴏᴍ ᴛʜᴇ ᴅᴀᴛᴀʙᴀꜱᴇ.\n\n"
             "/cancel - ᴄᴀɴᴄᴇʟ.", 
             timeout=60
         )
@@ -64,12 +64,20 @@ async def delete_specific_file(client: Client, message: Message):
         return await message.reply_text("❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>")
 
     try:
-        result = await db.media.delete_one({"file_id": text})
+        # Build a flexible query to match either file_id or message_id (as string or int)
+        query_conditions = [{"file_id": text}]
+        try:
+            int_val = int(text)
+            query_conditions.append({"message_id": int_val})
+        except ValueError:
+            pass
+
+        result = await db.media.delete_one({"$or": query_conditions})
         
         if result.deleted_count > 0:
-            await message.reply_text(f"✅ <b>ꜱᴜᴄᴄᴇꜱꜱ!</b> ꜰɪʟᴇ ᴡɪᴛʜ ɪᴅ <code>{text}</code> ʜᴀꜱ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ.")
+            await message.reply_text(f"✅ <b>ꜱᴜᴄᴄᴇꜱꜱ!</b> ꜰɪʟᴇ ᴡɪᴛʜ ɪᴅ/ᴍꜱɢ <code>{text}</code> ʜᴀꜱ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ.")
         else:
-            await message.reply_text(f"❌ <b>ɴᴏᴛ ꜰᴏᴜɴᴅ!</b> ɴᴏ ꜰɪʟᴇ ᴡɪᴛʜ ɪᴅ <code>{text}</code> ᴡᴀꜱ ꜰᴏᴜɴᴅ ɪɴ ᴛʜᴇ ᴅᴀᴛᴀʙᴀꜱᴇ.")
+            await message.reply_text(f"❌ <b>ɴᴏᴛ ꜰᴏᴜɴᴅ!</b> ɴᴏ ꜰɪʟᴇ ᴍᴀᴛᴄʜɪɴɢ <code>{text}</code> ᴡᴀꜱ ꜰᴏᴜɴᴅ ɪɴ ᴛʜᴇ ᴅᴀᴛᴀʙᴀꜱᴇ.")
     except Exception as e:
         await message.reply_text(f"❌ <b>ᴇʀʀᴏʀ:</b> {e}")
         
