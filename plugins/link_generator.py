@@ -23,9 +23,9 @@ async def link_generator(client: Client, message: Message):
         link = f"https://t.me/{client.username}?start={base64_string}"
         
         text = (
-            "🎉 ʏᴏᴜʀ ꜱʜᴀʀᴇᴀʙʟᴇ ʟɪɴᴋ ʜᴀꜱ ʙᴇᴇɴ ɢᴇɴᴇʀᴀᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ!\n\n"
-            "🔗 ᴛᴏ ꜱʜᴀʀᴇ ʏᴏᴜʀ ʟɪɴᴋ, ꜱɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴛʜᴇ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ.\n\n"
-            "ᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ʙᴇɪɴɢ ᴘᴀʀᴛ ᴏꜰ ᴛɪᴛᴀɴᴄɪɴᴇᴘʟᴇx! ᴡᴇ ᴛʀᴜʟʏ ᴀᴘᴘʀᴇᴄɪᴀᴛᴇ ʏᴏᴜʀ ꜱᴜᴘᴘᴏʀᴛ ᴀɴᴅ ʜᴏᴘᴇ ʏᴏᴜ ᴇɴᴊᴏʏ ᴜꜱɪɴɢ ᴏᴜʀ ʙᴏᴛ! 🚀"
+            "🎉 ʏᴏᴜʀ ꜱʜᴀʀᴇᴀʙʟᴇ ꜰɪʟᴇ ʟɪɴᴋ ɪꜱ ʀᴇᴀᴅʏ!\n"
+            "🔗 ᴄʟɪᴄᴋ ᴛʜᴇ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ ᴛᴏ ꜱʜᴀʀᴇ ɪᴛ.\n\n"
+            "ᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ʙᴇɪɴɢ ᴘᴀʀᴛ ᴏꜰ ᴛɪᴛᴀɴᴄɪɴᴇᴘʟᴇx! 🚀"
         )
         markup = InlineKeyboardMarkup([
             [InlineKeyboardButton("🔄 Share URL ↗", url=f"https://t.me/share/url?url={link}")],
@@ -49,9 +49,9 @@ async def link_generator(client: Client, message: Message):
             link = f"https://t.me/{client.username}?start={base64_string}"
             
             text = (
-                "🎉 ʏᴏᴜʀ ʙᴀᴛᴄʜ ꜱʜᴀʀᴇᴀʙʟᴇ ʟɪɴᴋ ʜᴀꜱ ʙᴇᴇɴ ɢᴇɴᴇʀᴀᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ!\n\n"
-                "🔗 ᴛᴏ ꜱʜᴀʀᴇ ʏᴏᴜʀ ʟɪɴᴋ, ꜱɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴛʜᴇ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ.\n\n"
-                "ᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ʙᴇɪɴɢ ᴘᴀʀᴛ ᴏꜰ ᴛɪᴛᴀɴᴄɪɴᴇᴘʟᴇx! ᴡᴇ ᴛʀᴜʟʏ ᴀᴘᴘʀᴇᴄɪᴀᴛᴇ ʏᴏᴜʀ ꜱᴜᴘᴘᴏʀᴛ ᴀɴᴅ ʜᴏᴘᴇ ʏᴏᴜ ᴇɴᴊᴏʏ ᴜꜱɪɴɢ ᴏᴜʀ ʙᴏᴛ! 🚀"
+                "🎉 ʏᴏᴜʀ ʙᴀᴛᴄʜ ꜱʜᴀʀᴇᴀʙʟᴇ ʟɪɴᴋ ɪꜱ ʀᴇᴀᴅʏ!\n"
+                "🔗 ᴄʟɪᴄᴋ ᴛʜᴇ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ ᴛᴏ ꜱʜᴀʀᴇ ɪᴛ.\n\n"
+                "ᴛʜᴀɴᴋ ʏᴏᴜ ꜰᴏʀ ʙᴇɪɴɢ ᴘᴀʀᴛ ᴏꜰ ᴛɪᴛᴀɴᴄɪɴᴇᴘʟᴇx! 🚀"
             )
             markup = InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔄 Share URL ↗", url=f"https://t.me/share/url?url={link}")],
