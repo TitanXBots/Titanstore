@@ -1,5 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyromod.exceptions import ListenerTimeout
 from helper_func import encode, get_message_id
 from database.database import is_admin, get_global_db_channel
 
@@ -13,8 +14,19 @@ async def link_generator(client: Client, message: Message):
     cmd = message.command[0]
 
     if cmd == "genlink":
-        r_msg = await client.ask(message.chat.id, "<b>ꜰᴏʀᴡᴀʀᴅ ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ʏᴏᴜʀ ᴅʙ ᴄʜᴀɴɴᴇʟ (ᴏʀ ꜱᴇɴᴅ ʟɪɴᴋ):</b>", timeout=60)
+        try:
+            r_msg = await client.ask(message.chat.id, "<b>ꜰᴏʀᴡᴀʀᴅ ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ʏᴏᴜʀ ᴅʙ ᴄʜᴀɴɴᴇʟ (ᴏʀ ꜱᴇɴᴅ ʟɪɴᴋ):</b>\n\n/cancel - ᴄᴀɴᴄᴇʟ.", timeout=60)
+        except ListenerTimeout:
+            return await message.reply_text("⌛ <b>ᴛɪᴍᴇᴏᴜᴛ! ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ.</b>")
+            
         if not r_msg: return
+        text_content = r_msg.text or r_msg.caption or ""
+        try: await r_msg.delete()
+        except: pass
+
+        if text_content.lower() == "/cancel":
+            return await message.reply_text("❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>")
+
         msg_id = await get_message_id(client, r_msg, db_chat_id)
         if not msg_id:
             return await message.reply_text("❌ <b>ɪɴᴠᴀʟɪᴅ ᴍᴇꜱꜱᴀɢᴇ!</b> ᴍᴜꜱᴛ ʙᴇ ꜰᴏʀᴡᴀʀᴅᴇᴅ ꜰʀᴏᴍ ᴛʜᴇ ᴄᴏʀʀᴇᴄᴛ ᴅʙ ᴄʜᴀɴɴᴇʟ.")
@@ -35,10 +47,26 @@ async def link_generator(client: Client, message: Message):
 
     elif cmd == "batch":
         try:
-            first_msg = await client.ask(message.chat.id, "<b>ꜰᴏʀᴡᴀʀᴅ ᴛʜᴇ *ꜰɪʀꜱᴛ* ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴛʜᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b>", timeout=60)
+            first_msg = await client.ask(message.chat.id, "<b>ꜰᴏʀᴡᴀʀᴅ ᴛʜᴇ *ꜰɪʀꜱᴛ* ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴛʜᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b>\n\n/cancel - ᴄᴀɴᴄᴇʟ.", timeout=60)
+            if not first_msg: return
+            first_text = first_msg.text or first_msg.caption or ""
+            try: await first_msg.delete()
+            except: pass
+
+            if first_text.lower() == "/cancel":
+                return await message.reply_text("❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>")
+
             first_id = await get_message_id(client, first_msg, db_chat_id)
             
-            second_msg = await client.ask(message.chat.id, "<b>ꜰᴏʀᴡᴀʀᴅ ᴛʜᴇ *ʟᴀꜱᴛ* ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴛʜᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b>", timeout=60)
+            second_msg = await client.ask(message.chat.id, "<b>ꜰᴏʀᴡᴀʀᴅ ᴛʜᴇ *ʟᴀꜱᴛ* ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴛʜᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b>\n\n/cancel - ᴄᴀɴᴄᴇʟ.", timeout=60)
+            if not second_msg: return
+            second_text = second_msg.text or second_msg.caption or ""
+            try: await second_msg.delete()
+            except: pass
+
+            if second_text.lower() == "/cancel":
+                return await message.reply_text("❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>")
+
             last_id = await get_message_id(client, second_msg, db_chat_id)
             
             if not first_id or not last_id:
@@ -58,6 +86,8 @@ async def link_generator(client: Client, message: Message):
                 [InlineKeyboardButton("🔗 Open Link ↗", url=link)]
             ])
             await message.reply_text(text, reply_markup=markup, disable_web_page_preview=True)
+        except ListenerTimeout:
+            await message.reply_text("⌛ <b>ᴛɪᴍᴇᴏᴜᴛ! ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ.</b>")
         except Exception as e:
             await message.reply_text(f"❌ <b>ᴇʀʀᴏʀ:</b> {e}")
             
