@@ -18,32 +18,23 @@ async def link_generator(client: Client, message: Message):
         try:
             r_msg = await client.listen(chat_id=message.chat.id, filters=filters.private & filters.user(user_id), timeout=60)
         except ListenerTimeout:
-            await prompt_msg.delete()
             return await message.reply_text("⌛ <b>ᴛɪᴍᴇᴏᴜᴛ! ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ.</b>")
             
         if not r_msg:
-            await prompt_msg.delete()
             return
             
         text_content = r_msg.text or r_msg.caption or ""
         
         if text_content.lower() == "/cancel":
-            await prompt_msg.delete()
             return await r_msg.reply_text("❌ <b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>")
 
         msg_id = await get_message_id(client, r_msg, db_chat_id)
-        
-        # Delete the bot's prompt message after getting the input (without deleting the user's message)
-        try:
-            await prompt_msg.delete()
-        except:
-            pass
 
         if not msg_id:
             return await r_msg.reply_text("❌ <b>ɪɴᴠᴀʟɪᴅ ᴍᴇꜱꜱᴀɢᴇ!</b> ᴍᴜꜱᴛ ʙᴇ ꜰᴏʀᴡᴀʀᴅᴇᴅ ꜰʀᴏᴍ ᴛʜᴇ ᴄᴏʀʀᴇᴄᴛ ᴅʙ ᴄʜᴀɴɴᴇʟ.")
         
         base64_string = await encode(f"get-{msg_id * abs(db_chat_id)}")
-        link = f"https://t.me/{client.username}?start={base64_string}"
+        link = f"https://t.me/{client.me.username}?start={base64_string}"
         
         text = (
             "🎉 ʏᴏᴜʀ ꜱʜᴀʀᴇᴀʙʟᴇ ꜰɪʟᴇ ʟɪɴᴋ ɪꜱ ʀᴇᴀᴅʏ!\n"
@@ -61,11 +52,7 @@ async def link_generator(client: Client, message: Message):
         try:
             first_msg = await client.listen(chat_id=message.chat.id, filters=filters.private & filters.user(user_id), timeout=60)
         except ListenerTimeout:
-            await prompt1.delete()
             return await message.reply_text("⌛ <b>ᴛɪᴍᴇᴏᴜᴛ! ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ.</b>")
-        
-        try: await prompt1.delete()
-        except: pass
 
         if not first_msg: return
         first_text = first_msg.text or first_msg.caption or ""
@@ -74,15 +61,11 @@ async def link_generator(client: Client, message: Message):
 
         first_id = await get_message_id(client, first_msg, db_chat_id)
         
-        prompt2 = await message.reply_text("<b>ꜰᴏʀᴡᴀʀᴅ ᴛʜᴇ *ʟᴀꜱᴛ* ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴛʜᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b>\n\n/cancel - ᴄᴀɴᴄᴇʟ.")
+        prompt2 = await message.reply_text("<b>ꜰᴏʀᴡᴀʀᴅ ᴛʜᴇ *ʟᴀꜱᴛ* ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ᴛ🇭ᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b>\n\n/cancel - ᴄᴀɴᴄᴇʟ.")
         try:
             second_msg = await client.listen(chat_id=message.chat.id, filters=filters.private & filters.user(user_id), timeout=60)
         except ListenerTimeout:
-            await prompt2.delete()
             return await message.reply_text("⌛ <b>ᴛɪᴍᴇᴏᴜᴛ! ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ.</b>")
-        
-        try: await prompt2.delete()
-        except: pass
 
         if not second_msg: return
         second_text = second_msg.text or second_msg.caption or ""
@@ -96,7 +79,7 @@ async def link_generator(client: Client, message: Message):
             
         string = f"batch-{first_id * abs(db_chat_id)}-{last_id * abs(db_chat_id)}"
         base64_string = await encode(string)
-        link = f"https://t.me/{client.username}?start={base64_string}"
+        link = f"https://t.me/{client.me.username}?start={base64_string}"
         
         text = (
             "🎉 ʏᴏᴜʀ ʙᴀᴛᴄʜ ꜱʜᴀʀᴇᴀʙʟᴇ ʟɪɴᴋ ɪꜱ ʀᴇᴀᴅʏ!\n"
