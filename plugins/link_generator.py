@@ -26,8 +26,10 @@ async def link_generator(client: Client, message: Message):
     if cmd == "genlink":
         prompt_msg = await message.reply_text("<b>ꜰᴏʀᴡᴀʀᴅ ᴍᴇꜱꜱᴀɢᴇ ꜰʀᴏᴍ ʏᴏᴜʀ ᴅʙ ᴄʜᴀɴɴᴇʟ:</b>\n\n/cancel - ᴄᴀɴᴄᴇʟ.")
         try:
-            r_msg = await client.listen(chat_id=message.chat.id, filters=filters.private & filters.user(user_id), timeout=60)
-        except ListenerTimeout: return await message.reply_text("⌛ <b>ᴛɪᴍᴇᴏᴜᴛ! ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ.</b>")
+            # FIX: Removed filters.user()
+            r_msg = await client.listen(chat_id=message.chat.id, timeout=60)
+        except ListenerTimeout: 
+            return await message.reply_text("⌛ <b>ᴛɪᴍᴇᴏᴜᴛ! ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ.</b>")
             
         if not r_msg: return
         text_content = r_msg.text or r_msg.caption or ""
@@ -46,14 +48,22 @@ async def link_generator(client: Client, message: Message):
 
     elif cmd == "batch":
         prompt1 = await message.reply_text("<b>ꜰᴏʀᴡᴀʀᴅ ᴛʜᴇ *ꜰɪʀꜱᴛ* ᴍᴇꜱꜱᴀɢᴇ:</b>\n\n/cancel - ᴄᴀɴᴄᴇʟ.")
-        try: first_msg = await client.listen(chat_id=message.chat.id, filters=filters.private & filters.user(user_id), timeout=60)
-        except ListenerTimeout: return await message.reply_text("⌛ <b>ᴛɪᴍᴇᴏᴜᴛ!</b>")
+        try: 
+            # FIX: Removed filters.user()
+            first_msg = await client.listen(chat_id=message.chat.id, timeout=60)
+        except ListenerTimeout: 
+            return await message.reply_text("⌛ <b>ᴛɪᴍᴇᴏᴜᴛ!</b>")
+            
         if not first_msg or (first_msg.text or "").lower() == "/cancel": return await message.reply_text("❌ <b>ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>")
         first_id = await get_message_id(client, first_msg, db_chat_id)
         
         prompt2 = await message.reply_text("<b>ꜰᴏʀᴡᴀʀᴅ ᴛʜᴇ *ʟᴀꜱᴛ* ᴍᴇꜱꜱᴀɢᴇ:</b>\n\n/cancel - ᴄᴀɴᴄᴇʟ.")
-        try: second_msg = await client.listen(chat_id=message.chat.id, filters=filters.private & filters.user(user_id), timeout=60)
-        except ListenerTimeout: return await message.reply_text("⌛ <b>ᴛɪᴍᴇᴏᴜᴛ!</b>")
+        try: 
+            # FIX: Removed filters.user()
+            second_msg = await client.listen(chat_id=message.chat.id, timeout=60)
+        except ListenerTimeout: 
+            return await message.reply_text("⌛ <b>ᴛɪᴍᴇᴏᴜᴛ!</b>")
+            
         if not second_msg or (second_msg.text or "").lower() == "/cancel": return await message.reply_text("❌ <b>ᴄᴀɴᴄᴇʟʟᴇᴅ!</b>")
         last_id = await get_message_id(client, second_msg, db_chat_id)
         
