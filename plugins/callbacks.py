@@ -1,10 +1,10 @@
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from config import START_MSG, HELP_TXT, COMMANDS_TXT, ABOUT_TXT, DISCLAIMER_TXT
+from config import START_MSG, HELP_TXT, COMMANDS_TXT, ABOUT_TXT, DISCLAIMER_TXT, START_PIC
 from helper_func import safe_edit
 from database.database import is_admin, is_maintenance
 
-@Client.on_callback_query(filters.regex("^(start|help|commands|about|disclaimer|close|admin_panel)$"))
+@Client.on_callback_query(filters.regex("^(start|help|commands|about|disclaimer|close)$"))
 async def generic_cb_handler(client: Client, query: CallbackQuery):
     try: await query.answer()
     except: pass
@@ -18,20 +18,13 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
 
     if data == "start":
         buttons = [
-            [InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"), InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")],
-            [InlineKeyboardButton("⚙️ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")]
+            [InlineKeyboardButton("👑 ᴍʏ ᴀᴄᴄᴏᴜɴᴛ", callback_data="my_account")],
+            [InlineKeyboardButton("🧠 ʜᴇʟᴘ", callback_data="help"), InlineKeyboardButton("🔰 ᴀʙᴏᴜᴛ", callback_data="about")]
         ]
+        if await is_admin(user_id):
+            buttons.append([InlineKeyboardButton("⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")])
+            
         return await safe_edit(query.message, START_MSG.format(first=first_name), InlineKeyboardMarkup(buttons))
-
-    elif data == "admin_panel":
-        if not await is_admin(user_id):
-            return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ!", show_alert=True)
-        return await safe_edit(query.message, "⚙️ <b>ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ ᴘᴀɴᴇʟ</b>", InlineKeyboardMarkup([
-            [InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")],
-            [InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu"), InlineKeyboardButton("📁 ᴀᴅᴅ ᴄʜᴀɴɴᴇʟꜱ", callback_data="add_channels_menu")],
-            [InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu")],
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")]
-        ]))
 
     elif data == "help":
         return await safe_edit(query.message, HELP_TXT.format(first=first_name), InlineKeyboardMarkup([
