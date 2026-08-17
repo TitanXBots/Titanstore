@@ -18,18 +18,32 @@ async def render_dashboard(client, message, user_id):
     
     text = (
         f"👤 **ʏᴏᴜʀ ᴀᴄᴄᴏᴜɴᴛ ᴅᴀꜱʜʙᴏᴀʀᴅ**\n\n"
-        f"🆔 **ᴜꜱᴇʀ ɪᴅ:** `{user_id}`\n"
+        f"🆔 **ᴜꜱᴇʀ ɪᴅ:** <code>{user_id}</code>\n"
         f"📊 **ꜱᴛᴀᴛᴜꜱ:** {status}\n"
         f"🪙 **ᴘᴏɪɴᴛꜱ:** {points}/{POINTS_TO_PREMIUM}\n\n"
-        f"🎁 **ʜᴏᴡ ᴛᴏ ɢᴇᴛ ᴘʀᴇᴍɪᴜᴍ?**\n"
-        f"1. **ʀᴇꜰᴇʀʀᴀʟ:** ꜱʜᴀʀᴇ ʏᴏᴜʀ ʟɪɴᴋ & ɢᴇᴛ 10 ᴘᴏɪɴᴛꜱ ᴘᴇʀ ɴᴇᴡ ᴜꜱᴇʀ.\n"
-        f"   🔗 `https://t.me/{client.me.username}?start=ref_{user_id}`\n\n"
-        f"2. **ᴅɪʀᴇᴄᴛ ᴘᴜʀᴄʜᴀꜱᴇ:** ᴘᴀʏ ᴅɪʀᴇᴄᴛʟʏ & ꜱᴇɴᴅ ꜱᴄʀᴇᴇɴꜱʜᴏᴛ ᴛᴏ ᴏᴡɴᴇʀ.\n"
-        f"   🧑‍💻 ᴄᴏɴᴛᴀᴄᴛ: @{OWNER_USERNAME}"
+        f"🎁 **ʜᴏᴡ ᴛᴏ ɢᴇᴛ ꜰʀᴇᴇ ᴘʀᴇᴍɪᴜᴍ?**\n"
+        f"ꜱʜᴀʀᴇ ʏᴏᴜʀ ʟɪɴᴋ & ɢᴇᴛ 10 ᴘᴏɪɴᴛꜱ ᴘᴇʀ ɴᴇᴡ ᴜꜱᴇʀ.\n"
+        f"🔗 <code>https://t.me/{client.me.username}?start=ref_{user_id}</code>\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f"🎖️ **ᴀᴠᴀɪʟᴀʙʟᴇ ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴꜱ :**\n\n"
+        f" ❏ 𝟶𝟷𝟻₹    ➠    𝟶𝟷 ᴡᴇᴇᴋꜱ\n"
+        f" ❏ 𝟶𝟹𝟿₹    ➠    𝟶𝟷 ᴍᴏɴᴛʜ\n"
+        f" ❏ 𝟶𝟽𝟻₹    ➠    𝟶𝟸 ᴍᴏɴᴛʜ\n"
+        f" ❏ 𝟷𝟷𝟶₹    ➠    𝟶𝟹 ᴍᴏɴᴛʜ\n"
+        f" ❏ 𝟷𝟿𝟿₹    ➠    𝟶𝟼 ᴍᴏɴᴛʜ\n"
+        f" ❏ 𝟹𝟼𝟶₹    ➠    𝟷𝟸 ᴍᴏɴᴛʜ\n\n"
+        f"🆔 ᴜᴘɪ ɪᴅ ➩ <code>kushalhari@slc</code> [ᴛᴀᴘ ᴛᴏ ᴄᴏᴘʏ]\n\n"
+        f"‼️ ᴍᴜsᴛ sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ ᴀғᴛᴇʀ ᴘᴀʏᴍᴇɴᴛ.\n"
+        f"‼️ ɢɪᴠᴇ ᴜꜱ ꜱᴏᴍᴇᴛɪᴍᴇ ᴛᴏ ᴀᴅᴅ ʏᴏᴜ ɪɴ ᴘʀᴇᴍɪᴜᴍ ʟɪꜱᴛ.\n\n"
+        f"**ᴏᴛʜᴇʀ ᴘʟᴀɴ**\n"
+        f"⏰ ᴄᴜꜱᴛᴏᴍɪꜱᴇᴅ ᴅᴀʏꜱ\n"
+        f"💸 ᴀᴄᴄᴏʀᴅɪɴɢ ᴛᴏ ᴅᴀʏꜱ ʏᴏᴜ ᴄʜᴏᴏꜱᴇ\n\n"
+        f"🏆 ɪꜰ ʏᴏᴜ ᴡᴀɴᴛ ᴀ ɴᴇᴡ ᴘʟᴀɴ ᴀᴘᴀʀᴛ ꜰʀᴏᴍ ᴛʜᴇ ɢɪᴠᴇɴ ᴘʟᴀɴ, ᴛʜᴇɴ ʏᴏᴜ ᴄᴀɴ ᴛᴀʟᴋ ᴛᴏ ᴏᴜʀ ᴏᴡɴᴇʀ ᴅɪʀᴇᴄᴛʟʏ ʙʏ ᴄʟɪᴄᴋɪɴɢ ᴏɴ ᴛʜᴇ ᴄᴏɴᴛᴀᴄᴛ ʙᴜᴛᴛᴏɴ ɢɪᴠᴇɴ ʙᴇʟᴏᴡ."
     )
     
     buttons = [
-        [InlineKeyboardButton("💳 ʀᴇᴅᴇᴇᴍ ᴘᴏɪɴᴛꜱ", callback_data="redeem_points"), InlineKeyboardButton("🛒 ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ", url=f"https://t.me/{OWNER_USERNAME}")]
+        [InlineKeyboardButton("📸 ꜱᴇɴᴅ ꜱᴄʀᴇᴇɴꜱʜᴏᴛ", url=f"https://t.me/{OWNER_USERNAME}")],
+        [InlineKeyboardButton("👨‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴏᴡɴᴇʀ", url=f"https://t.me/{OWNER_USERNAME}"), InlineKeyboardButton("💳 ʀᴇᴅᴇᴇᴍ ᴘᴏɪɴᴛꜱ", callback_data="redeem_points")]
     ]
     
     if is_prem or await is_admin(user_id):
@@ -89,7 +103,6 @@ async def premium_ui_callbacks(client, query):
         await safe_edit(query.message, f"⚙️ **ꜱᴇᴛᴜᴘ {ch_type.upper()} ᴄʜᴀɴɴᴇʟ**\n\n{prompt}", markup)
         
         try:
-            # FIX: Removed filters.user() to prevent pyromod from freezing
             input_msg = await client.listen(chat_id=query.message.chat.id, timeout=60)
         except ListenerTimeout: 
             return await render_dashboard(client, query.message, user_id)
