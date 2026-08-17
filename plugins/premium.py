@@ -117,7 +117,10 @@ async def premium_ui_callbacks(client, query):
         channels = []
         for item in text.split():
             try: 
-                if item.startswith("-100"): channels.append(int(item))
+                if item.startswith("-100"): 
+                    ch_id = int(item)
+                    if ch_id not in channels:
+                        channels.append(ch_id)
             except: pass
             
         if not channels: 
@@ -126,6 +129,12 @@ async def premium_ui_callbacks(client, query):
             
         if ch_type == "db" and len(channels) > 1: 
             await query.message.reply_text("❌ ᴘʀᴏᴠɪᴅᴇ ᴏɴʟʏ ᴏɴᴇ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ.")
+            return await render_dashboard(client, query.message, user_id)
+            
+        # DUPLICATE CHANNEL VALIDATION CHECK
+        existing_channels = await get_user_approved_channels(user_id, ch_type) or []
+        if set(channels) == set(existing_channels):
+            await query.message.reply_text("⚠️ **ᴛʜɪꜱ ᴄʜᴀɴɴᴇʟ ɪᴅ ɪꜱ ᴀʟʀᴇᴀᴅʏ ᴀᴅᴅᴇᴅ!**")
             return await render_dashboard(client, query.message, user_id)
         
         await submit_channel(user_id, ch_type, channels)
