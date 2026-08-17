@@ -149,14 +149,38 @@ async def handle_admin_approvals(client, query):
     
     if action == "aprv":
         await set_channel_status(target_user, ch_type, "approved")
-        await query.message.edit_text(query.message.text + f"\n\n**Status:** ✅ Approved by {query.from_user.first_name}")
+        status_text = f"✅ Approved by {query.from_user.first_name}"
+        alert_text = f"Approved {ch_type.upper()} channel!"
         try: await client.send_message(target_user, f"✅ ʏᴏᴜʀ {ch_type.upper()} ᴄʜᴀɴɴᴇʟ ʀᴇQᴜᴇꜱᴛ ᴡᴀꜱ ᴀᴘᴘʀᴏᴠᴇᴅ!")
         except: pass
     else:
         await set_channel_status(target_user, ch_type, "rejected")
-        await query.message.edit_text(query.message.text + f"\n\n**Status:** ❌ Rejected by {query.from_user.first_name}")
+        status_text = f"❌ Rejected by {query.from_user.first_name}"
+        alert_text = f"Rejected {ch_type.upper()} channel!"
         try: await client.send_message(target_user, f"❌ ʏᴏᴜʀ {ch_type.upper()} ᴄʜᴀɴɴᴇʟ ʀᴇQᴜᴇꜱᴛ ᴡᴀꜱ ʀᴇᴊᴇᴄᴛᴇᴅ.")
         except: pass
+
+    # Extract existing channels to reconstruct the formatted message
+    ch_str = "Unknown"
+    if query.message.text:
+        lines = query.message.text.split('\n')
+        for line in lines:
+            if line.startswith("Channels:"):
+                ch_str = line.replace("Channels:", "").strip()
+                break
+                
+    new_text = (
+        f"📝 **Channel Approval Request**\n"
+        f"User: `{target_user}`\n"
+        f"Type: `{ch_type.upper()}`\n"
+        f"Channels: {ch_str}\n\n"
+        f"**Status:** {status_text}"
+    )
+
+    # Edit the message text, but KEEP the original buttons (reply_markup)
+    await query.message.edit_text(new_text, reply_markup=query.message.reply_markup)
+    await query.answer(alert_text)
+
 
 @Client.on_message(filters.command("addpremium") & filters.private)
 async def add_prem_cmd(client, message):
@@ -171,6 +195,7 @@ async def add_prem_cmd(client, message):
     except Exception:
         await message.reply_text("Usage: /addpremium <user_id> <days>")
 
+
 @Client.on_message(filters.command("rmpremium") & filters.private)
 async def rm_prem_cmd(client, message):
     if not await is_admin(message.from_user.id): return
@@ -182,6 +207,7 @@ async def rm_prem_cmd(client, message):
         except: pass
     except Exception:
         await message.reply_text("Usage: /rmpremium <user_id>")
+
 
 @Client.on_message(filters.command("revokechannel") & filters.private)
 async def revoke_channel_cmd(client, message):
