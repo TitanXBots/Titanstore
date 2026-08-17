@@ -141,21 +141,12 @@ async def premium_ui_callbacks(client, query):
         await query.message.reply_text("✅ **ᴄʜᴀɴɴᴇʟ(ꜱ) ꜱᴜʙᴍɪᴛᴛᴇᴅ ꜰᴏʀ ᴀᴅᴍɪɴ ᴀᴘᴘʀᴏᴠᴀʟ!**")
         await render_dashboard(client, query.message, user_id)
         
-        # Format the log message exactly as requested
+        # Notify Admins
         admin_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton("✅ Approve", callback_data=f"aprv_{ch_type}_{user_id}"), InlineKeyboardButton("❌ Reject", callback_data=f"rjct_{ch_type}_{user_id}")]
         ])
-        
-        ch_str = " ".join(map(str, channels))
-        log_text = (
-            f"📝 Channel Approval Request\n"
-            f"User: {user_id}\n"
-            f"Type: {ch_type.upper()}\n"
-            f"Channels: {ch_str}\n\n"
-            f"Status: ⏳ Pending"
-        )
-        
-        await client.send_message(LOG_CHANNEL_ID, log_text, reply_markup=admin_markup)
+        ch_str = ", ".join(map(str, channels))
+        await client.send_message(LOG_CHANNEL_ID, f"📝 **Channel Approval Request**\nUser: `{user_id}`\nType: `{ch_type.upper()}`\nChannels: `{ch_str}`", reply_markup=admin_markup)
 
 
 # --- ADMIN CONTROLS FOR PREMIUM ---
@@ -178,20 +169,25 @@ async def handle_admin_approvals(client, query):
         try: await client.send_message(target_user, f"❌ ʏᴏᴜʀ {ch_type.upper()} ᴄʜᴀɴɴᴇʟ ʀᴇQᴜᴇꜱᴛ ᴡᴀꜱ ʀᴇᴊᴇᴄᴛᴇᴅ.")
         except: pass
 
-    # Smart edit: Updates ONLY the status line, keeps the layout and the buttons untouched.
+    # Extract existing channels to reconstruct the formatted message
+    ch_str = "Unknown"
     if query.message.text:
         lines = query.message.text.split('\n')
-        new_lines = []
         for line in lines:
-            if line.startswith("Status:"):
-                new_lines.append(f"Status: {status_text}")
-            else:
-                new_lines.append(line)
+            if line.startswith("Channels:"):
+                ch_str = line.replace("Channels:", "").strip()
+                break
                 
-        new_text = "\n".join(new_lines)
-        # We pass query.message.reply_markup back in so the buttons stay on the message
-        await query.message.edit_text(new_text, reply_markup=query.message.reply_markup)
-        
+    new_text = (
+        f"📝 **Channel Approval Request**\n"
+        f"User: `{target_user}`\n"
+        f"Type: `{ch_type.upper()}`\n"
+        f"Channels: {ch_str}\n\n"
+        f"**Status:** {status_text}"
+    )
+
+    # Edit the message text, but KEEP the original buttons (reply_markup)
+    await query.message.edit_text(new_text, reply_markup=query.message.reply_markup)
     await query.answer(alert_text)
 
 
