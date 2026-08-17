@@ -89,7 +89,8 @@ async def premium_ui_callbacks(client, query):
         await safe_edit(query.message, f"⚙️ **ꜱᴇᴛᴜᴘ {ch_type.upper()} ᴄʜᴀɴɴᴇʟ**\n\n{prompt}", markup)
         
         try:
-            input_msg = await client.listen(query.message.chat.id, filters=filters.user(user_id), timeout=60)
+            # FIX: Removed filters.user() to prevent pyromod from freezing
+            input_msg = await client.listen(chat_id=query.message.chat.id, timeout=60)
         except ListenerTimeout: 
             return await render_dashboard(client, query.message, user_id)
         
@@ -180,4 +181,4 @@ async def revoke_channel_cmd(client, message):
         await message.reply_text(f"✅ Revoked {ch_type.upper()} channel access for {user_id}.")
     except Exception:
         await message.reply_text("Usage: /revokechannel <user_id> <db/fs>")
-
+        
