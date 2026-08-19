@@ -3,7 +3,7 @@ import re
 import asyncio
 import logging
 from pyrogram.errors import MessageNotModified, UserNotParticipant, FloodWait
-from pyrogram.enums import ChatMemberStatus
+from pyrogram.enums import ChatMemberStatus, ParseMode
 
 # --------------------------------------------------
 # 1. BULLETPROOF UI EDITING
@@ -11,14 +11,17 @@ from pyrogram.enums import ChatMemberStatus
 async def safe_edit(message, text, reply_markup=None):
     """Safely edits a message, automatically detecting if it's text or media."""
     try:
-        if message.media:
+        # Explicit check for media types to prevent edge-case crashes
+        if message.photo or message.video or message.document or message.animation:
             return await message.edit_caption(
                 caption=text, 
+                parse_mode=ParseMode.HTML,
                 reply_markup=reply_markup
             )
         else:
             return await message.edit_text(
                 text=text, 
+                parse_mode=ParseMode.HTML,
                 reply_markup=reply_markup
             )
     except MessageNotModified:
@@ -47,7 +50,6 @@ async def subscribed(client, message_or_query, channels: list) -> bool:
             continue
         try:
             member = await client.get_chat_member(chat_id=channel, user_id=user_id)
-            # If user is banned/kicked, treat as not subscribed
             if member.status in [ChatMemberStatus.BANNED, ChatMemberStatus.RESTRICTED]:
                 return False
         except UserNotParticipant:
@@ -57,8 +59,6 @@ async def subscribed(client, message_or_query, channels: list) -> bool:
             return await subscribed(client, message_or_query, channels)
         except Exception as e:
             logging.error(f"FS Check Error on channel {channel}: {e}")
-            # If bot isn't admin in the FS channel, it might throw an error. 
-            # We pass to prevent the bot from breaking completely.
             pass
     return True
 
@@ -75,7 +75,6 @@ async def encode(string: str) -> str:
 
 async def decode(base64_string: str) -> str:
     """Decodes Base64 string back to message/batch data."""
-    # Add padding back if necessary
     base64_string = base64_string.strip("-")
     padding = len(base64_string) % 4
     if padding != 0:
@@ -92,9 +91,7 @@ async def decode(base64_string: str) -> str:
 async def get_messages(client, message_ids, chat_id):
     """Fetches a list of messages from the Database Channel."""
     try:
-        # Pyrogram can fetch a list of IDs directly
         messages = await client.get_messages(chat_id=chat_id, message_ids=list(message_ids))
-        # Ensure it returns a list even if it's a single message
         if not isinstance(messages, list):
             messages = [messages]
         return messages
@@ -105,21 +102,16 @@ async def get_messages(client, message_ids, chat_id):
         logging.error(f"Error fetching messages from DB: {e}")
         return []
 
-
 async def get_message_id(client, message, chat_id: int) -> int:
     """Extracts the specific message ID from a forwarded message or a direct link."""
-    # If the user forwarded a message from the DB channel
     if message.forward_from_chat:
         if message.forward_from_chat.id == chat_id:
             return message.forward_from_message_id
-            
-    # If the user sent a telegram link to the message
     elif message.text:
         pattern = r"https://t.me/(?:c/)?(.*)/(\d+)"
         match = re.search(pattern, message.text)
         if match:
             return int(match.group(2))
-            
     return 0
 
 
@@ -149,6 +141,5 @@ def get_readable_time(seconds: int) -> str:
 
     time_list.reverse()
     readable_time += " ".join(time_list)
-    
     return readable_time
     
