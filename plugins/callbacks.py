@@ -1,12 +1,12 @@
 import logging
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from pyrogram.errors import MessageNotModified
 
 from config import START_MSG, HELP_TXT, COMMANDS_TXT, ABOUT_TXT, DISCLAIMER_TXT
 from database.database import is_admin, is_maintenance
+from helper_func import safe_edit
 
-@Client.on_callback_query(filters.regex("^(start|help|commands|about|disclaimer|close)$"))
+@Client.on_callback_query(filters.regex("^(start|help|commands|about|disclaimer|close|admin_panel|settings)$"))
 async def generic_cb_handler(client: Client, query: CallbackQuery):
     try: await query.answer()
     except: pass
@@ -19,7 +19,6 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
     data = query.data
     first_name = query.from_user.first_name or "User"
 
-    # Pre-define variables to hold our new text and buttons
     new_text = ""
     buttons = []
 
@@ -31,6 +30,17 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
         ]
         if await is_admin(user_id):
             buttons.append([InlineKeyboardButton("⚙️ ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="settings")])
+
+    elif data in ["settings", "admin_panel"]:
+        if not await is_admin(user_id):
+            return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
+        new_text = "⚙️ <b>ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ ᴘᴀɴᴇʟ</b>"
+        buttons = [
+            [InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")],
+            [InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu"), InlineKeyboardButton("📁 ᴀᴅᴅ ᴄʜᴀɴɴᴇʟꜱ", callback_data="add_channels_menu")],
+            [InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu")],
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")]
+        ]
 
     elif data == "help":
         new_text = HELP_TXT.format(first=first_name)
@@ -61,29 +71,9 @@ async def generic_cb_handler(client: Client, query: CallbackQuery):
         ]
 
     elif data == "close":
-        try: 
-            await query.message.delete()
-        except: 
-            pass
+        try: await query.message.delete()
+        except: pass
         return
         
-    # --- BULLETPROOF EDITING LOGIC ---
-    try:
-        # If the original message has a photo/video, we must edit the caption
-        if query.message.media:
-            await query.message.edit_caption(
-                caption=new_text, 
-                reply_markup=InlineKeyboardMarkup(buttons)
-            )
-        # If it's just a text message, we edit the text
-        else:
-            await query.message.edit_text(
-                text=new_text, 
-                reply_markup=InlineKeyboardMarkup(buttons)
-            )
-    except MessageNotModified:
-        # If the user clicks a button they are already viewing, ignore the error
-        pass
-    except Exception as e:
-        logging.error(f"Callback edit error: {e}")
-        
+    await safe_edit(query.message, new_text, InlineKeyboardMarkup(buttons))
+    
