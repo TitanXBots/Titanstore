@@ -1,100 +1,154 @@
 import base64
 import re
 import asyncio
+import logging
+from pyrogram.errors import MessageNotModified, UserNotParticipant, FloodWait
 from pyrogram.enums import ChatMemberStatus
-from pyrogram.errors import UserNotParticipant, FloodWait, MessageNotModified
-from database.database import is_admin, is_owner, get_force_sub_status, get_global_fs_channels
 
-async def delayed_delete(message, delay=7):
-    await asyncio.sleep(delay)
-    try: await message.delete()
-    except: pass
+# --------------------------------------------------
+# 1. BULLETPROOF UI EDITING
+# --------------------------------------------------
+async def safe_edit(message, text, reply_markup=None):
+    """Safely edits a message, automatically detecting if it's text or media."""
+    try:
+        if message.media:
+            return await message.edit_caption(
+                caption=text, 
+                reply_markup=reply_markup
+            )
+        else:
+            return await message.edit_text(
+                text=text, 
+                reply_markup=reply_markup
+            )
+    except MessageNotModified:
+        # Ignore if the user clicks the same button twice
+        pass
+    except Exception as e:
+        logging.error(f"Safe Edit Error: {e}")
+
 
 async def send_cancel_msg(client, chat_id):
-    # Safe fallback dummy function to prevent import errors
-    pass
-
-async def safe_edit(message, text, buttons=None):
+    """Sends a generic cancellation message."""
     try:
-        if message.photo or message.video or message.document:
-            if message.caption != text: await message.edit_caption(caption=text, reply_markup=buttons)
-        else:
-            if message.text != text: await message.edit_text(text=text, reply_markup=buttons, disable_web_page_preview=True)
-    except MessageNotModified: pass
+        await client.send_message(chat_id, "❌ **ᴘʀᴏᴄᴇꜱꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!**")
     except Exception:
-        try: await message.reply_text(text=text, reply_markup=buttons, disable_web_page_preview=True)
-        except: pass
+        pass
 
-async def subscribed(client, message, custom_channels=None) -> bool:
-    if not message.from_user: return True
-    if not await get_force_sub_status(): return True
 
-    user_id = message.from_user.id
-    if await is_admin(user_id) or await is_owner(user_id): return True
-    
-    channels_to_check = custom_channels if custom_channels is not None else await get_global_fs_channels()
-    
-    for channel in channels_to_check:
-        if not channel or str(channel) in ["0", "-100"]: continue
+# --------------------------------------------------
+# 2. FORCE SUBSCRIPTION CHECKER
+# --------------------------------------------------
+async def subscribed(client, message_or_query, channels: list) -> bool:
+    """Checks if a user is subscribed to all required Force Sub channels."""
+    user_id = message_or_query.from_user.id
+    for channel in channels:
+        if not channel or str(channel) in ["0", "-100"]:
+            continue
         try:
-            chat_id = int(channel) if str(channel).startswith("-100") or str(channel).isdigit() else channel
-            member = await client.get_chat_member(chat_id, user_id)
-            if member.status not in [ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER]: return False
-        except UserNotParticipant: return False
+            member = await client.get_chat_member(chat_id=channel, user_id=user_id)
+            # If user is banned/kicked, treat as not subscribed
+            if member.status in [ChatMemberStatus.BANNED, ChatMemberStatus.RESTRICTED]:
+                return False
+        except UserNotParticipant:
+            return False
         except FloodWait as e:
             await asyncio.sleep(e.value)
-            try:
-                member = await client.get_chat_member(chat_id, user_id)
-                if member.status not in [ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER]: return False
-            except: return False
-        except Exception: continue
+            return await subscribed(client, message_or_query, channels)
+        except Exception as e:
+            logging.error(f"FS Check Error on channel {channel}: {e}")
+            # If bot isn't admin in the FS channel, it might throw an error. 
+            # We pass to prevent the bot from breaking completely.
+            pass
     return True
 
+
+# --------------------------------------------------
+# 3. ENCODING & DECODING FOR SHAREABLE LINKS
+# --------------------------------------------------
 async def encode(string: str) -> str:
-    return base64.urlsafe_b64encode(string.encode()).decode().rstrip("=")
+    """Encodes string to Base64 for secure start links."""
+    string_bytes = string.encode("ascii")
+    base64_bytes = base64.urlsafe_b64encode(string_bytes)
+    base64_string = base64_bytes.decode("ascii").strip("=")
+    return base64_string
 
 async def decode(base64_string: str) -> str:
-    base64_string = base64_string.strip("=")
-    padded = base64_string + "=" * (-len(base64_string) % 4)
-    return base64.urlsafe_b64decode(padded.encode()).decode()
+    """Decodes Base64 string back to message/batch data."""
+    # Add padding back if necessary
+    base64_string = base64_string.strip("-")
+    padding = len(base64_string) % 4
+    if padding != 0:
+        base64_string += "=" * (4 - padding)
+        
+    base64_bytes = base64_string.encode("ascii")
+    string_bytes = base64.urlsafe_b64decode(base64_bytes)
+    return string_bytes.decode("ascii")
 
-async def get_messages(client, message_ids, db_channel_id):
-    messages, total = [], 0
-    while total != len(message_ids):
-        batch = message_ids[total:total + 200]
-        try: msgs = await client.get_messages(chat_id=db_channel_id, message_ids=batch)
-        except FloodWait as e:
-            await asyncio.sleep(e.value)
-            msgs = await client.get_messages(chat_id=db_channel_id, message_ids=batch)
-        except: msgs = []
-        messages.extend(msgs)
-        total += len(batch)
-    return messages
 
-async def get_message_id(client, message, expected_channel_id):
+# --------------------------------------------------
+# 4. DATABASE MESSAGE RETRIEVAL
+# --------------------------------------------------
+async def get_messages(client, message_ids, chat_id):
+    """Fetches a list of messages from the Database Channel."""
+    try:
+        # Pyrogram can fetch a list of IDs directly
+        messages = await client.get_messages(chat_id=chat_id, message_ids=list(message_ids))
+        # Ensure it returns a list even if it's a single message
+        if not isinstance(messages, list):
+            messages = [messages]
+        return messages
+    except FloodWait as e:
+        await asyncio.sleep(e.value)
+        return await get_messages(client, message_ids, chat_id)
+    except Exception as e:
+        logging.error(f"Error fetching messages from DB: {e}")
+        return []
+
+
+async def get_message_id(client, message, chat_id: int) -> int:
+    """Extracts the specific message ID from a forwarded message or a direct link."""
+    # If the user forwarded a message from the DB channel
     if message.forward_from_chat:
-        return message.forward_from_message_id if message.forward_from_chat.id == expected_channel_id else 0
-    if message.forward_sender_name: return 0
-    text = message.text or message.caption or ""
-    if text:
-        match = re.search(r"https://t.me/(?:c/)?([^/]+)/(\d+)", text)
+        if message.forward_from_chat.id == chat_id:
+            return message.forward_from_message_id
+            
+    # If the user sent a telegram link to the message
+    elif message.text:
+        pattern = r"https://t.me/(?:c/)?(.*)/(\d+)"
+        match = re.search(pattern, message.text)
         if match:
-            chat, msg_id = match.group(1), int(match.group(2))
-            if chat in [str(expected_channel_id), str(expected_channel_id).replace("-100", "")]: return msg_id
+            return int(match.group(2))
+            
     return 0
 
+
+# --------------------------------------------------
+# 5. TIME FORMATTING
+# --------------------------------------------------
 def get_readable_time(seconds: int) -> str:
-    days, seconds = divmod(seconds, 86400)
-    hours, seconds = divmod(seconds, 3600)
-    minutes, seconds = divmod(seconds, 60)
-    res = []
-    if days: 
-        res.append(f"{days} Day" if days == 1 else f"{days} Days")
-    if hours: 
-        res.append(f"{hours} Hour" if hours == 1 else f"{hours} Hours")
-    if minutes: 
-        res.append(f"{minutes} Minute" if minutes == 1 else f"{minutes} Minutes")
-    if seconds or not res: 
-        res.append(f"{seconds} Second" if seconds == 1 else f"{seconds} Seconds")
-    return " ".join(res)
+    """Converts raw seconds into a readable format (e.g., 1d 2h 30m)."""
+    count = 0
+    readable_time = ""
+    time_list = []
+    time_suffix_list = ["s", "m", "h", "days"]
+
+    while count < 4:
+        count += 1
+        remainder, result = divmod(seconds, 60) if count < 3 else divmod(seconds, 24)
+        if seconds == 0 and remainder == 0:
+            break
+        time_list.append(int(result))
+        seconds = int(remainder)
+
+    for x in range(len(time_list)):
+        time_list[x] = str(time_list[x]) + time_suffix_list[x]
+
+    if len(time_list) == 4:
+        readable_time += time_list.pop() + ", "
+
+    time_list.reverse()
+    readable_time += " ".join(time_list)
+    
+    return readable_time
     
