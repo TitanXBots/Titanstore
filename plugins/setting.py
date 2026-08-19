@@ -2,7 +2,7 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from pyromod.exceptions import ListenerTimeout
-from helper_func import safe_edit, send_cancel_msg
+from helper_func import safe_edit
 from database.database import (
     is_admin, get_protect_status, set_protect_status, 
     get_force_sub_status, set_force_sub_status,
@@ -10,39 +10,16 @@ from database.database import (
     get_global_fs_channels, set_global_fs_channels
 )
 
-@Client.on_callback_query(filters.regex("^(settings|protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|add_channels_menu)$"))
+@Client.on_callback_query(filters.regex("^(protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|add_channels_menu)$"))
 async def settings_cb(client: Client, query: CallbackQuery):
     try: await query.answer()
     except: pass
     user_id = query.from_user.id
-    is_user_admin = await is_admin(user_id)
+    
+    if not await is_admin(user_id):
+        return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
+        
     data = query.data
-
-    if data == "settings":
-        if is_user_admin:
-            return await safe_edit(
-                query.message, 
-                "⚙️ <b>ᴀᴅᴍɪɴ ꜱᴇᴛᴛɪɴɢꜱ ᴘᴀɴᴇʟ</b>", 
-                InlineKeyboardMarkup([
-                    [InlineKeyboardButton("👨‍💻 ᴀᴅᴍɪɴ ᴍᴇɴᴜ", callback_data="admin_menu"), InlineKeyboardButton("🚫 ʙᴀɴ ᴍᴇɴᴜ", callback_data="ban_menu")],
-                    [InlineKeyboardButton("🗑 ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="autodelete_menu"), InlineKeyboardButton("📁 ᴀᴅᴅ ᴄʜᴀɴɴᴇʟꜱ", callback_data="add_channels_menu")],
-                    [InlineKeyboardButton("🔒 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ", callback_data="protect_menu")],
-                    [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")]
-                ])
-            )
-        else:
-            text = (
-                f"👤 <b>ᴜꜱᴇʀ ᴘʀᴏꜰɪʟᴇ & ꜱᴇᴛᴛɪɴɢꜱ</b>\n\n"
-                f"🆔 <b>ᴜꜱᴇʀ ɪᴅ:</b> <code>{user_id}</code>\n"
-                f"📊 <b>ꜱᴛᴀᴛᴜꜱ:</b> 🆓 ꜰʀᴇᴇ\n\n"
-            )
-            buttons = [[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")]]
-            return await safe_edit(query.message, text, InlineKeyboardMarkup(buttons))
-
-    if not is_user_admin:
-        try: await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
-        except: pass
-        return
 
     if data == "add_channels_menu":
         return await safe_edit(query.message, "📁 <b>ᴀᴅᴅ ᴄʜᴀɴɴᴇʟꜱ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴏɴꜰɪɢᴜʀᴇ ɢʟᴏʙᴀʟ ᴅᴀᴛᴀʙᴀꜱᴇ ᴀɴᴅ ꜰᴏʀᴄᴇ-ꜱᴜʙꜱᴄʀɪᴘᴛɪᴏɴ ᴄʜᴀɴɴᴇʟꜱ.", InlineKeyboardMarkup([
@@ -63,22 +40,8 @@ async def settings_cb(client: Client, query: CallbackQuery):
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
         ]))
 
-    elif data == "protect_on":
-        await set_protect_status(True)
-        is_on = await get_protect_status()
-        status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
-        text = (
-            f"🔒 <b>ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\n"
-            f"ᴘʀᴇᴠᴇɴᴛꜱ ᴜꜱᴇʀꜱ ꜰʀᴏᴍ ꜰᴏʀᴡᴀʀᴅɪɴɢ, ꜱᴀᴠɪɴɢ, ᴏʀ ᴄᴏᴘʏɪɴɢ ꜰɪʟᴇꜱ.\n\n"
-            f"ᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>"
-        )
-        return await safe_edit(query.message, text, InlineKeyboardMarkup([
-            [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="protect_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="protect_off")], 
-            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
-        ]))
-
-    elif data == "protect_off":
-        await set_protect_status(False)
+    elif data in ["protect_on", "protect_off"]:
+        await set_protect_status(data == "protect_on")
         is_on = await get_protect_status()
         status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
         text = (
@@ -106,7 +69,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_db_menu")]])
         await safe_edit(query.message, "📁 <b>ꜱᴇᴛ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ</b>\n\nꜱᴇɴᴅ ɴᴇᴡ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ɪᴅ (ᴍᴜꜱᴛ ꜱᴛᴀʀᴛ ᴡɪᴛʜ -100)\n\n/cancel - ᴄᴀɴᴄᴇʟ.", back_keyboard)
         try:
-            input_msg = await client.listen(query.message.chat.id, timeout=60)
+            input_msg = await client.listen(chat_id=query.message.chat.id, timeout=60)
         except ListenerTimeout:
             return await safe_edit(query.message, "📁 <b>ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>", back_keyboard)
 
@@ -164,7 +127,7 @@ async def settings_cb(client: Client, query: CallbackQuery):
         back_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="global_fs_menu")]])
         await safe_edit(query.message, "📢 <b>ꜱᴇᴛ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ</b>\n\nꜱᴇɴᴅ ɴᴇᴡ ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟ ɪᴅꜱ (ꜱᴘᴀᴄᴇ ꜱᴇᴘᴀʀᴀᴛᴇᴅ, ᴏʀ 0 ᴛᴏ ᴄʟᴇᴀʀ)\n\n/cancel - ᴄᴀɴᴄᴇʟ.", back_keyboard)
         try:
-            input_msg = await client.listen(query.message.chat.id, timeout=60)
+            input_msg = await client.listen(chat_id=query.message.chat.id, timeout=60)
         except ListenerTimeout:
             return await safe_edit(query.message, "📢 <b>ꜰᴏʀᴄᴇ ꜱᴜʙ ᴄʜᴀɴɴᴇʟꜱ</b>", back_keyboard)
 
