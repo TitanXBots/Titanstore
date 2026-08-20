@@ -15,7 +15,7 @@ from config import OWNER_USERNAME, POINTS_TO_PREMIUM, PREMIUM_DAYS, LOG_CHANNEL_
 async def plan_cmd(client, message):
     await render_dashboard(client, message, message.from_user.id)
 
-# --- 2. THE UI RENDERER (Refer & Earn + Trial Text) ---
+# --- 2. THE UI RENDERER (Refer & Earn + Persistent Trial Button) ---
 async def render_dashboard(client, message, user_id):
     is_prem = await get_premium_status(user_id)
     user = await get_user(user_id)
@@ -49,26 +49,25 @@ async def render_dashboard(client, message, user_id):
         
     else:
         trial_claimed = await has_claimed_trial(user_id)
+        
+        # Text changes based on whether they claimed it, but buttons stay the same!
         if not trial_claimed:
             text = ref_text + (
                 "😔 **YOU DON'T HAVE ANY PREMIUM SUBSCRIPTION. IF YOU WANT TO BUY PREMIUM CLICK ON BELOW BUTTON.**\n\n"
                 "**TO USE OUR PREMIUM FEATURES FOR 10 MINUTES CLICK ON FREE TRAIL BUTTON.**"
             )
-            buttons = [
-                [InlineKeyboardButton("🎁 GET FREE TRAIL FOR 10 MINUTES ☺️", callback_data="claim_trial")],
-                [InlineKeyboardButton("💳 BUY SUBSCRIPTION : REMOVE ADS", callback_data="show_plans")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ", callback_data="start")]
-            ]
         else:
             text = ref_text + (
                 "😔 **YOU DON'T HAVE ANY PREMIUM SUBSCRIPTION.**\n\n"
                 "*(You have already used your 10-minute free trial)*\n\n"
                 "**CLICK BELOW TO BUY PREMIUM AND REMOVE ADS.**"
             )
-            buttons = [
-                [InlineKeyboardButton("💳 BUY SUBSCRIPTION : REMOVE ADS", callback_data="show_plans")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ", callback_data="start")]
-            ]
+            
+        buttons = [
+            [InlineKeyboardButton("🎁 GET FREE TRAIL FOR 10 MINUTES ☺️", callback_data="claim_trial")],
+            [InlineKeyboardButton("💳 BUY SUBSCRIPTION : REMOVE ADS", callback_data="show_plans")],
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ", callback_data="start")]
+        ]
 
     await safe_edit(message, text, InlineKeyboardMarkup(buttons))
 
@@ -83,8 +82,11 @@ async def premium_ui_callbacks(client, query):
     if data == "my_account": return await render_dashboard(client, query.message, user_id)
     
     elif data == "claim_trial":
-        if await has_claimed_trial(user_id): return await query.answer("❌ ʏᴏᴜ ʜᴀᴠᴇ ᴀʟʀᴇᴀᴅʏ ᴄʟᴀɪᴍᴇᴅ ʏᴏᴜʀ ꜰʀᴇᴇ ᴛʀɪᴀʟ!", show_alert=True)
-        # Grant 10 minutes from database.py!
+        if await has_claimed_trial(user_id): 
+            # Persistent pop-up alert if they try to click it again
+            return await query.answer("❌ You have already used your 10-minute free trial!", show_alert=True)
+            
+        # Grant 10 minutes!
         await grant_free_trial(user_id)
         await query.answer("🎉 ꜱᴜᴄᴄᴇꜱꜱ! ʏᴏᴜ ɴᴏᴡ ʜᴀᴠᴇ 10 ᴍɪɴᴜᴛᴇꜱ ᴏꜰ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇꜱꜱ.", show_alert=True)
         await render_dashboard(client, query.message, user_id)
@@ -135,14 +137,13 @@ async def premium_ui_callbacks(client, query):
             await query.message.reply_text("❌ ᴘʀᴏᴠɪᴅᴇ ᴏɴʟʏ ᴏɴᴇ ᴅᴀᴛᴀʙᴀꜱᴇ ᴄʜᴀɴɴᴇʟ.")
             return await render_dashboard(client, query.message, user_id)
             
-        # 🚀 AUTO-APPROVE LOGIC IS HERE (Works for Trial Users instantly!)
+        # 🚀 AUTO-APPROVE LOGIC (Works for Trial Users instantly!)
         await submit_channel(user_id, ch_type, channels, status="approved")
         await query.message.reply_text("✅ **ᴄʜᴀɴɴᴇʟ(ꜱ) ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴜᴛᴏ-ᴀᴘᴘʀᴏᴠᴇᴅ!**")
         await render_dashboard(client, query.message, user_id)
         
         ch_str = " ".join(map(str, channels))
         await client.send_message(LOG_CHANNEL_ID, f"📝 **Channel Auto-Approved**\nUser: `{user_id}`\nType: `{ch_type.upper()}`\nChannels: `{ch_str}`\n\nStatus: ✅ Auto-Approved")
-
 
 # --- 4. MANUAL ADMIN COMMANDS ---
 @Client.on_message(filters.command("addpremium") & filters.private)
