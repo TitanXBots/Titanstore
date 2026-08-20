@@ -4,15 +4,13 @@ from config import DB_URI, DB_NAME, OWNER_ID, ADMINS, CHANNEL_ID, FORCE_SUB_CHAN
 
 dbclient = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
 database = dbclient[DB_NAME]
-db = database 
 
 user_data = database["users"]
 banned_users = database["banned_users"]
 admins_collection = database["admins"]
 maintenance_collection = database["maintenance"]
 settings_collection = database["settings"]
-media_col = database["media"]
-approvals_col = database["approvals"] # For Premium Custom Channels
+approvals_col = database["approvals"] 
 
 # --- CORE USER ---
 async def is_user_present(user_id: int) -> bool:
@@ -26,17 +24,16 @@ async def add_user(user_id: int, first_name=None, username=None):
     if not user:
         await user_data.insert_one({
             "_id": user_id, "first_name": first_name, "username": username,
-            "points": 0, "is_premium": False, "premium_expiry": None
+            "points": 0, "is_premium": False, "premium_expiry": None,
+            "trial_claimed": False
         })
     else:
         await user_data.update_one({"_id": user_id}, {"$set": {"first_name": first_name, "username": username}})
 
-async def get_all_users():
-    return [user["_id"] for user in await user_data.find({}, {"_id": 1}).to_list(length=None)]
-
+async def get_all_users(): return [user["_id"] for user in await user_data.find({}, {"_id": 1}).to_list(length=None)]
 async def delete_user(user_id: int): await user_data.delete_one({"_id": user_id})
 
-# --- PREMIUM & POINTS SYSTEM ---
+# --- PREMIUM, POINTS & 10-MIN TRIAL SYSTEM ---
 async def add_referral_points(user_id: int, points: int):
     await user_data.update_one({"_id": user_id}, {"$inc": {"points": points}})
 
@@ -55,11 +52,25 @@ async def set_premium(user_id: int, days: int):
     await user_data.update_one({"_id": user_id}, {"$set": {"is_premium": True, "premium_expiry": expiry}})
 
 async def remove_premium(user_id: int):
+    # Removes Premium AND auto-wipes custom channels if they were a trial user
     await user_data.update_one({"_id": user_id}, {"$set": {"is_premium": False, "premium_expiry": None}})
+    await approvals_col.delete_many({"user_id": user_id})
+
+async def has_claimed_trial(user_id: int) -> bool:
+    user = await get_user(user_id)
+    return user.get("trial_claimed", False) if user else False
+
+async def grant_free_trial(user_id: int):
+    expiry = (datetime.now(timezone.utc) + timedelta(minutes=10)).timestamp()
+    await user_data.update_one({"_id": user_id}, {"$set": {"is_premium": True, "premium_expiry": expiry, "trial_claimed": True}})
 
 # --- CUSTOM CHANNEL MANAGEMENT ---
-async def submit_channel(user_id: int, ch_type: str, channels: list):
-    await approvals_col.update_one({"user_id": user_id, "type": ch_type}, {"$set": {"channels": channels, "status": "pending"}}, upsert=True)
+async def submit_channel(user_id: int, ch_type: str, channels: list, status: str = "pending"):
+    await approvals_col.update_one(
+        {"user_id": user_id, "type": ch_type}, 
+        {"$set": {"channels": channels, "status": status}}, 
+        upsert=True
+    )
 
 async def get_user_approved_channels(user_id: int, ch_type: str):
     data = await approvals_col.find_one({"user_id": user_id, "type": ch_type, "status": "approved"})
@@ -93,24 +104,26 @@ async def is_admin(user_id) -> bool:
         return data is not None and data.get("is_admin", False)
     except: return False
 
-async def get_admins():
-    return [admin["_id"] for admin in await admins_collection.find({}, {"_id": 1}).to_list(length=None)]
-
+async def get_admins(): return [admin["_id"] for admin in await admins_collection.find({}, {"_id": 1}).to_list(length=None)]
 async def add_admin(user_id: int): await admins_collection.update_one({"_id": user_id}, {"$set": {"is_admin": True}}, upsert=True)
 async def remove_admin(user_id: int): await admins_collection.delete_one({"_id": user_id})
 async def is_owner(user_id) -> bool: return int(user_id) == int(OWNER_ID)
+
 async def is_user_banned(user_id: int) -> bool: return (await banned_users.find_one({"_id": user_id}) or {}).get("is_banned", False)
 async def get_ban_reason(user_id: int) -> str: return (await banned_users.find_one({"_id": user_id}) or {}).get("reason", "No reason provided")
 async def ban_user(user_id: int, reason: str = "No reason"): await banned_users.update_one({"_id": user_id}, {"$set": {"is_banned": True, "reason": reason}}, upsert=True)
 async def unban_user(user_id: int): await banned_users.update_one({"_id": user_id}, {"$set": {"is_banned": False, "reason": ""}}, upsert=True)
 async def get_banned_users(): return await banned_users.find({"is_banned": True}).to_list(length=None)
+
 async def is_maintenance(user_id: int) -> bool:
     if await is_admin(user_id): return False
     return (await maintenance_collection.find_one({"_id": "maintenance"}) or {}).get("maintenance") == "on"
+
 async def get_auto_delete_status() -> bool: return (await settings_collection.find_one({"_id": "auto_delete"}) or {}).get("status", True)
 async def set_auto_delete_status(status: bool): await settings_collection.update_one({"_id": "auto_delete"}, {"$set": {"status": status}}, upsert=True)
 async def get_auto_delete_time() -> int: return (await settings_collection.find_one({"_id": "auto_delete_time"}) or {}).get("time", 600)
 async def set_auto_delete_time(time: int): await settings_collection.update_one({"_id": "auto_delete_time"}, {"$set": {"time": time}}, upsert=True)
+
 async def get_protect_status() -> bool: return (await settings_collection.find_one({"_id": "protect_content"}) or {}).get("status", False)
 async def set_protect_status(status: bool): await settings_collection.update_one({"_id": "protect_content"}, {"$set": {"status": status}}, upsert=True)
 async def get_force_sub_status() -> bool: return (await settings_collection.find_one({"_id": "force_sub"}) or {}).get("status", True)
