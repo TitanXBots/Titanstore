@@ -4,6 +4,7 @@ from config import DB_URI, DB_NAME, OWNER_ID, ADMINS, CHANNEL_ID, FORCE_SUB_CHAN
 
 dbclient = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
 database = dbclient[DB_NAME]
+db = database
 
 user_data = database["users"]
 banned_users = database["banned_users"]
