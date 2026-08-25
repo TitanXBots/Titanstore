@@ -18,7 +18,7 @@ async def adstatus_command(client: Client, message: Message):
         return
 
     # Send a quick loading message and start the ping timer
-    processing_msg = await message.reply_text("🔄 **Fetching real-time statistics...**")
+    processing_msg = await message.reply_text("Fetching real-time statistics...")
     start_t = time.time()
 
     # 2. Fetch Live Database Counts
@@ -38,23 +38,23 @@ async def adstatus_command(client: Client, message: Message):
     ping = round((time.time() - start_t) * 1000)
     uptime = get_readable_time(int(time.time() - BOT_START_TIME))
 
-    # 5. Format the Text Exactly Like Your Screenshot
+    # 5. Format the Text
     text = (
-        f"📊 **BOT STATS**\n\n"
-        f"• 👥 **Total Users:** {total_users}\n"
-        f"• 👨 **Total Admins:** {total_admins}\n"
-        f"• 🚫 **Total Banned Users:** {total_banned}\n"
-        f"• 💎 **Premium Users:** {premium_users}\n"
-        f"• 📢 **Total ForceSub Channels:** {fsub_channels}\n\n"
-        f"⚙️ **BOT STATUS**\n\n"
-        f"• 📡 **Bot Ping:** {ping} ms\n"
-        f"• ⏱ **Bot Uptime:** {uptime}\n"
-        f"• 🛡 **Protect Content:** {protect_content}\n"
-        f"• 🔧 **Maintenance Mode:** {maintenance}\n"
-        f"• 🗑 **Auto Delete Mode:** {auto_delete}\n"
-        f"• 💌 **Request FSub Mode:** {fsub_mode}"
+        f"BOT STATS\n\n"
+        f"• Total Users: {total_users}\n"
+        f"• Total Admins: {total_admins}\n"
+        f"• Total Banned Users: {total_banned}\n"
+        f"• Premium Users: {premium_users}\n"
+        f"• Total ForceSub Channels: {fsub_channels}\n\n"
+        f"BOT STATUS\n\n"
+        f"• Bot Ping: {ping} ms\n"
+        f"• Bot Uptime: {uptime}\n"
+        f"• Protect Content: {protect_content}\n"
+        f"• Maintenance Mode: {maintenance}\n"
+        f"• Auto Delete Mode: {auto_delete}\n"
+        f"• Request FSub Mode: {fsub_mode}"
     )
 
     # Edit the loading message with the final stats
     await processing_msg.edit_text(text)
-  
+    
