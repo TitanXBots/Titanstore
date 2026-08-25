@@ -1,4 +1,5 @@
 import time
+import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from database.database import (
@@ -12,13 +13,20 @@ from helper_func import get_readable_time
 BOT_START_TIME = time.time()
 
 # ==========================================
-# 1. ADMIN COMMAND (/adstatus) - With User Warning
+# 1. ADMIN COMMAND (/adstatus) - Hidden from users
 # ==========================================
 @Client.on_message(filters.command("adstatus") & filters.private)
 async def adstatus_command(client: Client, message: Message):
-    # Security Check: Reply to non-admins trying to use the command
+    # Security Check: Alert non-admins and auto-delete
     if not await is_admin(message.from_user.id):
-        return await message.reply_text("⚠️ This command is only for admins.")
+        warning = await message.reply_text("⚠️ This command is only for Admins.")
+        await asyncio.sleep(10)
+        try:
+            await warning.delete()
+            await message.delete()
+        except:
+            pass
+        return
 
     processing_msg = await message.reply_text("Fetching real-time statistics...")
     start_t = time.time()
@@ -57,6 +65,14 @@ async def adstatus_command(client: Client, message: Message):
     )
 
     await processing_msg.edit_text(text)
+    
+    # 🚀 NEW: Auto-delete the admin stats and user command after 60 seconds
+    await asyncio.sleep(60)
+    try:
+        await processing_msg.delete()
+        await message.delete()
+    except:
+        pass
 
 
 # ==========================================
@@ -74,7 +90,7 @@ async def public_status_command(client: Client, message: Message):
     ping = round((time.time() - start_t) * 1000)
     uptime = get_readable_time(int(time.time() - BOT_START_TIME))
 
-    # Format exactly as requested (Removed extra emojis, kept Bot Status emojis)
+    # Format exactly as requested (Kept Bot Status emojis, removed the rest)
     text = (
         f"⚙️ BOT STATUS\n"
         f"Bot Status: Online\n"
@@ -85,3 +101,11 @@ async def public_status_command(client: Client, message: Message):
 
     await processing_msg.edit_text(text)
     
+    # 🚀 NEW: Auto-delete the public stats and user command after 60 seconds
+    await asyncio.sleep(60)
+    try:
+        await processing_msg.delete()
+        await message.delete()
+    except:
+        pass
+        
