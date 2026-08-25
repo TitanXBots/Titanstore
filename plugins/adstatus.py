@@ -38,15 +38,15 @@ async def adstatus_command(client: Client, message: Message):
     ping = round((time.time() - start_t) * 1000)
     uptime = get_readable_time(int(time.time() - BOT_START_TIME))
 
-    # 5. Format the Text
+    # 5. Format the Text (Removed inner emojis and bolding asterisks)
     text = (
-        f"BOT STATS\n\n"
+        f"📊 BOT STATS\n\n"
         f"• Total Users: {total_users}\n"
         f"• Total Admins: {total_admins}\n"
         f"• Total Banned Users: {total_banned}\n"
         f"• Premium Users: {premium_users}\n"
         f"• Total ForceSub Channels: {fsub_channels}\n\n"
-        f"BOT STATUS\n\n"
+        f"⚙️ BOT STATUS\n\n"
         f"• Bot Ping: {ping} ms\n"
         f"• Bot Uptime: {uptime}\n"
         f"• Protect Content: {protect_content}\n"
