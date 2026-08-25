@@ -53,7 +53,6 @@ async def set_premium(user_id: int, days: int):
     await user_data.update_one({"_id": user_id}, {"$set": {"is_premium": True, "premium_expiry": expiry}})
 
 async def remove_premium(user_id: int):
-    # Removes Premium AND auto-wipes custom channels if they were a trial user
     await user_data.update_one({"_id": user_id}, {"$set": {"is_premium": False, "premium_expiry": None}})
     await approvals_col.delete_many({"user_id": user_id})
 
@@ -116,10 +115,6 @@ async def ban_user(user_id: int, reason: str = "No reason"): await banned_users.
 async def unban_user(user_id: int): await banned_users.update_one({"_id": user_id}, {"$set": {"is_banned": False, "reason": ""}}, upsert=True)
 async def get_banned_users(): return await banned_users.find({"is_banned": True}).to_list(length=None)
 
-async def is_maintenance(user_id: int) -> bool:
-    if await is_admin(user_id): return False
-    return (await maintenance_collection.find_one({"_id": "maintenance"}) or {}).get("maintenance") == "on"
-
 async def get_auto_delete_status() -> bool: return (await settings_collection.find_one({"_id": "auto_delete"}) or {}).get("status", True)
 async def set_auto_delete_status(status: bool): await settings_collection.update_one({"_id": "auto_delete"}, {"$set": {"status": status}}, upsert=True)
 async def get_auto_delete_time() -> int: return (await settings_collection.find_one({"_id": "auto_delete_time"}) or {}).get("time", 600)
@@ -131,4 +126,16 @@ async def get_force_sub_status() -> bool: return (await settings_collection.find
 async def set_force_sub_status(status: bool): await settings_collection.update_one({"_id": "force_sub"}, {"$set": {"status": status}}, upsert=True)
 async def get_file_again_status() -> bool: return (await settings_collection.find_one({"_id": "get_file_again"}) or {}).get("status", True)
 async def set_file_again_status(status: bool): await settings_collection.update_one({"_id": "get_file_again"}, {"$set": {"status": status}}, upsert=True)
+
+# --- MAINTENANCE SYSTEM ---
+async def is_maintenance(user_id: int) -> bool:
+    if await is_admin(user_id): return False
+    return (await maintenance_collection.find_one({"_id": "maintenance"}) or {}).get("maintenance") == "on"
+
+async def get_maintenance_status() -> bool:
+    return (await maintenance_collection.find_one({"_id": "maintenance"}) or {}).get("maintenance") == "on"
+
+async def set_maintenance_status(status: bool):
+    val = "on" if status else "off"
+    await maintenance_collection.update_one({"_id": "maintenance"}, {"$set": {"maintenance": val}}, upsert=True)
     
