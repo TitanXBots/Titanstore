@@ -4,10 +4,11 @@ from pyromod.exceptions import ListenerTimeout
 from helper_func import safe_edit
 from database.database import (
     is_admin, get_protect_status, set_protect_status, get_force_sub_status, set_force_sub_status,
-    get_global_db_channel, set_global_db_channel, get_global_fs_channels, set_global_fs_channels
+    get_global_db_channel, set_global_db_channel, get_global_fs_channels, set_global_fs_channels,
+    get_maintenance_status, set_maintenance_status
 )
 
-@Client.on_callback_query(filters.regex("^(protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|add_channels_menu)$"))
+@Client.on_callback_query(filters.regex("^(protect_menu|protect_on|protect_off|forcesub_on|forcesub_off|global_db_menu|global_db_set|global_fs_menu|global_fs_set|add_channels_menu|maint_menu|maint_on|maint_off)$"))
 async def settings_cb(client: Client, query: CallbackQuery):
     try: await query.answer()
     except: pass
@@ -15,7 +16,18 @@ async def settings_cb(client: Client, query: CallbackQuery):
     if not await is_admin(user_id): return await query.answer("⚠️ ᴀᴄᴄᴇꜱꜱ ᴅᴇɴɪᴇᴅ: ᴀᴅᴍɪɴꜱ ᴏɴʟʏ!", show_alert=True)
     data = query.data
 
-    if data == "add_channels_menu":
+    if data in ["maint_menu", "maint_on", "maint_off"]:
+        if data == "maint_on": await set_maintenance_status(True)
+        elif data == "maint_off": await set_maintenance_status(False)
+        is_on = await get_maintenance_status()
+        status = "ᴏɴ ✅" if is_on else "ᴏꜰꜰ ❌"
+        text = f"🛠 <b>ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴡʜᴇɴ ᴏɴ, ɴᴏʀᴍᴀʟ ᴜꜱᴇʀꜱ ᴡɪʟʟ ʙᴇ ʙʟᴏᴄᴋᴇᴅ ꜰʀᴏᴍ ᴜꜱɪɴɢ ᴛʜᴇ ʙᴏᴛ.\n\nᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ: <b>{status}</b>"
+        return await safe_edit(query.message, text, InlineKeyboardMarkup([
+            [InlineKeyboardButton("✅ ᴇɴᴀʙʟᴇ", callback_data="maint_on"), InlineKeyboardButton("❌ ᴅɪꜱᴀʙʟᴇ", callback_data="maint_off")],
+            [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
+        ]))
+
+    elif data == "add_channels_menu":
         return await safe_edit(query.message, "📁 <b>ᴀᴅᴅ ᴄʜᴀɴɴᴇʟꜱ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄᴏɴꜰɪɢᴜʀᴇ ɢʟᴏʙᴀʟ ᴅᴀᴛᴀʙᴀꜱᴇ ᴀɴᴅ ꜰᴏʀᴄᴇ-ꜱᴜʙꜱᴄʀɪᴘᴛɪᴏɴ ᴄʜᴀɴɴᴇʟꜱ.", InlineKeyboardMarkup([
             [InlineKeyboardButton("📁 ɢʟᴏʙᴀʟ ᴅʙ", callback_data="global_db_menu"), InlineKeyboardButton("📢 ɢʟᴏʙᴀʟ ꜰꜱ", callback_data="global_fs_menu")],
             [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="admin_panel")]
