@@ -11,34 +11,35 @@ from helper_func import get_readable_time
 # Record the exact time the bot starts to calculate uptime
 BOT_START_TIME = time.time()
 
+# ==========================================
+# 1. ADMIN COMMAND (/adstatus) - With User Warning
+# ==========================================
 @Client.on_message(filters.command("adstatus") & filters.private)
 async def adstatus_command(client: Client, message: Message):
-    # 1. Security Check: Block non-admins silently
+    # Security Check: Reply to non-admins trying to use the command
     if not await is_admin(message.from_user.id):
-        return
+        return await message.reply_text("⚠️ This command is only for admins.")
 
-    # Send a quick loading message and start the ping timer
     processing_msg = await message.reply_text("Fetching real-time statistics...")
     start_t = time.time()
 
-    # 2. Fetch Live Database Counts
+    # Fetch Live Database Counts
     total_users = len(await get_all_users())
     total_admins = len(await get_admins())
     total_banned = len(await get_banned_users())
     premium_users = await user_data.count_documents({"is_premium": True})
     fsub_channels = len(await get_global_fs_channels())
 
-    # 3. Fetch Live Settings Statuses
+    # Fetch Live Settings Statuses
     protect_content = "Enabled" if await get_protect_status() else "Disabled"
     maintenance = "Enabled" if await get_maintenance_status() else "Disabled"
     auto_delete = "Enabled" if await get_auto_delete_status() else "Disabled"
     fsub_mode = "Enabled" if await get_force_sub_status() else "Disabled"
 
-    # 4. Calculate Final Ping and Uptime
+    # Calculate Final Ping and Uptime
     ping = round((time.time() - start_t) * 1000)
     uptime = get_readable_time(int(time.time() - BOT_START_TIME))
 
-    # 5. Format the Text (Removed inner emojis and bolding asterisks)
     text = (
         f"📊 BOT STATS\n\n"
         f"• Total Users: {total_users}\n"
@@ -55,6 +56,32 @@ async def adstatus_command(client: Client, message: Message):
         f"• Request FSub Mode: {fsub_mode}"
     )
 
-    # Edit the loading message with the final stats
+    await processing_msg.edit_text(text)
+
+
+# ==========================================
+# 2. PUBLIC COMMAND (/status) - For everyone
+# ==========================================
+@Client.on_message(filters.command("status") & filters.private)
+async def public_status_command(client: Client, message: Message):
+    processing_msg = await message.reply_text("Checking systems...")
+    start_t = time.time()
+
+    # Fetch only the Maintenance status for the public menu
+    maintenance = "Enabled" if await get_maintenance_status() else "Disabled"
+
+    # Calculate Final Ping and Uptime
+    ping = round((time.time() - start_t) * 1000)
+    uptime = get_readable_time(int(time.time() - BOT_START_TIME))
+
+    # Format exactly as requested (Removed extra emojis, kept Bot Status emojis)
+    text = (
+        f"⚙️ BOT STATUS\n"
+        f"Bot Status: Online\n"
+        f"Bot Ping: {ping} ms\n"
+        f"Bot Uptime: {uptime}\n"
+        f"Maintenance Mode: {maintenance}"
+    )
+
     await processing_msg.edit_text(text)
     
